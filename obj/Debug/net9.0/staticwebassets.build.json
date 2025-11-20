@@ -1,0 +1,702 @@
+{
+  "Version": 1,
+  "Hash": "exN66PPWUJvO2/XQpDgcOelcCONJSNgtK6G1S4kZXTI=",
+  "Source": "billing_system",
+  "BasePath": "_content/billing_system",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "billing_system/wwwroot",
+      "Source": "billing_system",
+      "ContentRoot": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/",
+      "BasePath": "_content/billing_system",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/n6t7ximslh-c7zpj91cjc.gz",
+      "SourceId": "billing_system",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/",
+      "BasePath": "_content/billing_system",
+      "RelativePath": "css/site#[.{fingerprint=c7zpj91cjc}]?.css.gz",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/site.css",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "Fingerprint": "8gyp10s9zf",
+      "Integrity": "WOTuRhot5HXknyOOj+Pcnd+h4ToCIZxAtytqMbd9x3w=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/site.css"
+    },
+    {
+      "Identity": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
+      "SourceId": "billing_system",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/",
+      "BasePath": "_content/billing_system",
+      "RelativePath": "css/tailwind#[.{fingerprint=zefz65wvgg}]?.css.gz",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/tailwind.css",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "Fingerprint": "a7r8yjlx12",
+      "Integrity": "tlmzBc2GoeRaIQuA7usvlcCw/n0gaDXfaT6eN5IPsoA=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/tailwind.css"
+    },
+    {
+      "Identity": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/site.css",
+      "SourceId": "billing_system",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/",
+      "BasePath": "_content/billing_system",
+      "RelativePath": "css/site#[.{fingerprint}]?.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "c7zpj91cjc",
+      "Integrity": "iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/css/site.css"
+    },
+    {
+      "Identity": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/tailwind.css",
+      "SourceId": "billing_system",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/",
+      "BasePath": "_content/billing_system",
+      "RelativePath": "css/tailwind#[.{fingerprint}]?.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "zefz65wvgg",
+      "Integrity": "y/LjK4F2+Jo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/css/tailwind.css"
+    }
+  ],
+  "Endpoints": [
+    {
+      "Route": "css/site.c7zpj91cjc.css",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/n6t7ximslh-c7zpj91cjc.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.008403361345"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "118"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"WOTuRhot5HXknyOOj+Pcnd+h4ToCIZxAtytqMbd9x3w=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 19 Nov 2025 18:33:54 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4=\""
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "c7zpj91cjc"
+        },
+        {
+          "Name": "label",
+          "Value": "css/site.css"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4="
+        }
+      ]
+    },
+    {
+      "Route": "css/site.c7zpj91cjc.css",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/site.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "127"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 19 Nov 2025 18:33:54 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "c7zpj91cjc"
+        },
+        {
+          "Name": "label",
+          "Value": "css/site.css"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4="
+        }
+      ]
+    },
+    {
+      "Route": "css/site.c7zpj91cjc.css.gz",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/n6t7ximslh-c7zpj91cjc.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "118"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"WOTuRhot5HXknyOOj+Pcnd+h4ToCIZxAtytqMbd9x3w=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 19 Nov 2025 18:33:54 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "c7zpj91cjc"
+        },
+        {
+          "Name": "label",
+          "Value": "css/site.css.gz"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-WOTuRhot5HXknyOOj+Pcnd+h4ToCIZxAtytqMbd9x3w="
+        }
+      ]
+    },
+    {
+      "Route": "css/site.css",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/n6t7ximslh-c7zpj91cjc.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.008403361345"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "118"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"WOTuRhot5HXknyOOj+Pcnd+h4ToCIZxAtytqMbd9x3w=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 19 Nov 2025 18:33:54 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4=\""
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4="
+        }
+      ]
+    },
+    {
+      "Route": "css/site.css",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/site.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "127"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 19 Nov 2025 18:33:54 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4="
+        }
+      ]
+    },
+    {
+      "Route": "css/site.css.gz",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/n6t7ximslh-c7zpj91cjc.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "118"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"WOTuRhot5HXknyOOj+Pcnd+h4ToCIZxAtytqMbd9x3w=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 19 Nov 2025 18:33:54 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-WOTuRhot5HXknyOOj+Pcnd+h4ToCIZxAtytqMbd9x3w="
+        }
+      ]
+    },
+    {
+      "Route": "css/tailwind.css",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.002583979328"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "386"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"tlmzBc2GoeRaIQuA7usvlcCw/n0gaDXfaT6eN5IPsoA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 19 Nov 2025 21:12:49 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"y/LjK4F2+Jo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM=\""
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-y/LjK4F2+Jo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM="
+        }
+      ]
+    },
+    {
+      "Route": "css/tailwind.css",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/tailwind.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "621"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"y/LjK4F2+Jo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 19 Nov 2025 21:12:49 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-y/LjK4F2+Jo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM="
+        }
+      ]
+    },
+    {
+      "Route": "css/tailwind.css.gz",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "386"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"tlmzBc2GoeRaIQuA7usvlcCw/n0gaDXfaT6eN5IPsoA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 19 Nov 2025 21:12:49 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-tlmzBc2GoeRaIQuA7usvlcCw/n0gaDXfaT6eN5IPsoA="
+        }
+      ]
+    },
+    {
+      "Route": "css/tailwind.zefz65wvgg.css",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.002583979328"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "386"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"tlmzBc2GoeRaIQuA7usvlcCw/n0gaDXfaT6eN5IPsoA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 19 Nov 2025 21:12:49 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"y/LjK4F2+Jo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM=\""
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "zefz65wvgg"
+        },
+        {
+          "Name": "label",
+          "Value": "css/tailwind.css"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-y/LjK4F2+Jo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM="
+        }
+      ]
+    },
+    {
+      "Route": "css/tailwind.zefz65wvgg.css",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/tailwind.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "621"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"y/LjK4F2+Jo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 19 Nov 2025 21:12:49 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "zefz65wvgg"
+        },
+        {
+          "Name": "label",
+          "Value": "css/tailwind.css"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-y/LjK4F2+Jo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM="
+        }
+      ]
+    },
+    {
+      "Route": "css/tailwind.zefz65wvgg.css.gz",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "386"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"tlmzBc2GoeRaIQuA7usvlcCw/n0gaDXfaT6eN5IPsoA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 19 Nov 2025 21:12:49 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "zefz65wvgg"
+        },
+        {
+          "Name": "label",
+          "Value": "css/tailwind.css.gz"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-tlmzBc2GoeRaIQuA7usvlcCw/n0gaDXfaT6eN5IPsoA="
+        }
+      ]
+    }
+  ]
+}

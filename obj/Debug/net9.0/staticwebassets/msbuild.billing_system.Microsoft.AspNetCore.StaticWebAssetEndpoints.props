@@ -1,0 +1,28 @@
+﻿<Project>
+  <ItemGroup>
+    <StaticWebAssetEndpoint Include="_content/billing_system/css/site.c7zpj91cjc.css">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\site.css'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"c7zpj91cjc"},{"Name":"integrity","Value":"sha256-iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4="},{"Name":"label","Value":"_content/billing_system/css/site.css"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"127"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4=\u0022"},{"Name":"Last-Modified","Value":"Wed, 19 Nov 2025 18:33:54 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/billing_system/css/site.css">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\site.css'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"127"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022iLqZHiTnPZvA/YmLP5OiLZPviudBoIx6e1LfeHXE4U4=\u0022"},{"Name":"Last-Modified","Value":"Wed, 19 Nov 2025 18:33:54 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/billing_system/css/tailwind.css">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\tailwind.css'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-y/LjK4F2\u002BJo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"621"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022y/LjK4F2\u002BJo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM=\u0022"},{"Name":"Last-Modified","Value":"Wed, 19 Nov 2025 21:12:49 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/billing_system/css/tailwind.zefz65wvgg.css">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\tailwind.css'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"zefz65wvgg"},{"Name":"integrity","Value":"sha256-y/LjK4F2\u002BJo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM="},{"Name":"label","Value":"_content/billing_system/css/tailwind.css"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"621"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022y/LjK4F2\u002BJo5yI6twdBTTyRvdcWcZZkjEavcMWDz3iM=\u0022"},{"Name":"Last-Modified","Value":"Wed, 19 Nov 2025 21:12:49 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+  </ItemGroup>
+</Project>

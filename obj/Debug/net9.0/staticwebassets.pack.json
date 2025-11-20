@@ -1,0 +1,33 @@
+{
+  "Files": [
+    {
+      "Id": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/site.css",
+      "PackagePath": "staticwebassets/css/site.css"
+    },
+    {
+      "Id": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/tailwind.css",
+      "PackagePath": "staticwebassets/css/tailwind.css"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.billing_system.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.billing_system.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.build.billing_system.props",
+      "PackagePath": "build\\billing_system.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.buildMultiTargeting.billing_system.props",
+      "PackagePath": "buildMultiTargeting\\billing_system.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.buildTransitive.billing_system.props",
+      "PackagePath": "buildTransitive\\billing_system.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

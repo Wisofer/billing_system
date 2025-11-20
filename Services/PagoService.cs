@@ -1,0 +1,129 @@
+using billing_system.Data;
+using billing_system.Models.Entities;
+using billing_system.Services.IServices;
+using billing_system.Utils;
+
+namespace billing_system.Services;
+
+public class PagoService : IPagoService
+{
+    private readonly IFacturaService _facturaService;
+
+    public PagoService(IFacturaService facturaService)
+    {
+        _facturaService = facturaService;
+    }
+
+    public List<Pago> ObtenerTodos()
+    {
+        return InMemoryStorage.Pagos.ToList();
+    }
+
+    public Pago? ObtenerPorId(int id)
+    {
+        return InMemoryStorage.Pagos.FirstOrDefault(p => p.Id == id);
+    }
+
+    public List<Pago> ObtenerPorFactura(int facturaId)
+    {
+        return InMemoryStorage.Pagos.Where(p => p.FacturaId == facturaId).ToList();
+    }
+
+    public decimal CalcularVuelto(decimal montoRecibido, decimal costo)
+    {
+        return montoRecibido > costo ? montoRecibido - costo : 0;
+    }
+
+    public decimal ConvertirMoneda(decimal monto, string monedaOrigen, string monedaDestino)
+    {
+        if (monedaOrigen == monedaDestino)
+            return monto;
+
+        if (monedaOrigen == SD.MonedaCordoba && monedaDestino == SD.MonedaDolar)
+            return monto / SD.TipoCambioDolar;
+
+        if (monedaOrigen == SD.MonedaDolar && monedaDestino == SD.MonedaCordoba)
+            return monto * SD.TipoCambioDolar;
+
+        return monto;
+    }
+
+    public Pago Crear(Pago pago)
+    {
+        var factura = _facturaService.ObtenerPorId(pago.FacturaId);
+        if (factura == null)
+            throw new Exception("Factura no encontrada");
+
+        pago.Id = InMemoryStorage.GetNextPagoId();
+        pago.FechaPago = DateTime.Now;
+        pago.TipoCambio = SD.TipoCambioDolar;
+
+        // Calcular vuelto si es pago físico
+        if (pago.TipoPago == SD.TipoPagoFisico && pago.MontoRecibido.HasValue)
+        {
+            pago.Vuelto = CalcularVuelto(pago.MontoRecibido.Value, pago.Monto);
+        }
+
+        InMemoryStorage.Pagos.Add(pago);
+
+        // Actualizar estado de factura si está completamente pagada
+        var totalPagado = ObtenerPorFactura(factura.Id).Sum(p => p.Monto) + pago.Monto;
+        if (totalPagado >= factura.Monto)
+        {
+            factura.Estado = SD.EstadoFacturaPagada;
+        }
+
+        return pago;
+    }
+
+    public Pago Actualizar(Pago pago)
+    {
+        var existente = ObtenerPorId(pago.Id);
+        if (existente == null)
+            throw new Exception("Pago no encontrado");
+
+        existente.Monto = pago.Monto;
+        existente.Moneda = pago.Moneda;
+        existente.TipoPago = pago.TipoPago;
+        existente.Banco = pago.Banco;
+        existente.TipoCuenta = pago.TipoCuenta;
+        existente.MontoRecibido = pago.MontoRecibido;
+        existente.Vuelto = pago.Vuelto;
+        existente.Observaciones = pago.Observaciones;
+
+        if (pago.TipoPago == SD.TipoPagoFisico && pago.MontoRecibido.HasValue)
+        {
+            existente.Vuelto = CalcularVuelto(pago.MontoRecibido.Value, pago.Monto);
+        }
+
+        return existente;
+    }
+
+    public bool Eliminar(int id)
+    {
+        var pago = ObtenerPorId(id);
+        if (pago == null)
+            return false;
+
+        InMemoryStorage.Pagos.Remove(pago);
+
+        // Actualizar estado de factura
+        var factura = _facturaService.ObtenerPorId(pago.FacturaId);
+        if (factura != null)
+        {
+            var totalPagado = ObtenerPorFactura(factura.Id).Sum(p => p.Monto);
+            if (totalPagado < factura.Monto)
+            {
+                factura.Estado = SD.EstadoFacturaPendiente;
+            }
+        }
+
+        return true;
+    }
+
+    public decimal CalcularTotalIngresos()
+    {
+        return InMemoryStorage.Pagos.Sum(p => p.Monto);
+    }
+}
+
