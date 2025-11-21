@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using billing_system.Models.ViewModels;
 using billing_system.Services.IServices;
-using billing_system.Data;
 
 namespace billing_system.Controllers;
 
@@ -34,9 +33,9 @@ public class HomeController : Controller
             PagosRealizados = _pagoService.CalcularTotalIngresos(),
             IngresoTotal = _pagoService.CalcularTotalIngresos(),
             IngresoFaltante = _facturaService.CalcularTotalPendiente() - _pagoService.CalcularTotalIngresos(),
-            TotalClientes = InMemoryStorage.Clientes.Count,
-            TotalFacturas = InMemoryStorage.Facturas.Count,
-            TotalPagos = InMemoryStorage.Pagos.Count
+            TotalClientes = _clienteService.ObtenerTodos().Count,
+            TotalFacturas = _facturaService.ObtenerTodas().Count,
+            TotalPagos = _pagoService.ObtenerTodos().Count
         };
 
         return View(viewModel);

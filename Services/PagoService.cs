@@ -2,31 +2,44 @@ using billing_system.Data;
 using billing_system.Models.Entities;
 using billing_system.Services.IServices;
 using billing_system.Utils;
+using Microsoft.EntityFrameworkCore;
 
 namespace billing_system.Services;
 
 public class PagoService : IPagoService
 {
+    private readonly ApplicationDbContext _context;
     private readonly IFacturaService _facturaService;
 
-    public PagoService(IFacturaService facturaService)
+    public PagoService(ApplicationDbContext context, IFacturaService facturaService)
     {
+        _context = context;
         _facturaService = facturaService;
     }
 
     public List<Pago> ObtenerTodos()
     {
-        return InMemoryStorage.Pagos.ToList();
+        return _context.Pagos
+            .Include(p => p.Factura)
+            .ThenInclude(f => f!.Cliente)
+            .OrderByDescending(p => p.FechaPago)
+            .ToList();
     }
 
     public Pago? ObtenerPorId(int id)
     {
-        return InMemoryStorage.Pagos.FirstOrDefault(p => p.Id == id);
+        return _context.Pagos
+            .Include(p => p.Factura)
+            .ThenInclude(f => f!.Cliente)
+            .FirstOrDefault(p => p.Id == id);
     }
 
     public List<Pago> ObtenerPorFactura(int facturaId)
     {
-        return InMemoryStorage.Pagos.Where(p => p.FacturaId == facturaId).ToList();
+        return _context.Pagos
+            .Where(p => p.FacturaId == facturaId)
+            .OrderByDescending(p => p.FechaPago)
+            .ToList();
     }
 
     public decimal CalcularVuelto(decimal montoRecibido, decimal costo)
@@ -54,7 +67,6 @@ public class PagoService : IPagoService
         if (factura == null)
             throw new Exception("Factura no encontrada");
 
-        pago.Id = InMemoryStorage.GetNextPagoId();
         pago.FechaPago = DateTime.Now;
         pago.TipoCambio = SD.TipoCambioDolar;
 
@@ -64,13 +76,15 @@ public class PagoService : IPagoService
             pago.Vuelto = CalcularVuelto(pago.MontoRecibido.Value, pago.Monto);
         }
 
-        InMemoryStorage.Pagos.Add(pago);
+        _context.Pagos.Add(pago);
+        _context.SaveChanges();
 
         // Actualizar estado de factura si está completamente pagada
-        var totalPagado = ObtenerPorFactura(factura.Id).Sum(p => p.Monto) + pago.Monto;
+        var totalPagado = ObtenerPorFactura(factura.Id).Sum(p => p.Monto);
         if (totalPagado >= factura.Monto)
         {
             factura.Estado = SD.EstadoFacturaPagada;
+            _context.SaveChanges();
         }
 
         return pago;
@@ -96,6 +110,7 @@ public class PagoService : IPagoService
             existente.Vuelto = CalcularVuelto(pago.MontoRecibido.Value, pago.Monto);
         }
 
+        _context.SaveChanges();
         return existente;
     }
 
@@ -105,16 +120,19 @@ public class PagoService : IPagoService
         if (pago == null)
             return false;
 
-        InMemoryStorage.Pagos.Remove(pago);
+        var facturaId = pago.FacturaId;
+        _context.Pagos.Remove(pago);
+        _context.SaveChanges();
 
         // Actualizar estado de factura
-        var factura = _facturaService.ObtenerPorId(pago.FacturaId);
+        var factura = _facturaService.ObtenerPorId(facturaId);
         if (factura != null)
         {
             var totalPagado = ObtenerPorFactura(factura.Id).Sum(p => p.Monto);
             if (totalPagado < factura.Monto)
             {
                 factura.Estado = SD.EstadoFacturaPendiente;
+                _context.SaveChanges();
             }
         }
 
@@ -123,7 +141,7 @@ public class PagoService : IPagoService
 
     public decimal CalcularTotalIngresos()
     {
-        return InMemoryStorage.Pagos.Sum(p => p.Monto);
+        return _context.Pagos.Sum(p => p.Monto);
     }
 }
 

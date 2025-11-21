@@ -1,6 +1,9 @@
 using billing_system.Data;
+using billing_system.Models.Entities;
 using billing_system.Services;
 using billing_system.Services.IServices;
+using billing_system.Utils;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +12,26 @@ builder.Services.AddControllersWithViews();
 
 // Configurar URLs en minúsculas
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
+
+// Configurar Entity Framework con MySQL
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+}
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    try
+    {
+        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+    }
+    catch
+    {
+        // Si no puede detectar la versión, usar una versión específica
+        options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 21)));
+    }
+});
 
 // Configurar sesiones
 builder.Services.AddDistributedMemoryCache();
@@ -26,11 +49,47 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IServicioService, ServicioService>();
 builder.Services.AddScoped<IFacturaService, FacturaService>();
 builder.Services.AddScoped<IPagoService, PagoService>();
+builder.Services.AddScoped<IPdfService, PdfService>();
 
 var app = builder.Build();
 
-// Inicializar almacenamiento en memoria
-InMemoryStorage.Initialize();
+// Aplicar migraciones e inicializar datos
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        // Aplicar migraciones
+        dbContext.Database.Migrate();
+        
+        // Inicializar servicios si no existen
+        if (!dbContext.Servicios.Any())
+        {
+            logger.LogInformation("Inicializando servicios en la base de datos...");
+            
+            var servicios = new List<Servicio>
+            {
+                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio1, Precio = SD.ServiciosPrincipales.PrecioServicio1, Activo = true, FechaCreacion = DateTime.Now },
+                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio2, Precio = SD.ServiciosPrincipales.PrecioServicio2, Activo = true, FechaCreacion = DateTime.Now },
+                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio3, Precio = SD.ServiciosPrincipales.PrecioServicio3, Activo = true, FechaCreacion = DateTime.Now },
+                new Servicio { Nombre = SD.ServiciosPrincipales.ServicioEspecial, Precio = SD.ServiciosPrincipales.PrecioServicioEspecial, Activo = true, FechaCreacion = DateTime.Now }
+            };
+            
+            dbContext.Servicios.AddRange(servicios);
+            dbContext.SaveChanges();
+            logger.LogInformation("Servicios inicializados correctamente.");
+        }
+
+        // Migrar datos de la tabla antigua 'clientes' a 'Clientes'
+        MigrateClientesData.MigrateOldClientesToNew(dbContext, logger);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error al inicializar la base de datos");
+    }
+}
 
 // Configurar el pipeline HTTP
 if (!app.Environment.IsDevelopment())

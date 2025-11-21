@@ -1,0 +1,99 @@
+<script>
+function mostrarNombreArchivo(input) {
+    const nombreArchivo = input.files[0]?.name || 'Seleccionar archivo Excel...';
+    document.getElementById('nombreArchivo').textContent = nombreArchivo;
+}
+
+setTimeout(function() {
+    const successMsg = document.getElementById('successMessage');
+    const errorMsg = document.getElementById('errorMessage');
+    const warningMsg = document.getElementById('warningMessage');
+    if (successMsg) successMsg.style.display = 'none';
+    if (errorMsg) errorMsg.style.display = 'none';
+    if (warningMsg) warningMsg.style.display = 'none';
+}, 5000);
+
+function abrirModalCrear() {
+    const modal = document.getElementById('modalCrearCliente');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    generarCodigoCliente();
+}
+
+async function generarCodigoCliente() {
+    try {
+        const response = await fetch('/clientes/obtener-codigo');
+        const data = await response.json();
+        document.getElementById('codigoCliente').value = data.codigo;
+    } catch (error) {
+        console.error('Error al obtener código:', error);
+        const numeroCliente = Math.floor(Math.random() * 1000) + 1;
+        document.getElementById('codigoCliente').value = `CLI-${String(numeroCliente).padStart(3, '0')}`;
+    }
+}
+
+function cerrarModalCrear() {
+    const modal = document.getElementById('modalCrearCliente');
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+    document.getElementById('formCrearCliente').reset();
+    document.querySelectorAll('#formCrearCliente .text-red-500').forEach(el => el.textContent = '');
+    document.getElementById('codigoCliente').value = '';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formCrearCliente');
+    if (!form) return;
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const formData = new FormData(this);
+        const data = {
+            Codigo: formData.get('Codigo') || '',
+            Nombre: formData.get('Nombre') || '',
+            Telefono: formData.get('Telefono') || null,
+            Cedula: formData.get('Cedula') || null,
+            Email: formData.get('Email') || null
+        };
+        
+        document.querySelectorAll('#formCrearCliente .text-red-500').forEach(el => el.textContent = '');
+        
+        try {
+            const response = await fetch('/clientes/crear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                cerrarModalCrear();
+                window.location.reload();
+            } else {
+                if (result.errors) {
+                    Object.keys(result.errors).forEach(key => {
+                        const errorElement = document.getElementById(`error-${key}`);
+                        if (errorElement && result.errors[key] && result.errors[key].length > 0) {
+                            errorElement.textContent = result.errors[key][0];
+                        }
+                    });
+                } else if (result.message) {
+                    alert(result.message);
+                }
+            }
+        } catch (error) {
+            console.error('Error completo:', error);
+            alert('Error al crear el cliente: ' + error.message);
+        }
+    });
+});
+</script>
+

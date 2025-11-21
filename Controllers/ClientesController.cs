@@ -20,7 +20,19 @@ public class ClientesController : Controller
     [HttpGet("/clientes/obtener-codigo")]
     public IActionResult ObtenerCodigo()
     {
-        var numeroCliente = InMemoryStorage.Clientes.Count + 1;
+        var todosClientes = _clienteService.ObtenerTodos();
+        var ultimoNumero = todosClientes
+            .Where(c => c.Codigo.StartsWith("CLI-"))
+            .Select(c => {
+                var partes = c.Codigo.Split('-');
+                if (partes.Length == 2 && int.TryParse(partes[1], out var num))
+                    return num;
+                return 0;
+            })
+            .DefaultIfEmpty(0)
+            .Max();
+        
+        var numeroCliente = ultimoNumero + 1;
         var codigo = $"CLI-{numeroCliente:D3}";
         
         // Asegurar que el código sea único
@@ -34,19 +46,36 @@ public class ClientesController : Controller
     }
 
     [HttpGet("/clientes")]
-    public IActionResult Index(string? busqueda)
+    public IActionResult Index(string? busqueda, int pagina = 1, int tamanoPagina = 10)
     {
         if (HttpContext.Session.GetString("UsuarioActual") == null)
         {
             return Redirect("/login");
         }
 
-        var clientes = string.IsNullOrWhiteSpace(busqueda)
-            ? _clienteService.ObtenerTodos()
-            : _clienteService.Buscar(busqueda);
+        // Validar parámetros de paginación
+        if (pagina < 1) pagina = 1;
+        if (tamanoPagina < 5) tamanoPagina = 5;
+        if (tamanoPagina > 50) tamanoPagina = 50;
+
+        var resultado = _clienteService.ObtenerPaginados(pagina, tamanoPagina, busqueda);
+        var esAdministrador = Helpers.EsAdministrador(HttpContext.Session);
+        
+        // Estadísticas desde la base de datos (optimizado)
+        var totalClientes = _clienteService.ObtenerTotal();
+        var clientesActivos = _clienteService.ObtenerTotalActivos();
+        var nuevosEsteMes = _clienteService.ObtenerNuevosEsteMes();
 
         ViewBag.Busqueda = busqueda;
-        return View(clientes);
+        ViewBag.Pagina = pagina;
+        ViewBag.TamanoPagina = tamanoPagina;
+        ViewBag.TotalItems = resultado.TotalItems;
+        ViewBag.TotalPages = resultado.TotalPages;
+        ViewBag.EsAdministrador = esAdministrador;
+        ViewBag.ClientesActivos = clientesActivos;
+        ViewBag.NuevosEsteMes = nuevosEsteMes;
+
+        return View(resultado.Items);
     }
 
 
@@ -139,7 +168,7 @@ public class ClientesController : Controller
     }
 
     [HttpPost("/clientes/editar/{id}")]
-    public IActionResult Editar(int id, Cliente cliente)
+    public IActionResult Editar(int id, [FromForm] Cliente cliente)
     {
         if (HttpContext.Session.GetString("UsuarioActual") == null)
         {
@@ -152,12 +181,29 @@ public class ClientesController : Controller
             return Redirect("/clientes");
         }
 
-        if (id != cliente.Id)
+        // Asegurar que el ID del cliente coincida con el de la ruta
+        cliente.Id = id;
+
+        // Validar que el cliente exista
+        var clienteExistente = _clienteService.ObtenerPorId(id);
+        if (clienteExistente == null)
         {
-            TempData["Error"] = "Error en la solicitud.";
+            TempData["Error"] = "Cliente no encontrado.";
             return Redirect("/clientes");
         }
 
+        // Manejar el checkbox Activo (si no viene en el formulario, es false)
+        // El formulario envía "true" si está marcado, o "false" del hidden si no está marcado
+        if (Request.Form["Activo"].ToString() == "true")
+        {
+            cliente.Activo = true;
+        }
+        else
+        {
+            cliente.Activo = false;
+        }
+
+        // Validaciones
         if (string.IsNullOrWhiteSpace(cliente.Codigo))
         {
             ModelState.AddModelError("Codigo", "El código es requerido.");
@@ -174,6 +220,8 @@ public class ClientesController : Controller
 
         if (!ModelState.IsValid)
         {
+            // Si hay errores, mantener los datos del formulario pero asegurar que el cliente tenga todos los campos
+            cliente.FechaCreacion = clienteExistente.FechaCreacion;
             return View(cliente);
         }
 
@@ -186,6 +234,8 @@ public class ClientesController : Controller
         catch (Exception ex)
         {
             TempData["Error"] = $"Error al actualizar cliente: {ex.Message}";
+            // Recargar el cliente original en caso de error
+            cliente.FechaCreacion = clienteExistente.FechaCreacion;
             return View(cliente);
         }
     }
@@ -206,14 +256,23 @@ public class ClientesController : Controller
 
         try
         {
+            // Verificar que el cliente existe
+            var cliente = _clienteService.ObtenerPorId(id);
+            if (cliente == null)
+            {
+                TempData["Error"] = "Cliente no encontrado.";
+                return Redirect("/clientes");
+            }
+
+            // Intentar eliminar
             var eliminado = _clienteService.Eliminar(id);
             if (eliminado)
             {
-                TempData["Success"] = "Cliente eliminado exitosamente.";
+                TempData["Success"] = $"Cliente '{cliente.Nombre}' eliminado exitosamente.";
             }
             else
             {
-                TempData["Error"] = "No se puede eliminar el cliente porque tiene facturas asociadas.";
+                TempData["Error"] = $"No se puede eliminar el cliente '{cliente.Nombre}' porque tiene facturas asociadas. Primero debe eliminar o cancelar las facturas relacionadas.";
             }
         }
         catch (Exception ex)

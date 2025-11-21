@@ -1,0 +1,97 @@
+@{
+    var pagina = ViewBag.Pagina as int? ?? 1;
+    var tamanoPagina = ViewBag.TamanoPagina as int? ?? 10;
+    var totalItems = ViewBag.TotalItems as int? ?? 0;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var busqueda = ViewBag.Busqueda as string ?? "";
+}
+
+@if (totalItems > 0 && totalPages > 1)
+{
+    <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-500">
+                Mostrando <span class="font-medium text-gray-900">@((pagina - 1) * tamanoPagina + 1)</span> a 
+                <span class="font-medium text-gray-900">@(Math.Min(pagina * tamanoPagina, totalItems))</span> de 
+                <span class="font-medium text-gray-900">@totalItems</span> cliente(s)
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                @if (pagina > 1)
+                {
+                    <a href="/clientes?pagina=@(pagina - 1)&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
+                       class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Anterior
+                    </a>
+                }
+                else
+                {
+                    <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed">
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Anterior
+                    </span>
+                }
+
+                <div class="flex items-center space-x-1">
+                    @{
+                        int inicio = Math.Max(1, pagina - 2);
+                        int fin = Math.Min(totalPages, pagina + 2);
+                        
+                        if (inicio > 1)
+                        {
+                            <a href="/clientes?pagina=1&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
+                               class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">1</a>
+                            if (inicio > 2) { <span class="px-2 text-gray-500">...</span> }
+                        }
+                        
+                        for (int i = inicio; i <= fin; i++)
+                        {
+                            if (i == pagina)
+                            {
+                                <span class="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg">@i</span>
+                            }
+                            else
+                            {
+                                <a href="/clientes?pagina=@i&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
+                                   class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">@i</a>
+                            }
+                        }
+                        
+                        if (fin < totalPages)
+                        {
+                            if (fin < totalPages - 1) { <span class="px-2 text-gray-500">...</span> }
+                            <a href="/clientes?pagina=@totalPages&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
+                               class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">@totalPages</a>
+                        }
+                    }
+                </div>
+
+                @if (pagina < totalPages)
+                {
+                    <a href="/clientes?pagina=@(pagina + 1)&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
+                       class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        Siguiente
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                }
+                else
+                {
+                    <span class="px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed">
+                        Siguiente
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+}
+

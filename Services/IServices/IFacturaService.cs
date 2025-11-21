@@ -16,5 +16,9 @@ public interface IFacturaService
     void GenerarFacturasAutomaticas();
     decimal CalcularTotalPendiente();
     decimal CalcularTotalPagado();
+    int ObtenerTotal();
+    int ObtenerTotalPagadas();
+    int ObtenerTotalPendientes();
+    decimal ObtenerMontoTotal();
 }
 

@@ -1,32 +1,40 @@
 using billing_system.Data;
 using billing_system.Models.Entities;
 using billing_system.Services.IServices;
+using Microsoft.EntityFrameworkCore;
 
 namespace billing_system.Services;
 
 public class ServicioService : IServicioService
 {
+    private readonly ApplicationDbContext _context;
+
+    public ServicioService(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
     public List<Servicio> ObtenerTodos()
     {
-        return InMemoryStorage.Servicios.ToList();
+        return _context.Servicios.ToList();
     }
 
     public List<Servicio> ObtenerActivos()
     {
-        return InMemoryStorage.Servicios.Where(s => s.Activo).ToList();
+        return _context.Servicios.Where(s => s.Activo).ToList();
     }
 
     public Servicio? ObtenerPorId(int id)
     {
-        return InMemoryStorage.Servicios.FirstOrDefault(s => s.Id == id);
+        return _context.Servicios.FirstOrDefault(s => s.Id == id);
     }
 
     public Servicio Crear(Servicio servicio)
     {
-        servicio.Id = InMemoryStorage.GetNextServicioId();
         servicio.FechaCreacion = DateTime.Now;
         servicio.Activo = true;
-        InMemoryStorage.Servicios.Add(servicio);
+        _context.Servicios.Add(servicio);
+        _context.SaveChanges();
         return servicio;
     }
 
@@ -40,6 +48,7 @@ public class ServicioService : IServicioService
         existente.Precio = servicio.Precio;
         existente.Activo = servicio.Activo;
 
+        _context.SaveChanges();
         return existente;
     }
 
@@ -50,11 +59,12 @@ public class ServicioService : IServicioService
             return false;
 
         // Verificar si tiene facturas
-        var tieneFacturas = InMemoryStorage.Facturas.Any(f => f.ServicioId == id);
+        var tieneFacturas = _context.Facturas.Any(f => f.ServicioId == id);
         if (tieneFacturas)
             return false; // No se puede eliminar si tiene facturas
 
-        InMemoryStorage.Servicios.Remove(servicio);
+        _context.Servicios.Remove(servicio);
+        _context.SaveChanges();
         return true;
     }
 }
