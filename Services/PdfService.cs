@@ -2,112 +2,256 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using billing_system.Models.Entities;
+using System.IO;
 
 namespace billing_system.Services;
 
 public class PdfService : IPdfService
 {
-    public PdfService()
+    private readonly IWebHostEnvironment? _environment;
+
+    public PdfService(IWebHostEnvironment? environment = null)
     {
         QuestPDF.Settings.License = LicenseType.Community;
+        _environment = environment;
     }
 
     public byte[] GenerarPdfFactura(Factura factura)
     {
+        var fechaVencimiento = factura.FechaCreacion.AddDays(8); // 8 días después de la fecha de creación
+        var mesFacturado = factura.MesFacturacion.ToString("MMM/yyyy").ToUpper();
+        
+        // Cargar logo si existe
+        byte[]? logoBytes = null;
+        if (_environment != null)
+        {
+            var logoPath = Path.Combine(_environment.WebRootPath, "images", "logo.png");
+            if (File.Exists(logoPath))
+            {
+                logoBytes = File.ReadAllBytes(logoPath);
+            }
+        }
+        
         var documento = Document.Create(container =>
         {
             container.Page(page =>
             {
                 page.Size(PageSizes.A4);
-                page.Margin(2, Unit.Centimetre);
+                page.Margin(1.5f, Unit.Centimetre);
                 page.PageColor(Colors.White);
-                page.DefaultTextStyle(x => x.FontSize(10));
+                page.DefaultTextStyle(x => x.FontSize(9));
 
+                // Header con Logo e Información de la Empresa
                 page.Header()
-                    .Row(row =>
+                    .Column(column =>
                     {
-                        row.RelativeItem().Column(column =>
+                        column.Item().Row(row =>
                         {
-                            column.Item().Text("FACTURA").FontSize(24).Bold().FontColor(Colors.Blue.Darken2);
-                            column.Item().Text($"Número: {factura.Numero}").FontSize(12);
-                            column.Item().Text($"Fecha: {factura.FechaCreacion:dd/MM/yyyy}").FontSize(10);
+                            // Logo (si existe)
+                            if (logoBytes != null)
+                            {
+                                row.ConstantItem(80).Height(60).AlignLeft().AlignMiddle()
+                                    .Image(logoBytes).FitArea();
+                            }
+                            else
+                            {
+                                row.ConstantItem(80);
+                            }
+                            
+                            // Información de la Empresa
+                            row.RelativeItem().PaddingLeft(10).Column(empresaColumn =>
+                            {
+                                empresaColumn.Item().Text("EMSINET").FontSize(16).Bold().FontColor(Colors.Blue.Darken3);
+                                empresaColumn.Item().Text("Sistema de Facturación").FontSize(9).FontColor(Colors.Grey.Darken2);
+                                empresaColumn.Item().Text("Nicaragua").FontSize(8).FontColor(Colors.Grey.Medium);
+                                empresaColumn.Item().Text("E-mail: facturacion@emsinet.com.ni").FontSize(8).FontColor(Colors.Grey.Medium);
+                            });
                         });
 
-                        row.ConstantItem(100).AlignRight().Column(column =>
+                        column.Item().PaddingTop(10).Row(row =>
                         {
-                            column.Item().Text("Estado:").FontSize(10);
-                            column.Item().PaddingTop(2).Text(factura.Estado).FontSize(12).Bold()
-                                .FontColor(factura.Estado == "Pagada" ? Colors.Green.Darken2 : 
-                                          factura.Estado == "Cancelada" ? Colors.Red.Darken2 : 
-                                          Colors.Orange.Darken2);
+                            // Número de Factura destacado
+                            row.RelativeItem().Column(facturaColumn =>
+                            {
+                                facturaColumn.Item().Text($"Factura {factura.Numero}").FontSize(14).Bold().FontColor(Colors.Blue.Darken3);
+                                facturaColumn.Item().PaddingTop(5).Row(fechaRow =>
+                                {
+                                    fechaRow.RelativeItem().Text($"Fecha: {factura.FechaCreacion:dd/MM/yyyy}").FontSize(9);
+                                    fechaRow.RelativeItem().Text($"Vencimiento: {fechaVencimiento:dd/MM/yyyy}").FontSize(9);
+                                });
+                            });
+
+                            // Estado
+                            row.ConstantItem(100).AlignRight().Column(estadoColumn =>
+                            {
+                                estadoColumn.Item().Text("Estado:").FontSize(9).FontColor(Colors.Grey.Darken2);
+                                estadoColumn.Item().PaddingTop(2).Text(factura.Estado).FontSize(11).Bold()
+                                    .FontColor(factura.Estado == "Pagada" ? Colors.Green.Darken2 : 
+                                              factura.Estado == "Cancelada" ? Colors.Red.Darken2 : 
+                                              Colors.Orange.Darken2);
+                            });
                         });
                     });
 
                 page.Content()
-                    .PaddingVertical(1, Unit.Centimetre)
+                    .PaddingVertical(0.8f, Unit.Centimetre)
                     .Column(column =>
                     {
-                        column.Spacing(20);
+                        column.Spacing(15);
 
-                        // Información del Cliente
-                        column.Item().BorderBottom(1).PaddingBottom(10).Column(clienteColumn =>
-                        {
-                            clienteColumn.Item().Text("DATOS DEL CLIENTE").FontSize(14).Bold().FontColor(Colors.Grey.Darken3);
-                            clienteColumn.Item().PaddingTop(5).Row(row =>
+                        // Información del Cliente (formato similar a la imagen)
+                        column.Item().Background(Colors.Grey.Lighten4).Padding(10).Border(1).BorderColor(Colors.Grey.Lighten2)
+                            .Column(clienteColumn =>
                             {
-                                row.RelativeItem().Text($"Código: {factura.Cliente.Codigo}").FontSize(10);
-                                row.RelativeItem().Text($"Nombre: {factura.Cliente.Nombre}").FontSize(10);
+                                clienteColumn.Item().Text("DATOS DEL CLIENTE").FontSize(11).Bold().FontColor(Colors.Grey.Darken3);
+                                clienteColumn.Item().PaddingTop(5).Row(clienteRow =>
+                                {
+                                    clienteRow.RelativeItem().Column(datosColumn =>
+                                    {
+                                        datosColumn.Item().Text($"Cliente: {factura.Cliente.Nombre}").FontSize(9);
+                                        if (!string.IsNullOrEmpty(factura.Cliente.Cedula))
+                                        {
+                                            datosColumn.Item().Text($"Cédula: {factura.Cliente.Cedula}").FontSize(9);
+                                        }
+                                        datosColumn.Item().Text($"Código: {factura.Cliente.Codigo}").FontSize(9);
+                                    });
+                                    clienteRow.RelativeItem().Column(contactoColumn =>
+                                    {
+                                        if (!string.IsNullOrEmpty(factura.Cliente.Telefono))
+                                        {
+                                            contactoColumn.Item().Text($"Teléfono: {factura.Cliente.Telefono}").FontSize(9);
+                                        }
+                                        if (!string.IsNullOrEmpty(factura.Cliente.Email))
+                                        {
+                                            contactoColumn.Item().Text($"E-mail: {factura.Cliente.Email}").FontSize(9);
+                                        }
+                                        contactoColumn.Item().Text($"Mes facturado: {mesFacturado}").FontSize(9);
+                                    });
+                                });
                             });
-                            if (!string.IsNullOrEmpty(factura.Cliente.Telefono))
+
+                        // Descripción del Servicio Consumido
+                        column.Item().Column(servicioColumn =>
+                        {
+                            servicioColumn.Item().Text("Descripción del servicio consumido").FontSize(11).Bold().FontColor(Colors.Grey.Darken3);
+                            servicioColumn.Item().PaddingTop(5).Table(table =>
                             {
-                                clienteColumn.Item().Text($"Teléfono: {factura.Cliente.Telefono}").FontSize(10);
-                            }
-                            if (!string.IsNullOrEmpty(factura.Cliente.Email))
-                            {
-                                clienteColumn.Item().Text($"Email: {factura.Cliente.Email}").FontSize(10);
-                            }
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.RelativeColumn(3);
+                                    columns.ConstantColumn(120);
+                                });
+
+                                // Header de la tabla
+                                table.Header(header =>
+                                {
+                                    header.Cell().Element(HeaderCellStyle).Text("Descripción del servicio consumido").FontSize(10).Bold();
+                                    header.Cell().Element(HeaderCellStyle).AlignRight().Text("Monto C$").FontSize(10).Bold();
+                                });
+
+                                // Servicio
+                                table.Cell().Element(BodyCellStyle).Text(factura.Servicio.Nombre).FontSize(9);
+                                table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+
+                                // Sub-total
+                                table.Cell().Element(BodyCellStyle).Text("Sub-total C$").FontSize(9);
+                                table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+
+                                // IVA (opcional, se puede comentar si no aplica)
+                                // table.Cell().Element(BodyCellStyle).Text("I.V.A. C$").FontSize(9);
+                                // table.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+
+                                // Total
+                                table.Cell().Element(TotalCellStyle).Text("Total C$").FontSize(11).Bold();
+                                table.Cell().Element(TotalCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(11).Bold();
+                            });
                         });
 
-                        // Detalles de la Factura
-                        column.Item().BorderBottom(1).PaddingBottom(10).Column(detallesColumn =>
+                        // Estado de la Cuenta (si hay pagos)
+                        if (factura.Pagos != null && factura.Pagos.Any())
                         {
-                            detallesColumn.Item().Text("DETALLES DE LA FACTURA").FontSize(14).Bold().FontColor(Colors.Grey.Darken3);
-                            detallesColumn.Item().PaddingTop(5).Row(row =>
+                            var montoPagado = factura.Pagos.Sum(p => p.Monto);
+                            column.Item().Column(estadoColumn =>
                             {
-                                row.RelativeItem().Text($"Servicio: {factura.Servicio.Nombre}").FontSize(10);
-                                row.RelativeItem().Text($"Mes: {factura.MesFacturacion:MMMM yyyy}").FontSize(10);
-                            });
-                        });
+                                estadoColumn.Item().Text("Estado de la cuenta").FontSize(11).Bold().FontColor(Colors.Grey.Darken3);
+                                estadoColumn.Item().PaddingTop(5).Table(estadoTable =>
+                                {
+                                    estadoTable.ColumnsDefinition(columns =>
+                                    {
+                                        columns.RelativeColumn(3);
+                                        columns.ConstantColumn(120);
+                                    });
 
-                        // Tabla de Montos
-                        column.Item().Table(table =>
+                                    estadoTable.Header(header =>
+                                    {
+                                        header.Cell().Element(HeaderCellStyle).Text("Estado de la cuenta").FontSize(10).Bold();
+                                        header.Cell().Element(HeaderCellStyle).AlignRight().Text("C$").FontSize(10).Bold();
+                                    });
+
+                                    estadoTable.Cell().Element(BodyCellStyle).Text("Saldo inicial del periodo").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+
+                                    estadoTable.Cell().Element(BodyCellStyle).Text("Monto pagado").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{montoPagado:N2}").FontSize(9);
+
+                                    estadoTable.Cell().Element(BodyCellStyle).Text("Monto consumido").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+
+                                    estadoTable.Cell().Element(BodyCellStyle).Text("Saldo final del periodo").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+
+                                    var montoTotalPagar = factura.Monto - montoPagado;
+                                    estadoTable.Cell().Element(TotalCellStyle).Text("Monto total a pagar").FontSize(11).Bold();
+                                    estadoTable.Cell().Element(TotalCellStyle).AlignRight().Text($"{montoTotalPagar:N2}").FontSize(11).Bold();
+                                });
+                            });
+                        }
+                        else
                         {
-                            table.ColumnsDefinition(columns =>
+                            // Estado de la cuenta sin pagos
+                            column.Item().Column(estadoColumn =>
                             {
-                                columns.RelativeColumn();
-                                columns.ConstantColumn(100);
+                                estadoColumn.Item().Text("Estado de la cuenta").FontSize(11).Bold().FontColor(Colors.Grey.Darken3);
+                                estadoColumn.Item().PaddingTop(5).Table(estadoTable =>
+                                {
+                                    estadoTable.ColumnsDefinition(columns =>
+                                    {
+                                        columns.RelativeColumn(3);
+                                        columns.ConstantColumn(120);
+                                    });
+
+                                    estadoTable.Header(header =>
+                                    {
+                                        header.Cell().Element(HeaderCellStyle).Text("Estado de la cuenta").FontSize(10).Bold();
+                                        header.Cell().Element(HeaderCellStyle).AlignRight().Text("C$").FontSize(10).Bold();
+                                    });
+
+                                    estadoTable.Cell().Element(BodyCellStyle).Text("Saldo inicial del periodo").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+
+                                    estadoTable.Cell().Element(BodyCellStyle).Text("Monto pagado").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+
+                                    estadoTable.Cell().Element(BodyCellStyle).Text("Monto consumido").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+
+                                    estadoTable.Cell().Element(BodyCellStyle).Text("Saldo final del periodo").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+
+                                    estadoTable.Cell().Element(TotalCellStyle).Text("Monto total a pagar").FontSize(11).Bold();
+                                    estadoTable.Cell().Element(TotalCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(11).Bold();
+                                });
                             });
-
-                            table.Header(header =>
-                            {
-                                header.Cell().Element(CellStyle).Text("Concepto").FontSize(11).Bold();
-                                header.Cell().Element(CellStyle).AlignRight().Text("Monto").FontSize(11).Bold();
-                            });
-
-                            table.Cell().Element(CellStyle).Text(factura.Servicio.Nombre).FontSize(10);
-                            table.Cell().Element(CellStyle).AlignRight().Text($"C$ {factura.Monto:N2}").FontSize(10);
-
-                            table.Cell().Element(CellStyle).Text("TOTAL").FontSize(12).Bold();
-                            table.Cell().Element(CellStyle).AlignRight().Text($"C$ {factura.Monto:N2}").FontSize(12).Bold();
-                        });
+                        }
                     });
 
                 page.Footer()
                     .AlignCenter()
+                    .PaddingTop(10)
                     .Text(x =>
                     {
-                        x.Span("Sistema de Facturación - ").FontSize(8).FontColor(Colors.Grey.Medium);
-                        x.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Medium);
+                        x.Span("Sistema de Facturación EMSINET - ").FontSize(7).FontColor(Colors.Grey.Medium);
+                        x.Span($"Generado el {DateTime.Now:dd/MM/yyyy HH:mm}").FontSize(7).FontColor(Colors.Grey.Medium);
                     });
             });
         });
@@ -115,13 +259,34 @@ public class PdfService : IPdfService
         return documento.GeneratePdf();
     }
 
-    private static IContainer CellStyle(IContainer container)
+    private static IContainer HeaderCellStyle(IContainer container)
+    {
+        return container
+            .Background(Colors.Grey.Lighten3)
+            .BorderBottom(1)
+            .BorderColor(Colors.Grey.Lighten1)
+            .PaddingVertical(8)
+            .PaddingHorizontal(10);
+    }
+
+    private static IContainer BodyCellStyle(IContainer container)
     {
         return container
             .BorderBottom(1)
             .BorderColor(Colors.Grey.Lighten2)
-            .PaddingVertical(5)
-            .PaddingHorizontal(5);
+            .PaddingVertical(6)
+            .PaddingHorizontal(10);
+    }
+
+    private static IContainer TotalCellStyle(IContainer container)
+    {
+        return container
+            .Background(Colors.Grey.Lighten4)
+            .BorderTop(2)
+            .BorderBottom(1)
+            .BorderColor(Colors.Grey.Medium)
+            .PaddingVertical(8)
+            .PaddingHorizontal(10);
     }
 }
 

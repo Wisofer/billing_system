@@ -19551,6 +19551,11 @@
       "FileKind": "mvc"
     },
     {
+      "FilePath": "/home/william/Documentos/aplicaciones/billing_system/Views/Pagos/Crear.cshtml",
+      "TargetPath": "Views\\Pagos\\Crear.cshtml",
+      "FileKind": "mvc"
+    },
+    {
       "FilePath": "/home/william/Documentos/aplicaciones/billing_system/Views/Clientes/_Paginacion.cshtml",
       "TargetPath": "Views\\Clientes\\_Paginacion.cshtml",
       "FileKind": "mvc"

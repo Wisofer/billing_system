@@ -4,6 +4,8 @@ using billing_system.Models.Entities;
 using billing_system.Services;
 using billing_system.Services.IServices;
 using billing_system.Utils;
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace billing_system.Controllers;
 
@@ -209,7 +211,6 @@ public class FacturasController : Controller
     [HttpPost("/facturas/editar/{id}")]
     public IActionResult Editar(int id, [FromForm] string Estado, [FromForm] string? ArchivoPDF)
     {
-
         var factura = _facturaService.ObtenerPorId(id);
         if (factura == null)
         {
@@ -233,13 +234,43 @@ public class FacturasController : Controller
 
         try
         {
+            var estadoAnterior = factura.Estado;
             factura.Estado = Estado;
+            
             if (!string.IsNullOrWhiteSpace(ArchivoPDF))
             {
                 factura.ArchivoPDF = ArchivoPDF;
             }
 
             _facturaService.Actualizar(factura);
+
+            // Sincronizar con sistema de pagos
+            // Si cambias a "Pagada" y no hay pagos registrados, crear un pago automático
+            if (Estado == SD.EstadoFacturaPagada && estadoAnterior != SD.EstadoFacturaPagada)
+            {
+                var pagoService = HttpContext.RequestServices.GetRequiredService<IPagoService>();
+                var pagosExistentes = pagoService.ObtenerPorFactura(factura.Id);
+                var totalPagado = pagosExistentes.Sum(p => p.Monto);
+
+                // Solo crear pago si no hay pagos o el total pagado es menor al monto
+                if (totalPagado < factura.Monto)
+                {
+                    var montoPendiente = factura.Monto - totalPagado;
+                    var pagoAutomatico = new Pago
+                    {
+                        FacturaId = factura.Id,
+                        Monto = montoPendiente,
+                        Moneda = SD.MonedaCordoba,
+                        TipoPago = SD.TipoPagoFisico, // Por defecto físico
+                        FechaPago = DateTime.Now,
+                        Observaciones = "Pago registrado automáticamente al cambiar estado de factura"
+                    };
+                    pagoService.Crear(pagoAutomatico);
+                }
+            }
+            // Si cambias a "Pendiente" desde "Pagada", no eliminamos los pagos
+            // porque puede ser un error y queremos mantener el historial
+
             TempData["Success"] = "Factura actualizada exitosamente.";
             return Redirect("/facturas");
         }
