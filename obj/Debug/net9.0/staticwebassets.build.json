@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "pOGen6pbbQQXXfuBheSFmrUPLQCBozuhi8dOuuzCtFg=",
+  "Hash": "d1MiyGk6oFou2i+8DycSqV4HXrKTDcErWglucRSAOJg=",
   "Source": "billing_system",
   "BasePath": "_content/billing_system",
   "Mode": "Default",
@@ -57,6 +57,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/css/tailwind.css"
+    },
+    {
+      "Identity": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/images/logo.png",
+      "SourceId": "billing_system",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/",
+      "BasePath": "_content/billing_system",
+      "RelativePath": "images/logo#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "4sj6z0fdl4",
+      "Integrity": "pNx1ajWAyQInO2YLT4XE/K/7xq/ZL5q1iIDxqHulyWU=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/images/logo.png"
     }
   ],
   "Endpoints": [
@@ -355,6 +376,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-tlmzBc2GoeRaIQuA7usvlcCw/n0gaDXfaT6eN5IPsoA="
+        }
+      ]
+    },
+    {
+      "Route": "images/logo.4sj6z0fdl4.png",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/images/logo.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "159830"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"pNx1ajWAyQInO2YLT4XE/K/7xq/ZL5q1iIDxqHulyWU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 22 Nov 2025 04:10:47 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "4sj6z0fdl4"
+        },
+        {
+          "Name": "label",
+          "Value": "images/logo.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-pNx1ajWAyQInO2YLT4XE/K/7xq/ZL5q1iIDxqHulyWU="
+        }
+      ]
+    },
+    {
+      "Route": "images/logo.png",
+      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/images/logo.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "159830"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"pNx1ajWAyQInO2YLT4XE/K/7xq/ZL5q1iIDxqHulyWU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 22 Nov 2025 04:10:47 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-pNx1ajWAyQInO2YLT4XE/K/7xq/ZL5q1iIDxqHulyWU="
         }
       ]
     }

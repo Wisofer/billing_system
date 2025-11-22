@@ -5,6 +5,10 @@
       "PackagePath": "staticwebassets/css/tailwind.css"
     },
     {
+      "Id": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/images/logo.png",
+      "PackagePath": "staticwebassets/images/logo.png"
+    },
+    {
       "Id": "obj/Debug/net9.0/staticwebassets/msbuild.billing_system.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
     },
