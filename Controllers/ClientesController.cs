@@ -109,6 +109,23 @@ public class ClientesController : Controller
             ModelState.AddModelError("Nombre", "El nombre es requerido.");
         }
 
+        // Validar duplicados
+        if (!string.IsNullOrWhiteSpace(cliente.Cedula) && _clienteService.ExisteCedula(cliente.Cedula))
+        {
+            ModelState.AddModelError("Cedula", "Ya existe un cliente con esta cédula.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(cliente.Email) && _clienteService.ExisteEmail(cliente.Email))
+        {
+            ModelState.AddModelError("Email", "Ya existe un cliente con este email.");
+        }
+
+        if (_clienteService.ExisteNombreYCedula(cliente.Nombre, cliente.Cedula))
+        {
+            ModelState.AddModelError("Nombre", "Ya existe un cliente con este nombre" + 
+                (string.IsNullOrWhiteSpace(cliente.Cedula) ? "." : $" y cédula '{cliente.Cedula}'."));
+        }
+
         if (!ModelState.IsValid)
         {
             var errors = ModelState.ToDictionary(
@@ -216,6 +233,23 @@ public class ClientesController : Controller
         if (string.IsNullOrWhiteSpace(cliente.Nombre))
         {
             ModelState.AddModelError("Nombre", "El nombre es requerido.");
+        }
+
+        // Validar duplicados (excluyendo el cliente actual)
+        if (!string.IsNullOrWhiteSpace(cliente.Cedula) && _clienteService.ExisteCedula(cliente.Cedula, id))
+        {
+            ModelState.AddModelError("Cedula", "Ya existe otro cliente con esta cédula.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(cliente.Email) && _clienteService.ExisteEmail(cliente.Email, id))
+        {
+            ModelState.AddModelError("Email", "Ya existe otro cliente con este email.");
+        }
+
+        if (_clienteService.ExisteNombreYCedula(cliente.Nombre, cliente.Cedula, id))
+        {
+            ModelState.AddModelError("Nombre", "Ya existe otro cliente con este nombre" + 
+                (string.IsNullOrWhiteSpace(cliente.Cedula) ? "." : $" y cédula '{cliente.Cedula}'."));
         }
 
         if (!ModelState.IsValid)
@@ -346,6 +380,26 @@ public class ClientesController : Controller
                             if (string.IsNullOrWhiteSpace(nombre))
                             {
                                 errores.Add($"Fila {row}: El nombre es requerido.");
+                                continue;
+                            }
+
+                            // Validar duplicados antes de crear
+                            if (_clienteService.ExisteNombreYCedula(nombre, cedula))
+                            {
+                                errores.Add($"Fila {row}: Ya existe un cliente con el nombre '{nombre}'" + 
+                                          (string.IsNullOrWhiteSpace(cedula) ? "" : $" y cédula '{cedula}'") + ". Se omite.");
+                                continue;
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(cedula) && _clienteService.ExisteCedula(cedula))
+                            {
+                                errores.Add($"Fila {row}: Ya existe un cliente con la cédula '{cedula}'. Se omite.");
+                                continue;
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(email) && _clienteService.ExisteEmail(email))
+                            {
+                                errores.Add($"Fila {row}: Ya existe un cliente con el email '{email}'. Se omite.");
                                 continue;
                             }
 

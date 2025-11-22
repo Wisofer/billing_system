@@ -1,0 +1,11 @@
+@model List<billing_system.Models.Entities.Servicio>
+@{
+    ViewData["Title"] = "Servicios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
+}
+
+@await Html.PartialAsync("_Header")
+@await Html.PartialAsync("_TablaServicios", Model)
+@await Html.PartialAsync("_Notificaciones")
+

@@ -14,6 +14,9 @@ public interface IClienteService
     Cliente Actualizar(Cliente cliente);
     bool Eliminar(int id);
     bool ExisteCodigo(string codigo, int? idExcluir = null);
+    bool ExisteCedula(string? cedula, int? idExcluir = null);
+    bool ExisteEmail(string? email, int? idExcluir = null);
+    bool ExisteNombreYCedula(string nombre, string? cedula, int? idExcluir = null);
     int ObtenerTotal();
     int ObtenerTotalActivos();
     int ObtenerNuevosEsteMes();

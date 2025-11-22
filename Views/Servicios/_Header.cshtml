@@ -1,0 +1,22 @@
+@{
+    var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
+}
+
+<div class="mb-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-semibold text-gray-900 mb-1">Gestión de Servicios</h2>
+            <p class="text-sm text-gray-500">Administra los servicios y sus precios</p>
+        </div>
+        @if (esAdministrador)
+        {
+            <a href="/servicios/crear" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Nuevo Servicio</span>
+            </a>
+        }
+    </div>
+</div>
+

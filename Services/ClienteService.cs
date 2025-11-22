@@ -98,6 +98,23 @@ public class ClienteService : IClienteService
 
     public Cliente Crear(Cliente cliente)
     {
+        // Validar duplicados antes de crear
+        if (ExisteNombreYCedula(cliente.Nombre, cliente.Cedula))
+        {
+            throw new Exception($"Ya existe un cliente con el nombre '{cliente.Nombre}'" + 
+                              (string.IsNullOrWhiteSpace(cliente.Cedula) ? "" : $" y cédula '{cliente.Cedula}'"));
+        }
+
+        if (!string.IsNullOrWhiteSpace(cliente.Cedula) && ExisteCedula(cliente.Cedula))
+        {
+            throw new Exception($"Ya existe un cliente con la cédula '{cliente.Cedula}'");
+        }
+
+        if (!string.IsNullOrWhiteSpace(cliente.Email) && ExisteEmail(cliente.Email))
+        {
+            throw new Exception($"Ya existe un cliente con el email '{cliente.Email}'");
+        }
+
         cliente.FechaCreacion = DateTime.Now;
         cliente.Activo = true;
         
@@ -139,6 +156,23 @@ public class ClienteService : IClienteService
         if (existente == null)
             throw new Exception("Cliente no encontrado");
 
+        // Validar duplicados antes de actualizar (excluyendo el cliente actual)
+        if (ExisteNombreYCedula(cliente.Nombre, cliente.Cedula, cliente.Id))
+        {
+            throw new Exception($"Ya existe otro cliente con el nombre '{cliente.Nombre}'" + 
+                              (string.IsNullOrWhiteSpace(cliente.Cedula) ? "" : $" y cédula '{cliente.Cedula}'"));
+        }
+
+        if (!string.IsNullOrWhiteSpace(cliente.Cedula) && ExisteCedula(cliente.Cedula, cliente.Id))
+        {
+            throw new Exception($"Ya existe otro cliente con la cédula '{cliente.Cedula}'");
+        }
+
+        if (!string.IsNullOrWhiteSpace(cliente.Email) && ExisteEmail(cliente.Email, cliente.Id))
+        {
+            throw new Exception($"Ya existe otro cliente con el email '{cliente.Email}'");
+        }
+
         existente.Codigo = cliente.Codigo;
         existente.Nombre = cliente.Nombre;
         existente.Telefono = cliente.Telefono;
@@ -170,6 +204,51 @@ public class ClienteService : IClienteService
     {
         return _context.Clientes
             .Any(c => c.Codigo == codigo && (idExcluir == null || c.Id != idExcluir));
+    }
+
+    public bool ExisteCedula(string? cedula, int? idExcluir = null)
+    {
+        if (string.IsNullOrWhiteSpace(cedula))
+            return false;
+        
+        return _context.Clientes
+            .Any(c => c.Cedula != null && 
+                     c.Cedula.Trim().ToUpper() == cedula.Trim().ToUpper() && 
+                     (idExcluir == null || c.Id != idExcluir));
+    }
+
+    public bool ExisteEmail(string? email, int? idExcluir = null)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+        
+        return _context.Clientes
+            .Any(c => c.Email != null && 
+                     c.Email.Trim().ToLower() == email.Trim().ToLower() && 
+                     (idExcluir == null || c.Id != idExcluir));
+    }
+
+    public bool ExisteNombreYCedula(string nombre, string? cedula, int? idExcluir = null)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+            return false;
+        
+        var nombreNormalizado = nombre.Trim().ToUpper();
+        var query = _context.Clientes
+            .Where(c => c.Nombre.Trim().ToUpper() == nombreNormalizado);
+        
+        if (!string.IsNullOrWhiteSpace(cedula))
+        {
+            var cedulaNormalizada = cedula.Trim().ToUpper();
+            query = query.Where(c => c.Cedula != null && c.Cedula.Trim().ToUpper() == cedulaNormalizada);
+        }
+        
+        if (idExcluir.HasValue)
+        {
+            query = query.Where(c => c.Id != idExcluir.Value);
+        }
+        
+        return query.Any();
     }
 }
 

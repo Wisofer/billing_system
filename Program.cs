@@ -50,6 +50,7 @@ builder.Services.AddScoped<IServicioService, ServicioService>();
 builder.Services.AddScoped<IFacturaService, FacturaService>();
 builder.Services.AddScoped<IPagoService, PagoService>();
 builder.Services.AddScoped<IPdfService, PdfService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
 var app = builder.Build();
 

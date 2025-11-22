@@ -68,6 +68,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2xpZW50ZXMvX1RhYmxhQ2xpZW50ZXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/william/Documentos/aplicaciones/billing_system/Views/Configuraciones/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29uZmlndXJhY2lvbmVzL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/william/Documentos/aplicaciones/billing_system/Views/Facturas/Crear.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRmFjdHVyYXMvQ3JlYXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -116,14 +120,34 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvUGFnb3MvSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/william/Documentos/aplicaciones/billing_system/Views/Servicios/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2VydmljaW9zL0NyZWFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/aplicaciones/billing_system/Views/Servicios/Editar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2VydmljaW9zL0VkaXRhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/aplicaciones/billing_system/Views/Servicios/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2VydmljaW9zL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/aplicaciones/billing_system/Views/Servicios/_Header.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2VydmljaW9zL19IZWFkZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/aplicaciones/billing_system/Views/Servicios/_Notificaciones.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2VydmljaW9zL19Ob3RpZmljYWNpb25lcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/aplicaciones/billing_system/Views/Servicios/_TablaServicios.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2VydmljaW9zL19UYWJsYVNlcnZpY2lvcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/william/Documentos/aplicaciones/billing_system/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/william/Documentos/aplicaciones/billing_system/Views/Shared/_LoginPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Mb2dpblBhcnRpYWwuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[/home/william/Documentos/aplicaciones/billing_system/Views/VerificarDB/VerificarDB.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVmVyaWZpY2FyREIvVmVyaWZpY2FyREIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
