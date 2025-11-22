@@ -30,7 +30,17 @@
 
             <!-- Form -->
             <div class="p-8">
+                @if (!string.IsNullOrEmpty(ViewBag.Error as string))
+                {
+                    <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                        @ViewBag.Error
+                    </div>
+                }
                 <form action="/login" method="post" class="space-y-6">
+                    @if (!string.IsNullOrEmpty(Context.Request.Query["ReturnUrl"].ToString()))
+                    {
+                        <input type="hidden" name="returnUrl" value="@Context.Request.Query["ReturnUrl"]" />
+                    }
                     <!-- Usuario -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">

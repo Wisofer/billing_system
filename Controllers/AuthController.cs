@@ -8,7 +8,6 @@ using System.Text.Json;
 
 namespace billing_system.Controllers;
 
-[Route("[controller]/[action]")]
 public class AuthController : Controller
 {
     private readonly IAuthService _authService;
@@ -19,22 +18,29 @@ public class AuthController : Controller
     }
 
     [HttpGet("/login")]
-    public IActionResult Login()
+    public IActionResult Login(string? returnUrl = null)
     {
-        // Si ya está autenticado, redirigir al home
+        // Si ya está autenticado, redirigir a la URL original o al home
         if (User.Identity?.IsAuthenticated == true)
         {
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
             return Redirect("/");
         }
+        
+        ViewBag.ReturnUrl = returnUrl;
         return View();
     }
 
     [HttpPost("/login")]
-    public async Task<IActionResult> Login(string NombreUsuario, string Contrasena)
+    public async Task<IActionResult> Login(string NombreUsuario, string Contrasena, string? returnUrl = null)
     {
         if (string.IsNullOrWhiteSpace(NombreUsuario) || string.IsNullOrWhiteSpace(Contrasena))
         {
             ViewBag.Error = "El nombre de usuario y la contraseña son requeridos.";
+            ViewBag.ReturnUrl = returnUrl;
             return View();
         }
 
@@ -44,6 +50,7 @@ public class AuthController : Controller
         if (usuario == null)
         {
             ViewBag.Error = "Usuario o contraseña incorrectos.";
+            ViewBag.ReturnUrl = returnUrl;
             return View();
         }
 
@@ -72,7 +79,12 @@ public class AuthController : Controller
             ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) // 30 minutos
         });
 
-        // Redirigir al home
+        // Redirigir a la URL original si existe, sino al home
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return Redirect(returnUrl);
+        }
+        
         return Redirect("/");
     }
 
