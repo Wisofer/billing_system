@@ -1,19 +1,41 @@
+using billing_system.Data;
 using billing_system.Models.Entities;
 using billing_system.Services.IServices;
 using billing_system.Utils;
+using Microsoft.EntityFrameworkCore;
 
 namespace billing_system.Services;
 
 public class AuthService : IAuthService
 {
+    private readonly ApplicationDbContext _context;
+
+    public AuthService(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
     public Usuario? ValidarUsuario(string nombreUsuario, string contrasena)
     {
-        var usuarios = SD.UsuariosEstaticos.ObtenerUsuarios();
-        
-        var usuario = usuarios.FirstOrDefault(u => 
-            u.NombreUsuario.Equals(nombreUsuario, StringComparison.OrdinalIgnoreCase) &&
-            u.Contrasena == contrasena &&
-            u.Activo);
+        if (string.IsNullOrWhiteSpace(nombreUsuario) || string.IsNullOrWhiteSpace(contrasena))
+        {
+            return null;
+        }
+
+        // Buscar usuario en la base de datos
+        var usuario = _context.Usuarios
+            .FirstOrDefault(u => u.NombreUsuario.ToLower() == nombreUsuario.ToLower() && u.Activo);
+
+        if (usuario == null)
+        {
+            return null;
+        }
+
+        // Verificar contraseña
+        if (!PasswordHelper.VerifyPassword(contrasena, usuario.Contrasena))
+        {
+            return null;
+        }
 
         return usuario;
     }
@@ -28,4 +50,3 @@ public class AuthService : IAuthService
         return usuario.Rol == SD.RolNormal;
     }
 }
-

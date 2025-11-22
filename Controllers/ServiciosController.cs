@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using billing_system.Models.Entities;
 using billing_system.Services.IServices;
@@ -5,6 +6,7 @@ using billing_system.Utils;
 
 namespace billing_system.Controllers;
 
+[Authorize]
 [Route("[controller]/[action]")]
 public class ServiciosController : Controller
 {
@@ -18,49 +20,24 @@ public class ServiciosController : Controller
     [HttpGet("/servicios")]
     public IActionResult Index()
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
         var servicios = _servicioService.ObtenerTodos();
-        var esAdministrador = Helpers.EsAdministrador(HttpContext.Session);
+        var esAdministrador = SecurityHelper.IsAdministrator(User);
 
         ViewBag.EsAdministrador = esAdministrador;
         return View(servicios);
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpGet("/servicios/crear")]
     public IActionResult Crear()
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            TempData["Error"] = "No tienes permisos para crear servicios.";
-            return Redirect("/servicios");
-        }
-
         return View();
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpPost("/servicios/crear")]
     public IActionResult Crear([FromForm] Servicio servicio)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            TempData["Error"] = "No tienes permisos para crear servicios.";
-            return Redirect("/servicios");
-        }
-
         // Manejar el checkbox Activo
         if (Request.Form["Activo"].ToString() == "true")
         {
@@ -100,20 +77,10 @@ public class ServiciosController : Controller
         }
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpGet("/servicios/editar/{id}")]
     public IActionResult Editar(int id)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            TempData["Error"] = "No tienes permisos para editar servicios.";
-            return Redirect("/servicios");
-        }
-
         var servicio = _servicioService.ObtenerPorId(id);
         if (servicio == null)
         {
@@ -124,26 +91,13 @@ public class ServiciosController : Controller
         return View(servicio);
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpPost("/servicios/editar/{id}")]
     public IActionResult Editar(int id, [FromForm] Servicio servicio)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            TempData["Error"] = "No tienes permisos para editar servicios.";
-            return Redirect("/servicios");
-        }
-
         servicio.Id = id;
 
         // Manejar el checkbox Activo
-        // Cuando el checkbox está marcado, se envía "true" del checkbox y "false" del hidden
-        // Cuando no está marcado, solo se envía "false" del hidden
-        // Request.Form["Activo"] puede devolver múltiples valores, necesitamos verificar si contiene "true"
         var activoValues = Request.Form["Activo"];
         servicio.Activo = activoValues.Contains("true");
 
@@ -176,20 +130,10 @@ public class ServiciosController : Controller
         }
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpPost("/servicios/eliminar/{id}")]
     public IActionResult Eliminar(int id)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            TempData["Error"] = "No tienes permisos para eliminar servicios.";
-            return Redirect("/servicios");
-        }
-
         try
         {
             var eliminado = _servicioService.Eliminar(id);
@@ -210,4 +154,3 @@ public class ServiciosController : Controller
         return Redirect("/servicios");
     }
 }
-

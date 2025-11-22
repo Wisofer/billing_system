@@ -1,8 +1,8 @@
+@using System.Security.Claims
 @{
-    var usuarioActual = Context.Session.GetString("UsuarioActual");
-    var rolUsuario = Context.Session.GetString("RolUsuario") ?? "";
-    var nombreUsuario = Context.Session.GetString("NombreUsuario") ?? "";
-    var estaAutenticado = !string.IsNullOrEmpty(usuarioActual);
+    var estaAutenticado = User.Identity?.IsAuthenticated ?? false;
+    var nombreUsuario = User.Identity?.Name ?? Context.Session.GetString("NombreUsuario") ?? "";
+    var rolUsuario = User.FindFirst("Rol")?.Value ?? Context.Session.GetString("RolUsuario") ?? "";
 }
 
 <!DOCTYPE html>

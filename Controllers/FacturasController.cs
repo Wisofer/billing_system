@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using billing_system.Models.Entities;
 using billing_system.Services;
@@ -6,6 +7,7 @@ using billing_system.Utils;
 
 namespace billing_system.Controllers;
 
+[Authorize]
 [Route("[controller]/[action]")]
 public class FacturasController : Controller
 {
@@ -25,12 +27,7 @@ public class FacturasController : Controller
     [HttpGet("/facturas")]
     public IActionResult Index(string? estado, int? mes, int? año, string? busquedaCliente, int pagina = 1, int tamanoPagina = 10)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        var esAdministrador = Helpers.EsAdministrador(HttpContext.Session);
+        var esAdministrador = SecurityHelper.IsAdministrator(User);
 
         // Validar parámetros de paginación
         if (pagina < 1) pagina = 1;
@@ -93,11 +90,6 @@ public class FacturasController : Controller
     [HttpGet("/facturas/crear")]
     public IActionResult Crear()
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
         ViewBag.Clientes = _clienteService.ObtenerTodos().Where(c => c.Activo).ToList();
         ViewBag.Servicios = _servicioService.ObtenerActivos();
         return View();
@@ -106,11 +98,6 @@ public class FacturasController : Controller
     [HttpPost("/facturas/crear")]
     public IActionResult Crear([FromForm] int ClienteId, [FromForm] int ServicioId, [FromForm] string MesFacturacion)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
         var factura = new Factura
         {
             ClienteId = ClienteId,
@@ -167,19 +154,10 @@ public class FacturasController : Controller
         }
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpPost("/facturas/generar-automaticas")]
     public IActionResult GenerarAutomaticas()
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            TempData["Error"] = "No tienes permisos para generar facturas automáticas.";
-            return Redirect("/facturas");
-        }
 
         try
         {
@@ -200,11 +178,6 @@ public class FacturasController : Controller
     [HttpGet("/facturas/ver/{id}")]
     public IActionResult Ver(int id)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
         var factura = _facturaService.ObtenerPorId(id);
         if (factura == null)
         {
@@ -215,19 +188,10 @@ public class FacturasController : Controller
         return View(factura);
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpGet("/facturas/editar/{id}")]
     public IActionResult Editar(int id)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            TempData["Error"] = "No tienes permisos para editar facturas.";
-            return Redirect("/facturas");
-        }
 
         var factura = _facturaService.ObtenerPorId(id);
         if (factura == null)
@@ -241,19 +205,10 @@ public class FacturasController : Controller
         return View(factura);
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpPost("/facturas/editar/{id}")]
     public IActionResult Editar(int id, [FromForm] string Estado, [FromForm] string? ArchivoPDF)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            TempData["Error"] = "No tienes permisos para editar facturas.";
-            return Redirect("/facturas");
-        }
 
         var factura = _facturaService.ObtenerPorId(id);
         if (factura == null)
@@ -297,19 +252,10 @@ public class FacturasController : Controller
         }
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpPost("/facturas/eliminar/{id}")]
     public IActionResult Eliminar(int id)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            TempData["Error"] = "No tienes permisos para eliminar facturas.";
-            return Redirect("/facturas");
-        }
 
         try
         {
@@ -334,11 +280,6 @@ public class FacturasController : Controller
     [HttpGet("/facturas/descargar-pdf/{id}")]
     public IActionResult DescargarPdf(int id)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
         var factura = _facturaService.ObtenerPorId(id);
         if (factura == null)
         {

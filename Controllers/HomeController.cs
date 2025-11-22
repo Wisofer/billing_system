@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using billing_system.Models.ViewModels;
 using billing_system.Services.IServices;
 
 namespace billing_system.Controllers;
 
+[Authorize]
 [Route("[action]")]
 public class HomeController : Controller
 {
@@ -21,11 +23,6 @@ public class HomeController : Controller
     [HttpGet("/")]
     public IActionResult Index()
     {
-        // Si no está autenticado, redirigir al login
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
 
         var viewModel = new DashboardViewModel
         {
@@ -39,6 +36,30 @@ public class HomeController : Controller
         };
 
         return View(viewModel);
+    }
+
+    [HttpGet("/error")]
+    [AllowAnonymous]
+    public IActionResult Error(int? statusCode = null)
+    {
+        if (statusCode.HasValue)
+        {
+            ViewBag.StatusCode = statusCode.Value;
+            ViewBag.ErrorMessage = statusCode.Value switch
+            {
+                404 => "Página no encontrada",
+                403 => "Acceso denegado",
+                500 => "Error interno del servidor",
+                _ => "Ha ocurrido un error"
+            };
+        }
+        else
+        {
+            ViewBag.StatusCode = 500;
+            ViewBag.ErrorMessage = "Ha ocurrido un error";
+        }
+
+        return View();
     }
 }
 

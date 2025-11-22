@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using billing_system.Data;
@@ -7,6 +8,7 @@ using billing_system.Utils;
 
 namespace billing_system.Controllers;
 
+[Authorize]
 [Route("[controller]/[action]")]
 public class ClientesController : Controller
 {
@@ -48,18 +50,13 @@ public class ClientesController : Controller
     [HttpGet("/clientes")]
     public IActionResult Index(string? busqueda, int pagina = 1, int tamanoPagina = 10)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
         // Validar parámetros de paginación
         if (pagina < 1) pagina = 1;
         if (tamanoPagina < 5) tamanoPagina = 5;
         if (tamanoPagina > 50) tamanoPagina = 50;
 
         var resultado = _clienteService.ObtenerPaginados(pagina, tamanoPagina, busqueda);
-        var esAdministrador = Helpers.EsAdministrador(HttpContext.Session);
+        var esAdministrador = SecurityHelper.IsAdministrator(User);
         
         // Estadísticas desde la base de datos (optimizado)
         var totalClientes = _clienteService.ObtenerTotal();
@@ -79,18 +76,10 @@ public class ClientesController : Controller
     }
 
 
+    [Authorize(Policy = "Administrador")]
     [HttpPost("/clientes/crear")]
     public IActionResult Crear([FromBody] Cliente cliente)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Json(new { success = false, message = "No autenticado" });
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            return Json(new { success = false, message = "No tienes permisos para crear clientes." });
-        }
 
         // El código se genera automáticamente si no viene o está vacío
         if (string.IsNullOrWhiteSpace(cliente.Codigo))
@@ -160,19 +149,10 @@ public class ClientesController : Controller
         }
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpGet("/clientes/editar/{id}")]
     public IActionResult Editar(int id)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            TempData["Error"] = "No tienes permisos para editar clientes.";
-            return Redirect("/clientes");
-        }
 
         var cliente = _clienteService.ObtenerPorId(id);
         if (cliente == null)
@@ -184,19 +164,10 @@ public class ClientesController : Controller
         return View(cliente);
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpPost("/clientes/editar/{id}")]
     public IActionResult Editar(int id, [FromForm] Cliente cliente)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            TempData["Error"] = "No tienes permisos para editar clientes.";
-            return Redirect("/clientes");
-        }
 
         // Asegurar que el ID del cliente coincida con el de la ruta
         cliente.Id = id;
@@ -274,15 +245,10 @@ public class ClientesController : Controller
         }
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpPost("/clientes/eliminar/{id}")]
     public IActionResult Eliminar(int id)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        if (!Helpers.EsAdministrador(HttpContext.Session))
         {
             TempData["Error"] = "No tienes permisos para eliminar clientes.";
             return Redirect("/clientes");
@@ -317,15 +283,11 @@ public class ClientesController : Controller
         return Redirect("/clientes");
     }
 
+    [Authorize(Policy = "Administrador")]
     [HttpPost("/clientes/importar")]
     public IActionResult Importar(IFormFile archivoExcel)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        var rolUsuario = HttpContext.Session.GetString("RolUsuario") ?? "";
+        var rolUsuario = SecurityHelper.GetUserRole(User);
         if (rolUsuario != SD.RolAdministrador)
         {
             TempData["Error"] = "No tienes permisos para importar clientes.";

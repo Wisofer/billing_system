@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using billing_system.Models.Entities;
 using billing_system.Services.IServices;
@@ -5,6 +6,7 @@ using billing_system.Utils;
 
 namespace billing_system.Controllers;
 
+[Authorize]
 [Route("[controller]/[action]")]
 public class PagosController : Controller
 {
@@ -22,10 +24,6 @@ public class PagosController : Controller
     [HttpGet("/pagos")]
     public IActionResult Index()
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
 
         var pagos = _pagoService.ObtenerTodos();
         return View(pagos);
@@ -34,10 +32,6 @@ public class PagosController : Controller
     [HttpGet("/pagos/crear")]
     public IActionResult Crear(string? clienteBusqueda)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
 
         ViewBag.ClienteBusqueda = clienteBusqueda;
         ViewBag.Clientes = string.IsNullOrWhiteSpace(clienteBusqueda)
@@ -70,10 +64,6 @@ public class PagosController : Controller
     [HttpPost("/pagos/crear")]
     public IActionResult Crear(Pago pago)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
 
         if (!ModelState.IsValid)
         {
@@ -102,10 +92,6 @@ public class PagosController : Controller
     [HttpPost("/pagos/eliminar/{id}")]
     public IActionResult Eliminar(int id)
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
 
         try
         {

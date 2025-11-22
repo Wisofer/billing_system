@@ -1,8 +1,10 @@
 using billing_system.Data;
 using billing_system.Models.Entities;
 using billing_system.Services;
+using billing_system.Services;
 using billing_system.Services.IServices;
 using billing_system.Utils;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +43,27 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
+});
+
+// Configurar Authentication con Cookies (estándar en .NET para MVC)
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie("Cookies", options =>
+    {
+        options.LoginPath = "/login";
+        options.LogoutPath = "/logout";
+        options.AccessDeniedPath = "/login";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+        options.SlidingExpiration = true;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+    });
+
+// Configurar Authorization
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Administrador", policy => policy.RequireClaim("Rol", "Administrador"));
+    options.AddPolicy("Normal", policy => policy.RequireClaim("Rol", "Normal", "Administrador"));
 });
 
 // Registrar servicios
@@ -85,6 +108,9 @@ using (var scope = app.Services.CreateScope())
 
         // Migrar datos de la tabla antigua 'clientes' a 'Clientes'
         MigrateClientesData.MigrateOldClientesToNew(dbContext, logger);
+
+        // Crear usuario admin si no existe
+        InicializarUsuarioAdmin.CrearAdminSiNoExiste(dbContext, logger);
     }
     catch (Exception ex)
     {
@@ -95,7 +121,7 @@ using (var scope = app.Services.CreateScope())
 // Configurar el pipeline HTTP
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/error");
     app.UseHsts();
     app.UseHttpsRedirection();
 }
@@ -103,7 +129,11 @@ else
 {
     // En desarrollo, solo usar HTTP si no hay HTTPS configurado
     // Esto evita la advertencia de redirección HTTPS
+    app.UseDeveloperExceptionPage();
 }
+
+// Manejar códigos de estado (404, 403, 500, etc.)
+app.UseStatusCodePagesWithReExecute("/error", "?statusCode={0}");
 
 app.UseStaticFiles();
 
@@ -111,6 +141,10 @@ app.UseRouting();
 
 // Habilitar sesiones
 app.UseSession();
+
+// Habilitar Authentication y Authorization (debe ir después de UseRouting y antes de MapControllerRoute)
+app.UseAuthentication();
+app.UseAuthorization();
 
 
 // Configurar rutas MVC

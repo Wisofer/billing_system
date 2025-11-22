@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using billing_system.Models.Entities;
 using billing_system.Services.IServices;
@@ -7,6 +8,7 @@ using System.Text;
 
 namespace billing_system.Controllers;
 
+[Authorize(Policy = "Administrador")]
 [Route("[controller]/[action]")]
 public class ConfiguracionesController : Controller
 {
@@ -20,21 +22,12 @@ public class ConfiguracionesController : Controller
     [HttpGet("/configuraciones")]
     public IActionResult Index()
     {
-        if (HttpContext.Session.GetString("UsuarioActual") == null)
-        {
-            return Redirect("/login");
-        }
-
-        var esAdministrador = Helpers.EsAdministrador(HttpContext.Session);
-        if (!esAdministrador)
-        {
-            TempData["Error"] = "Solo los administradores pueden acceder a esta sección.";
-            return Redirect("/");
-        }
+        // Obtener información del usuario desde Claims
+        var nombreUsuario = User.Identity?.Name ?? "";
+        var rolUsuario = User.FindFirst("Rol")?.Value ?? "";
+        var esAdministrador = User.HasClaim("Rol", "Administrador");
 
         var usuarios = _usuarioService.ObtenerTodos();
-        var rolUsuario = HttpContext.Session.GetString("RolUsuario") ?? "";
-        var nombreUsuario = HttpContext.Session.GetString("NombreUsuario") ?? "";
 
         ViewBag.EsAdministrador = esAdministrador;
         ViewBag.RolUsuario = rolUsuario;
@@ -48,10 +41,6 @@ public class ConfiguracionesController : Controller
     public IActionResult CrearUsuario([FromForm] string nombreUsuario, [FromForm] string contrasena, 
         [FromForm] string nombreCompleto, [FromForm] string rol, [FromForm] bool activo)
     {
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            return Json(new { success = false, message = "No tienes permisos para realizar esta acción." });
-        }
 
         if (string.IsNullOrWhiteSpace(nombreUsuario) || string.IsNullOrWhiteSpace(contrasena))
         {
@@ -85,10 +74,6 @@ public class ConfiguracionesController : Controller
         [FromForm] string? contrasena, [FromForm] string nombreCompleto, 
         [FromForm] string rol, [FromForm] bool activo)
     {
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            return Json(new { success = false, message = "No tienes permisos para realizar esta acción." });
-        }
 
         var usuario = _usuarioService.ObtenerPorId(id);
         if (usuario == null)
@@ -123,13 +108,8 @@ public class ConfiguracionesController : Controller
     [HttpPost("/configuraciones/usuarios/eliminar")]
     public IActionResult EliminarUsuario([FromForm] int id)
     {
-        if (!Helpers.EsAdministrador(HttpContext.Session))
-        {
-            return Json(new { success = false, message = "No tienes permisos para realizar esta acción." });
-        }
-
-        var usuarioActual = Helpers.ObtenerUsuarioActual(HttpContext.Session);
-        if (usuarioActual != null && usuarioActual.Id == id)
+        var usuarioActualId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (usuarioActualId != null && int.TryParse(usuarioActualId, out var idActual) && idActual == id)
         {
             return Json(new { success = false, message = "No puedes eliminar tu propio usuario." });
         }
@@ -151,10 +131,6 @@ public class ConfiguracionesController : Controller
 
     private string HashPassword(string password)
     {
-        using (var sha256 = SHA256.Create())
-        {
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hashedBytes);
-        }
+        return PasswordHelper.HashPassword(password);
     }
 }
