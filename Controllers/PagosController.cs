@@ -278,4 +278,48 @@ public class PagosController : Controller
 
         return Redirect("/pagos");
     }
+
+    [Authorize(Policy = "Administrador")]
+    [HttpPost("/pagos/eliminar-multiples")]
+    public IActionResult EliminarMultiples([FromForm] List<int> pagoIds)
+    {
+        if (pagoIds == null || !pagoIds.Any())
+        {
+            TempData["Error"] = "No se seleccionaron pagos para eliminar.";
+            return Redirect("/pagos");
+        }
+
+        try
+        {
+            var resultado = _pagoService.EliminarMultiples(pagoIds);
+            
+            var mensajes = new List<string>();
+            if (resultado.eliminados > 0)
+            {
+                mensajes.Add($"{resultado.eliminados} pago(s) eliminado(s) exitosamente.");
+            }
+            if (resultado.noEncontrados > 0)
+            {
+                mensajes.Add($"{resultado.noEncontrados} pago(s) no encontrado(s).");
+            }
+
+            if (mensajes.Any())
+            {
+                if (resultado.eliminados > 0)
+                {
+                    TempData["Success"] = string.Join(" ", mensajes);
+                }
+                else
+                {
+                    TempData["Error"] = string.Join(" ", mensajes);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error al eliminar pagos: {ex.Message}";
+        }
+
+        return Redirect("/pagos");
+    }
 }

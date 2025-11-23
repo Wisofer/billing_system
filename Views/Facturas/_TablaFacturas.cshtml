@@ -3,10 +3,10 @@
     var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
 }
 
-<div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-    <div class="border-b border-gray-100 px-6 py-4">
-        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+    <div class="border-b border-gray-100 dark:border-gray-700 px-6 py-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+            <svg class="w-5 h-5 mr-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Lista de Facturas
@@ -15,73 +15,85 @@
 
     <div class="overflow-x-auto">
         <table class="w-full">
-            <thead class="bg-gray-50 border-b border-gray-100">
+            <thead class="bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"># Factura</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mes</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    @if (esAdministrador)
+                    {
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-12">
+                            <input type="checkbox" id="selectAll" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" title="Seleccionar todas">
+                        </th>
+                    }
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"># Factura</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cliente</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Servicio</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Mes</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Monto</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-100">
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                 @if (Model.Any())
                 {
                     @foreach (var factura in Model)
                     {
-                        <tr class="hover:bg-gray-50 transition-colors">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            @if (esAdministrador)
+                            {
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <input type="checkbox" name="facturaIds" value="@factura.Id" class="factura-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                </td>
+                            }
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-medium text-gray-900">@factura.Numero</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">@factura.Numero</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">@factura.Cliente.Nombre</div>
-                                <div class="text-sm text-gray-500">@factura.Cliente.Codigo</div>
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">@factura.Cliente.Nombre</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">@factura.Cliente.Codigo</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">@factura.Servicio.Nombre</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">@factura.MesFacturacion.ToString("MMMM yyyy")</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">@factura.Servicio.Nombre</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">@factura.MesFacturacion.ToString("MMMM yyyy")</td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-medium text-gray-900">C$ @factura.Monto.ToString("N2")</span>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">C$ @factura.Monto.ToString("N2")</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if (factura.Estado == "Pagada")
                                 {
-                                    <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-green-50 text-green-700">Pagada</span>
+                                    <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300">Pagada</span>
                                 }
                                 else if (factura.Estado == "Pendiente")
                                 {
-                                    <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-amber-50 text-amber-700">Pendiente</span>
+                                    <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-amber-50 dark:bg-amber-900 text-amber-700 dark:text-amber-300">Pendiente</span>
                                 }
                                 else
                                 {
-                                    <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-red-50 text-red-700">Cancelada</span>
+                                    <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-300">Cancelada</span>
                                 }
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">@factura.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">@factura.FechaCreacion.ToString("dd/MM/yyyy")</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
-                                    <a href="/facturas/ver/@factura.Id" class="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="Ver factura">
+                                    <a href="/facturas/ver/@factura.Id" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900 p-2 rounded-lg transition-colors" title="Ver factura">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </a>
-                                    <a href="/facturas/descargar-pdf/@factura.Id" class="text-gray-600 hover:text-gray-700 hover:bg-gray-50 p-2 rounded-lg transition-colors" title="Descargar PDF">
+                                    <a href="/facturas/descargar-pdf/@factura.Id" class="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors" title="Descargar PDF">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                         </svg>
                                     </a>
                                     @if (esAdministrador)
                                     {
-                                        <a href="/facturas/editar/@factura.Id" class="text-gray-600 hover:text-gray-700 hover:bg-gray-50 p-2 rounded-lg transition-colors" title="Editar factura">
+                                        <a href="/facturas/editar/@factura.Id" class="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors" title="Editar factura">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </a>
                                         <form method="post" action="/facturas/eliminar/@factura.Id" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar esta factura?');">
-                                            <button type="submit" class="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors" title="Eliminar factura">
+                                            <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900 p-2 rounded-lg transition-colors" title="Eliminar factura">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
@@ -96,7 +108,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-sm text-gray-500">
+                        <td colspan="@(esAdministrador ? 9 : 8)" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
                             No hay facturas registradas.
                         </td>
                     </tr>
@@ -107,4 +119,135 @@
 
     @await Html.PartialAsync("_Paginacion")
 </div>
+
+@if (esAdministrador)
+{
+    <form id="formEliminarMultiples" method="post" action="/facturas/eliminar-multiples" style="display: none;">
+        <!-- Los IDs se agregarán dinámicamente via JavaScript -->
+    </form>
+
+    <script>
+        (function() {
+            'use strict';
+            
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const facturaCheckboxes = document.querySelectorAll('.factura-checkbox');
+            const btnEliminarSeleccionadas = document.getElementById('btnEliminarSeleccionadas');
+            const formEliminarMultiples = document.getElementById('formEliminarMultiples');
+            
+            // Función para actualizar el estado del botón
+            function actualizarBotonEliminar() {
+                const seleccionadas = Array.from(facturaCheckboxes).filter(cb => cb.checked);
+                btnEliminarSeleccionadas.disabled = seleccionadas.length === 0;
+            }
+            
+            // Función para actualizar el estado de "Seleccionar todas"
+            function actualizarSelectAll() {
+                if (facturaCheckboxes.length === 0) {
+                    if (selectAllCheckbox) selectAllCheckbox.checked = false;
+                    return;
+                }
+                
+                const todasSeleccionadas = Array.from(facturaCheckboxes).every(cb => cb.checked);
+                const algunaSeleccionada = Array.from(facturaCheckboxes).some(cb => cb.checked);
+                
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = todasSeleccionadas;
+                    selectAllCheckbox.indeterminate = algunaSeleccionada && !todasSeleccionadas;
+                }
+            }
+            
+            // Event listener para "Seleccionar todas"
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    facturaCheckboxes.forEach(cb => {
+                        cb.checked = selectAllCheckbox.checked;
+                    });
+                    actualizarBotonEliminar();
+                });
+            }
+            
+            // Event listeners para checkboxes individuales
+            facturaCheckboxes.forEach(cb => {
+                cb.addEventListener('change', function() {
+                    actualizarBotonEliminar();
+                    actualizarSelectAll();
+                });
+            });
+            
+            // Event listener para el botón eliminar
+            if (btnEliminarSeleccionadas) {
+                btnEliminarSeleccionadas.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    
+                    const seleccionadas = Array.from(facturaCheckboxes)
+                        .filter(cb => cb.checked)
+                        .map(cb => parseInt(cb.value));
+                    
+                    if (seleccionadas.length === 0) {
+                        alert('Por favor, selecciona al menos una factura para eliminar.');
+                        return;
+                    }
+                    
+                    const confirmacion = confirm(`¿Estás seguro de eliminar ${seleccionadas.length} factura(s)?\n\nEsta acción no se puede deshacer.`);
+                    
+                    if (!confirmacion) {
+                        return;
+                    }
+                    
+                    // Obtener el token anti-forgery (buscar en toda la página)
+                    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                    if (!tokenInput) {
+                        console.error('Token anti-forgery no encontrado');
+                        alert('Error de seguridad. Por favor, recarga la página e intenta de nuevo.');
+                        return;
+                    }
+                    const token = tokenInput.value;
+                    
+                    // Crear FormData
+                    const formData = new FormData();
+                    formData.append('__RequestVerificationToken', token);
+                    seleccionadas.forEach(id => {
+                        formData.append('facturaIds', id.toString());
+                    });
+                    
+                    // Guardar el contenido original del botón
+                    const contenidoOriginal = btnEliminarSeleccionadas.innerHTML;
+                    
+                    // Mostrar indicador de carga
+                    btnEliminarSeleccionadas.disabled = true;
+                    btnEliminarSeleccionadas.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg><span>Eliminando...</span>';
+                    
+                    // Enviar usando fetch
+                    try {
+                        const response = await fetch('/facturas/eliminar-multiples', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        if (response.ok || response.redirected) {
+                            // Redirigir a la página de facturas
+                            window.location.href = '/facturas';
+                        } else {
+                            const errorText = await response.text();
+                            console.error('Error del servidor:', errorText);
+                            alert('Error al eliminar las facturas. Por favor, intenta de nuevo.');
+                            btnEliminarSeleccionadas.disabled = false;
+                            btnEliminarSeleccionadas.innerHTML = contenidoOriginal;
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error al eliminar las facturas. Por favor, intenta de nuevo.');
+                        btnEliminarSeleccionadas.disabled = false;
+                        btnEliminarSeleccionadas.innerHTML = contenidoOriginal;
+                    }
+                });
+            }
+            
+            // Inicializar estado
+            actualizarBotonEliminar();
+            actualizarSelectAll();
+        })();
+    </script>
+}
 

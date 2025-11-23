@@ -13,37 +13,18 @@ namespace billing_system.Controllers;
 public class ClientesController : Controller
 {
     private readonly IClienteService _clienteService;
+    private readonly IServicioService _servicioService;
 
-    public ClientesController(IClienteService clienteService)
+    public ClientesController(IClienteService clienteService, IServicioService servicioService)
     {
         _clienteService = clienteService;
+        _servicioService = servicioService;
     }
 
     [HttpGet("/clientes/obtener-codigo")]
     public IActionResult ObtenerCodigo()
     {
-        var todosClientes = _clienteService.ObtenerTodos();
-        var ultimoNumero = todosClientes
-            .Where(c => c.Codigo.StartsWith("CLI-"))
-            .Select(c => {
-                var partes = c.Codigo.Split('-');
-                if (partes.Length == 2 && int.TryParse(partes[1], out var num))
-                    return num;
-                return 0;
-            })
-            .DefaultIfEmpty(0)
-            .Max();
-        
-        var numeroCliente = ultimoNumero + 1;
-        var codigo = $"CLI-{numeroCliente:D3}";
-        
-        // Asegurar que el código sea único
-        while (_clienteService.ExisteCodigo(codigo))
-        {
-            numeroCliente++;
-            codigo = $"CLI-{numeroCliente:D3}";
-        }
-        
+        var codigo = CodigoHelper.GenerarCodigoClienteUnico(c => _clienteService.ExisteCodigo(c));
         return Json(new { codigo });
     }
 
@@ -80,22 +61,16 @@ public class ClientesController : Controller
     [HttpPost("/clientes/crear")]
     public IActionResult Crear([FromBody] Cliente cliente)
     {
-
-        // El código se genera automáticamente si no viene o está vacío
-        if (string.IsNullOrWhiteSpace(cliente.Codigo))
-        {
-            // Se generará en el servicio
-            cliente.Codigo = string.Empty;
-        }
-        else if (_clienteService.ExisteCodigo(cliente.Codigo))
-        {
-            // Si viene un código, validar que no exista
-            ModelState.AddModelError("Codigo", "El código ya existe.");
-        }
-
+        // Validaciones básicas
         if (string.IsNullOrWhiteSpace(cliente.Nombre))
         {
             ModelState.AddModelError("Nombre", "El nombre es requerido.");
+        }
+
+        // Validar código si se proporciona manualmente
+        if (!string.IsNullOrWhiteSpace(cliente.Codigo) && _clienteService.ExisteCodigo(cliente.Codigo))
+        {
+            ModelState.AddModelError("Codigo", "El código ya existe.");
         }
 
         // Validar duplicados
@@ -109,7 +84,7 @@ public class ClientesController : Controller
             ModelState.AddModelError("Email", "Ya existe un cliente con este email.");
         }
 
-        if (_clienteService.ExisteNombreYCedula(cliente.Nombre, cliente.Cedula))
+        if (!string.IsNullOrWhiteSpace(cliente.Nombre) && _clienteService.ExisteNombreYCedula(cliente.Nombre, cliente.Cedula))
         {
             ModelState.AddModelError("Nombre", "Ya existe un cliente con este nombre" + 
                 (string.IsNullOrWhiteSpace(cliente.Cedula) ? "." : $" y cédula '{cliente.Cedula}'."));
@@ -117,10 +92,12 @@ public class ClientesController : Controller
 
         if (!ModelState.IsValid)
         {
-            var errors = ModelState.ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
-            );
+            var errors = ModelState
+                .Where(kvp => kvp.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
             return Json(new { success = false, errors });
         }
 
@@ -153,7 +130,6 @@ public class ClientesController : Controller
     [HttpGet("/clientes/editar/{id}")]
     public IActionResult Editar(int id)
     {
-
         var cliente = _clienteService.ObtenerPorId(id);
         if (cliente == null)
         {
@@ -161,14 +137,15 @@ public class ClientesController : Controller
             return Redirect("/clientes");
         }
 
+        ViewBag.Servicios = _servicioService.ObtenerActivos();
         return View(cliente);
     }
 
     [Authorize(Policy = "Administrador")]
     [HttpPost("/clientes/editar/{id}")]
+    [ValidateAntiForgeryToken]
     public IActionResult Editar(int id, [FromForm] Cliente cliente)
     {
-
         // Asegurar que el ID del cliente coincida con el de la ruta
         cliente.Id = id;
 
@@ -180,16 +157,16 @@ public class ClientesController : Controller
             return Redirect("/clientes");
         }
 
-        // Manejar el checkbox Activo (si no viene en el formulario, es false)
-        // El formulario envía "true" si está marcado, o "false" del hidden si no está marcado
-        if (Request.Form["Activo"].ToString() == "true")
-        {
-            cliente.Activo = true;
-        }
-        else
-        {
-            cliente.Activo = false;
-        }
+        // Manejar el checkbox Activo
+        // Cuando el checkbox está marcado, se envía "true" (y también el hidden "false")
+        // Cuando no está marcado, solo se envía el hidden input con "false"
+        // Request.Form["Activo"] es una StringValues que puede contener múltiples valores
+        // Si contiene "true", el checkbox está marcado; si solo contiene "false", no está marcado
+        var activoFormValues = Request.Form["Activo"];
+        // Verificar si el checkbox está marcado (contiene "true")
+        // Si solo contiene "false", significa que el checkbox no está marcado
+        bool activo = activoFormValues.Count > 0 && activoFormValues.Any(v => v == "true");
+        cliente.Activo = activo;
 
         // Validaciones
         if (string.IsNullOrWhiteSpace(cliente.Codigo))
@@ -223,10 +200,17 @@ public class ClientesController : Controller
                 (string.IsNullOrWhiteSpace(cliente.Cedula) ? "." : $" y cédula '{cliente.Cedula}'."));
         }
 
+        // Si FechaCreacion no viene del formulario o está vacía, mantener la existente
+        if (cliente.FechaCreacion == default(DateTime))
+        {
+            cliente.FechaCreacion = clienteExistente.FechaCreacion;
+        }
+
         if (!ModelState.IsValid)
         {
             // Si hay errores, mantener los datos del formulario pero asegurar que el cliente tenga todos los campos
             cliente.FechaCreacion = clienteExistente.FechaCreacion;
+            ViewBag.Servicios = _servicioService.ObtenerActivos();
             return View(cliente);
         }
 
@@ -241,19 +225,16 @@ public class ClientesController : Controller
             TempData["Error"] = $"Error al actualizar cliente: {ex.Message}";
             // Recargar el cliente original en caso de error
             cliente.FechaCreacion = clienteExistente.FechaCreacion;
+            ViewBag.Servicios = _servicioService.ObtenerActivos();
             return View(cliente);
         }
     }
 
     [Authorize(Policy = "Administrador")]
     [HttpPost("/clientes/eliminar/{id}")]
+    [ValidateAntiForgeryToken]
     public IActionResult Eliminar(int id)
     {
-        {
-            TempData["Error"] = "No tienes permisos para eliminar clientes.";
-            return Redirect("/clientes");
-        }
-
         try
         {
             // Verificar que el cliente existe
@@ -285,6 +266,7 @@ public class ClientesController : Controller
 
     [Authorize(Policy = "Administrador")]
     [HttpPost("/clientes/importar")]
+    [ValidateAntiForgeryToken]
     public IActionResult Importar(IFormFile archivoExcel)
     {
         var rolUsuario = SecurityHelper.GetUserRole(User);
@@ -366,11 +348,7 @@ public class ClientesController : Controller
                             }
 
                             // Generar código único
-                            var codigo = $"CLI{DateTime.Now:yyyyMMddHHmmss}{row}";
-                            while (_clienteService.ExisteCodigo(codigo))
-                            {
-                                codigo = $"CLI{DateTime.Now:yyyyMMddHHmmss}{row}{new Random().Next(1000)}";
-                            }
+                            var codigo = CodigoHelper.GenerarCodigoClienteUnico(c => _clienteService.ExisteCodigo(c));
 
                             var cliente = new Cliente
                             {
@@ -407,6 +385,24 @@ public class ClientesController : Controller
         catch (Exception ex)
         {
             TempData["Error"] = $"Error al procesar el archivo: {ex.Message}";
+            return Redirect("/clientes");
+        }
+    }
+
+    [Authorize(Policy = "Administrador")]
+    [HttpPost("/clientes/actualizar-codigos")]
+    [ValidateAntiForgeryToken]
+    public IActionResult ActualizarCodigos()
+    {
+        try
+        {
+            var actualizados = _clienteService.ActualizarCodigosExistentes();
+            TempData["Success"] = $"Se actualizaron {actualizados} código(s) de cliente(s) al nuevo formato EMS_XXXXXX.";
+            return Redirect("/clientes");
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error al actualizar códigos: {ex.Message}";
             return Redirect("/clientes");
         }
     }

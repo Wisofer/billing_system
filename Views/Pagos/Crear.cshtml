@@ -21,20 +21,20 @@
 
 <!-- Encabezado -->
 <div class="mb-6">
-    <h2 class="text-2xl font-semibold text-gray-900 mb-1">Registrar Nuevo Pago</h2>
+    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-1">Registrar Nuevo Pago</h2>
     <p class="text-sm text-gray-500">Registra un pago para una factura pendiente</p>
 </div>
 
-<div class="bg-white border border-gray-200 rounded-lg p-6">
+<div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
     <!-- Formulario de búsqueda de cliente (separado) -->
     <form method="post" action="/pagos/buscar-cliente" class="mb-6">
-        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <h3 class="text-sm font-semibold text-gray-700 mb-3">Buscar Cliente</h3>
+        <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Buscar Cliente</h3>
             <div class="flex space-x-2">
                 <input type="text" name="clienteBusqueda" id="clienteBusqueda" 
                        value="@clienteBusqueda"
                        placeholder="Buscar por nombre o código..." 
-                       class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                       class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                     Buscar
                 </button>
@@ -49,9 +49,9 @@
         {
             <!-- Selección de Cliente -->
             <div>
-                <label for="clienteId" class="block text-sm font-medium text-gray-700 mb-2">Cliente *</label>
+                <label for="clienteId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cliente *</label>
                 <select name="clienteId" id="clienteId" required 
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         onchange="cargarFacturas(this.value)">
                     <option value="">Seleccionar cliente...</option>
                     @foreach (var cliente in clientes)
@@ -63,9 +63,9 @@
 
             <!-- Selección de Factura -->
             <div>
-                <label for="FacturaId" class="block text-sm font-medium text-gray-700 mb-2">Factura con Saldo Pendiente *</label>
+                <label for="FacturaId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Factura con Saldo Pendiente *</label>
                 <select name="FacturaId" id="FacturaId" required 
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         onchange="actualizarMonto(this.value)">
                     <option value="">Seleccionar factura...</option>
                     @foreach (var factura in facturas)
@@ -73,17 +73,17 @@
                         <option value="@factura.Id" data-monto="@factura.Monto">@factura.Numero - C$ @factura.Monto.ToString("N2")</option>
                     }
                 </select>
-                <p class="text-xs text-gray-500 mt-1">Se cargarán automáticamente las facturas con saldo pendiente al seleccionar un cliente</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Se cargarán automáticamente las facturas con saldo pendiente al seleccionar un cliente</p>
             </div>
 
             <!-- Monto y Moneda -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="Monto" class="block text-sm font-medium text-gray-700 mb-2">Monto *</label>
+                    <label for="Monto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto *</label>
                     <div class="relative">
                         <input type="number" asp-for="Monto" name="Monto" step="0.01" min="0.01" max="100000" required 
                                id="Monto"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                oninput="validarMonto(this)"
                                placeholder="0.00"
                                readonly />
@@ -97,28 +97,28 @@
                         </button>
                     </div>
                     <span asp-validation-for="Monto" class="text-red-500 text-xs"></span>
-                    <p class="text-xs text-gray-500 mt-1" id="montoInfo">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="montoInfo">
                         <span class="font-medium">⚠️ Importante:</span> El monto se llena automáticamente al seleccionar una factura. 
                         <span class="text-amber-600">Usa punto (.) para decimales, NO coma.</span>
                     </p>
                 </div>
 
                 <div>
-                    <label for="Moneda" class="block text-sm font-medium text-gray-700 mb-2">Moneda *</label>
+                    <label for="Moneda" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Moneda *</label>
                     <select asp-for="Moneda" name="Moneda" id="Moneda" required 
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             onchange="actualizarTipoCambio()">
                         <option value="C$">C$ (Córdobas)</option>
                         <option value="$">$ (Dólares)</option>
                         <option value="Ambos">Ambos</option>
                     </select>
-                    <p class="text-xs text-gray-500 mt-1">Tipo de cambio: C$ @tipoCambio = $1</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tipo de cambio: C$ @tipoCambio = $1</p>
                 </div>
             </div>
 
             <!-- Tipo de Pago -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Pago *</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo de Pago *</label>
                 <div class="flex space-x-4">
                     <label class="flex items-center space-x-2 cursor-pointer">
                         <input type="radio" name="TipoPago" value="Fisico" required 
@@ -138,29 +138,29 @@
             <!-- Campos para Pago Físico -->
             <div id="camposFisico" style="display: none;" class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div>
-                    <label for="MontoRecibido" class="block text-sm font-medium text-gray-700 mb-2">Monto Recibido</label>
+                    <label for="MontoRecibido" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto Recibido</label>
                     <input type="number" asp-for="MontoRecibido" name="MontoRecibido" step="0.01" min="0" 
                            id="MontoRecibido"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                            onchange="calcularVuelto()" />
                     <span asp-validation-for="MontoRecibido" class="text-red-500 text-xs"></span>
                 </div>
 
                 <div>
-                    <label for="Vuelto" class="block text-sm font-medium text-gray-700 mb-2">Vuelto</label>
+                    <label for="Vuelto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vuelto</label>
                     <input type="number" asp-for="Vuelto" name="Vuelto" step="0.01" readonly 
                            id="Vuelto"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed" />
-                    <p class="text-xs text-gray-500 mt-1">Se calcula automáticamente</p>
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed" />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Se calcula automáticamente</p>
                 </div>
             </div>
 
             <!-- Campos para Pago Electrónico -->
             <div id="camposElectronico" style="display: none;" class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-green-50 border border-green-200 rounded-lg p-4">
                 <div>
-                    <label for="Banco" class="block text-sm font-medium text-gray-700 mb-2">Banco *</label>
+                    <label for="Banco" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Banco *</label>
                     <select asp-for="Banco" name="Banco" id="Banco" 
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Seleccionar banco...</option>
                         @foreach (var banco in bancos)
                         {
@@ -171,9 +171,9 @@
                 </div>
 
                 <div>
-                    <label for="TipoCuenta" class="block text-sm font-medium text-gray-700 mb-2">Tipo de Cuenta *</label>
+                    <label for="TipoCuenta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo de Cuenta *</label>
                     <select asp-for="TipoCuenta" name="TipoCuenta" id="TipoCuenta" 
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Seleccionar tipo...</option>
                         @foreach (var tipo in tiposCuenta)
                         {
@@ -186,15 +186,15 @@
 
             <!-- Observaciones -->
             <div>
-                <label for="Observaciones" class="block text-sm font-medium text-gray-700 mb-2">Observaciones</label>
+                <label for="Observaciones" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Observaciones</label>
                 <textarea asp-for="Observaciones" name="Observaciones" id="Observaciones" rows="3" 
-                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="Notas adicionales sobre el pago..."></textarea>
             </div>
 
             <!-- Botones -->
             <div class="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
-                <a href="/pagos" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                <a href="/pagos" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 transition-colors">
                     Cancelar
                 </a>
                 <button type="submit" formaction="/pagos/crear" formmethod="post" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
@@ -352,7 +352,7 @@
                 montoInput.value = montoFormateado;
                 montoInput.readOnly = true; // Hacer readonly para evitar edición accidental
                 montoInfo.innerHTML = `<span class="font-medium text-green-600">✓ Monto pendiente: C$ ${monto.toLocaleString('es-NI', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`;
-                montoInfo.className = 'text-xs text-gray-500 mt-1';
+                montoInfo.className = 'text-xs text-gray-500 dark:text-gray-400 mt-1';
                 
                 // Guardar el monto esperado en un atributo para validación posterior
                 montoInput.setAttribute('data-monto-esperado', montoFormateado);
@@ -422,7 +422,7 @@
             montoInfo.className = 'text-xs text-amber-600 mt-1 font-medium';
         } else if (monto > 0) {
             montoInfo.innerHTML = `Monto ingresado: C$ ${monto.toLocaleString('es-NI', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            montoInfo.className = 'text-xs text-gray-500 mt-1';
+            montoInfo.className = 'text-xs text-gray-500 dark:text-gray-400 mt-1';
         }
     }
 

@@ -27,8 +27,9 @@ async function generarCodigoCliente() {
         document.getElementById('codigoCliente').value = data.codigo;
     } catch (error) {
         console.error('Error al obtener código:', error);
-        const numeroCliente = Math.floor(Math.random() * 1000) + 1;
-        document.getElementById('codigoCliente').value = `CLI-${String(numeroCliente).padStart(3, '0')}`;
+        // Fallback: generar código aleatorio de 6 dígitos con formato EMS_XXXXXX
+        const numeros = Math.floor(Math.random() * 900000) + 100000; // Número de 6 dígitos
+        document.getElementById('codigoCliente').value = `EMS_${numeros}`;
     }
 }
 

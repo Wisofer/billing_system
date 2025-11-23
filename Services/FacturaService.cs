@@ -109,6 +109,10 @@ public class FacturaService : IFacturaService
         factura.FechaCreacion = DateTime.Now;
 
         _context.Facturas.Add(factura);
+        
+        // Actualizar el último servicio usado del cliente
+        cliente.ServicioId = factura.ServicioId;
+        
         _context.SaveChanges();
         return factura;
     }
@@ -144,6 +148,44 @@ public class FacturaService : IFacturaService
         _context.Facturas.Remove(factura);
         _context.SaveChanges();
         return true;
+    }
+
+    public (int eliminadas, int conPagos, int noEncontradas) EliminarMultiples(List<int> ids)
+    {
+        if (ids == null || !ids.Any())
+            return (0, 0, 0);
+
+        int eliminadas = 0;
+        int conPagos = 0;
+        int noEncontradas = 0;
+
+        foreach (var id in ids)
+        {
+            var factura = ObtenerPorId(id);
+            if (factura == null)
+            {
+                noEncontradas++;
+                continue;
+            }
+
+            // Verificar si tiene pagos
+            var tienePagos = _context.Pagos.Any(p => p.FacturaId == id);
+            if (tienePagos)
+            {
+                conPagos++;
+                continue;
+            }
+
+            _context.Facturas.Remove(factura);
+            eliminadas++;
+        }
+
+        if (eliminadas > 0)
+        {
+            _context.SaveChanges();
+        }
+
+        return (eliminadas, conPagos, noEncontradas);
     }
 
     public void GenerarFacturasAutomaticas()

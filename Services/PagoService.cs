@@ -139,6 +139,52 @@ public class PagoService : IPagoService
         return true;
     }
 
+    public (int eliminados, int noEncontrados) EliminarMultiples(List<int> ids)
+    {
+        if (ids == null || !ids.Any())
+            return (0, 0);
+
+        int eliminados = 0;
+        int noEncontrados = 0;
+        var facturasARevisar = new HashSet<int>();
+
+        foreach (var id in ids)
+        {
+            var pago = ObtenerPorId(id);
+            if (pago == null)
+            {
+                noEncontrados++;
+                continue;
+            }
+
+            facturasARevisar.Add(pago.FacturaId);
+            _context.Pagos.Remove(pago);
+            eliminados++;
+        }
+
+        if (eliminados > 0)
+        {
+            _context.SaveChanges();
+
+            // Actualizar estado de facturas afectadas
+            foreach (var facturaId in facturasARevisar)
+            {
+                var factura = _facturaService.ObtenerPorId(facturaId);
+                if (factura != null)
+                {
+                    var totalPagado = ObtenerPorFactura(factura.Id).Sum(p => p.Monto);
+                    if (totalPagado < factura.Monto)
+                    {
+                        factura.Estado = SD.EstadoFacturaPendiente;
+                    }
+                }
+            }
+            _context.SaveChanges();
+        }
+
+        return (eliminados, noEncontrados);
+    }
+
     public decimal CalcularTotalIngresos()
     {
         return _context.Pagos.Sum(p => p.Monto);

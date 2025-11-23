@@ -30,6 +30,12 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Cedula).HasMaxLength(50);
             entity.Property(e => e.Email).HasMaxLength(200);
             entity.HasIndex(e => e.Codigo).IsUnique();
+            
+            // Relación opcional con Servicio (último servicio usado)
+            entity.HasOne(e => e.Servicio)
+                .WithMany()
+                .HasForeignKey(e => e.ServicioId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Configuración de Servicio

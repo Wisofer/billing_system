@@ -20,5 +20,6 @@ public interface IClienteService
     int ObtenerTotal();
     int ObtenerTotalActivos();
     int ObtenerNuevosEsteMes();
+    int ActualizarCodigosExistentes();
 }
 

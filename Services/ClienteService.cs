@@ -2,6 +2,7 @@ using billing_system.Data;
 using billing_system.Models.Entities;
 using billing_system.Models.ViewModels;
 using billing_system.Services.IServices;
+using billing_system.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace billing_system.Services;
@@ -73,7 +74,9 @@ public class ClienteService : IClienteService
 
     public Cliente? ObtenerPorId(int id)
     {
-        return _context.Clientes.FirstOrDefault(c => c.Id == id);
+        return _context.Clientes
+            .Include(c => c.Servicio)
+            .FirstOrDefault(c => c.Id == id);
     }
 
     public Cliente? ObtenerPorCodigo(string codigo)
@@ -121,28 +124,7 @@ public class ClienteService : IClienteService
         // Generar código automáticamente si no viene
         if (string.IsNullOrWhiteSpace(cliente.Codigo))
         {
-            var ultimoNumero = _context.Clientes
-                .Where(c => c.Codigo.StartsWith("CLI-"))
-                .Select(c => c.Codigo)
-                .ToList()
-                .Select(c => {
-                    var partes = c.Split('-');
-                    if (partes.Length == 2 && int.TryParse(partes[1], out var num))
-                        return num;
-                    return 0;
-                })
-                .DefaultIfEmpty(0)
-                .Max();
-            
-            var numeroCliente = ultimoNumero + 1;
-            cliente.Codigo = $"CLI-{numeroCliente:D3}";
-            
-            // Asegurar que el código sea único
-            while (ExisteCodigo(cliente.Codigo))
-            {
-                numeroCliente++;
-                cliente.Codigo = $"CLI-{numeroCliente:D3}";
-            }
+            cliente.Codigo = CodigoHelper.GenerarCodigoClienteUnico(codigo => ExisteCodigo(codigo));
         }
         
         _context.Clientes.Add(cliente);
@@ -179,6 +161,8 @@ public class ClienteService : IClienteService
         existente.Cedula = cliente.Cedula;
         existente.Email = cliente.Email;
         existente.Activo = cliente.Activo;
+        existente.FechaCreacion = cliente.FechaCreacion;
+        existente.ServicioId = cliente.ServicioId;
 
         _context.SaveChanges();
         return existente;
@@ -249,6 +233,40 @@ public class ClienteService : IClienteService
         }
         
         return query.Any();
+    }
+
+    public int ActualizarCodigosExistentes()
+    {
+        // Optimización: procesar en lotes para evitar cargar todos los clientes en memoria
+        int actualizados = 0;
+        const int batchSize = 100;
+        int skip = 0;
+        
+        while (true)
+        {
+            var clientes = _context.Clientes
+                .Where(c => !c.Codigo.StartsWith("EMS_"))
+                .Skip(skip)
+                .Take(batchSize)
+                .ToList();
+
+            if (!clientes.Any())
+                break;
+
+            foreach (var cliente in clientes)
+            {
+                var nuevoCodigo = CodigoHelper.GenerarCodigoClienteUnico(codigo => 
+                    _context.Clientes.Any(c => c.Codigo == codigo && c.Id != cliente.Id));
+                
+                cliente.Codigo = nuevoCodigo;
+                actualizados++;
+            }
+
+            _context.SaveChanges();
+            skip += batchSize;
+        }
+
+        return actualizados;
     }
 }
 

@@ -5,15 +5,15 @@
     var errorMessage = ViewBag.ErrorMessage as string ?? "Ha ocurrido un error";
 }
 
-<div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
     <div class="max-w-md w-full text-center">
         <div class="mb-8">
-            <h1 class="text-9xl font-bold text-gray-300">@statusCode</h1>
+            <h1 class="text-9xl font-bold text-gray-300 dark:text-gray-700">@statusCode</h1>
         </div>
         
         <div class="mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-2">@errorMessage</h2>
-            <p class="text-gray-600">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">@errorMessage</h2>
+            <p class="text-gray-600 dark:text-gray-400">
                 @if (statusCode == 404)
                 {
                     <span>La página que buscas no existe o ha sido movida.</span>
@@ -34,7 +34,7 @@
                 Volver al Inicio
             </a>
             <div>
-                <a href="javascript:history.back()" class="text-blue-600 hover:text-blue-700 text-sm">
+                <a href="javascript:history.back()" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm">
                     ← Volver atrás
                 </a>
             </div>

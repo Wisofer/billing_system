@@ -12,6 +12,7 @@ public interface IPagoService
     Pago Crear(Pago pago);
     Pago Actualizar(Pago pago);
     bool Eliminar(int id);
+    (int eliminados, int noEncontrados) EliminarMultiples(List<int> ids);
     decimal CalcularTotalIngresos();
 }
 

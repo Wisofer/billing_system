@@ -4,6 +4,8 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@Html.AntiForgeryToken()
+
 @await Html.PartialAsync("_Header")
 @await Html.PartialAsync("_Estadisticas")
 @await Html.PartialAsync("_Filtros")

@@ -44,9 +44,22 @@ public class FacturasController : Controller
             query = query.Where(f => f.Estado == estado);
         }
 
-        if (mes.HasValue && año.HasValue)
+        // Aplicar filtro de mes y año
+        // Si el usuario selecciona "Todos los meses" (mes viene como string vacío), no aplicar filtro
+        // Si no viene el parámetro mes (primera carga), usar el mes actual por defecto
+        var tieneParametroMes = Request.Query.ContainsKey("mes");
+        var mesVacio = tieneParametroMes && string.IsNullOrEmpty(Request.Query["mes"].ToString());
+        
+        if (mesVacio)
         {
-            var fechaFiltro = new DateTime(año.Value, mes.Value, 1);
+            // Usuario seleccionó "Todos los meses" - no aplicar filtro de mes
+        }
+        else
+        {
+            // Aplicar filtro: usar el mes especificado o el mes actual por defecto
+            var mesFiltro = mes ?? DateTime.Now.Month;
+            var añoFiltro = año ?? DateTime.Now.Year;
+            var fechaFiltro = new DateTime(añoFiltro, mesFiltro, 1);
             query = query.Where(f => f.MesFacturacion.Year == fechaFiltro.Year && f.MesFacturacion.Month == fechaFiltro.Month);
         }
 
@@ -71,7 +84,8 @@ public class FacturasController : Controller
         var montoTotal = _facturaService.ObtenerMontoTotal();
 
         ViewBag.Estado = estado ?? "Todos";
-        ViewBag.Mes = mes;
+        // Si no se especifica un mes, usar el mes actual
+        ViewBag.Mes = mes ?? DateTime.Now.Month;
         ViewBag.Año = año ?? DateTime.Now.Year;
         ViewBag.BusquedaCliente = busquedaCliente;
         ViewBag.Pagina = pagina;
@@ -95,6 +109,18 @@ public class FacturasController : Controller
         ViewBag.Clientes = _clienteService.ObtenerTodos().Where(c => c.Activo).ToList();
         ViewBag.Servicios = _servicioService.ObtenerActivos();
         return View();
+    }
+
+    [HttpGet("/facturas/obtener-servicio-cliente/{clienteId}")]
+    public IActionResult ObtenerServicioCliente(int clienteId)
+    {
+        var cliente = _clienteService.ObtenerPorId(clienteId);
+        if (cliente == null)
+        {
+            return Json(new { servicioId = (int?)null });
+        }
+
+        return Json(new { servicioId = cliente.ServicioId });
     }
 
     [HttpPost("/facturas/crear")]
@@ -303,6 +329,54 @@ public class FacturasController : Controller
         catch (Exception ex)
         {
             TempData["Error"] = $"Error al eliminar factura: {ex.Message}";
+        }
+
+        return Redirect("/facturas");
+    }
+
+    [Authorize(Policy = "Administrador")]
+    [HttpPost("/facturas/eliminar-multiples")]
+    public IActionResult EliminarMultiples([FromForm] List<int> facturaIds)
+    {
+        if (facturaIds == null || !facturaIds.Any())
+        {
+            TempData["Error"] = "No se seleccionaron facturas para eliminar.";
+            return Redirect("/facturas");
+        }
+
+        try
+        {
+            var resultado = _facturaService.EliminarMultiples(facturaIds);
+            
+            var mensajes = new List<string>();
+            if (resultado.eliminadas > 0)
+            {
+                mensajes.Add($"{resultado.eliminadas} factura(s) eliminada(s) exitosamente.");
+            }
+            if (resultado.conPagos > 0)
+            {
+                mensajes.Add($"{resultado.conPagos} factura(s) no se pudieron eliminar porque tienen pagos asociados.");
+            }
+            if (resultado.noEncontradas > 0)
+            {
+                mensajes.Add($"{resultado.noEncontradas} factura(s) no encontrada(s).");
+            }
+
+            if (mensajes.Any())
+            {
+                if (resultado.eliminadas > 0)
+                {
+                    TempData["Success"] = string.Join(" ", mensajes);
+                }
+                else
+                {
+                    TempData["Error"] = string.Join(" ", mensajes);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error al eliminar facturas: {ex.Message}";
         }
 
         return Redirect("/facturas");

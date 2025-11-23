@@ -13,6 +13,7 @@ public interface IFacturaService
     Factura Crear(Factura factura);
     Factura Actualizar(Factura factura);
     bool Eliminar(int id);
+    (int eliminadas, int conPagos, int noEncontradas) EliminarMultiples(List<int> ids);
     void GenerarFacturasAutomaticas();
     decimal CalcularTotalPendiente();
     decimal CalcularTotalPagado();

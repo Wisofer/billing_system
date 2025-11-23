@@ -8,7 +8,7 @@
 
 <div class="max-w-2xl mx-auto">
     <div class="mb-6">
-        <h2 class="text-2xl font-semibold text-gray-900 mb-1">Crear Nueva Factura</h2>
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-1">Crear Nueva Factura</h2>
         <p class="text-sm text-gray-500">Completa los datos para generar una nueva factura</p>
     </div>
 
@@ -22,12 +22,12 @@
         </div>
     }
 
-    <div class="bg-white border border-gray-200 rounded-lg p-6">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
         <form method="post" action="/facturas/crear" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="ClienteId" class="block text-sm font-medium text-gray-700 mb-2">Cliente *</label>
-                    <select name="ClienteId" id="ClienteId" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <label for="ClienteId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cliente *</label>
+                    <select name="ClienteId" id="ClienteId" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Seleccionar cliente...</option>
                         @foreach (var cliente in clientes)
                         {
@@ -41,8 +41,8 @@
                 </div>
 
                 <div>
-                    <label for="ServicioId" class="block text-sm font-medium text-gray-700 mb-2">Servicio *</label>
-                    <select name="ServicioId" id="servicioSelect" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <label for="ServicioId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Servicio *</label>
+                    <select name="ServicioId" id="servicioSelect" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Seleccionar servicio...</option>
                         @foreach (var servicio in servicios)
                         {
@@ -58,23 +58,23 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="MesFacturacion" class="block text-sm font-medium text-gray-700 mb-2">Mes de Facturación *</label>
+                    <label for="MesFacturacion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mes de Facturación *</label>
                     <input type="month" name="MesFacturacion" id="MesFacturacion" required 
                            value="@DateTime.Now.ToString("yyyy-MM")"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                     @if (ViewData.ModelState["MesFacturacion"]?.Errors.Count > 0)
                     {
                         <span class="text-red-500 text-xs">@ViewData.ModelState["MesFacturacion"].Errors[0].ErrorMessage</span>
                     }
-                    <p class="text-xs text-gray-500 mt-1">Selecciona el mes al que corresponde esta factura</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Selecciona el mes al que corresponde esta factura</p>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Monto</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto</label>
                     <input type="text" id="montoDisplay" readonly 
                            value="C$ 0.00"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed" />
-                    <p class="text-xs text-gray-500 mt-1">Se actualiza automáticamente según el servicio seleccionado</p>
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed" />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Se actualiza automáticamente según el servicio seleccionado</p>
                 </div>
             </div>
 
@@ -95,7 +95,7 @@
             </div>
 
             <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
-                <a href="/facturas" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700">
+                <a href="/facturas" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 transition-colors text-sm font-medium text-gray-700">
                     Cancelar
                 </a>
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
@@ -108,9 +108,41 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const clienteSelect = document.getElementById('ClienteId');
     const servicioSelect = document.getElementById('servicioSelect');
     const montoDisplay = document.getElementById('montoDisplay');
     
+    // Cuando se selecciona un cliente, cargar su último servicio
+    clienteSelect.addEventListener('change', async function() {
+        const clienteId = clienteSelect.value;
+        
+        if (clienteId) {
+            try {
+                const response = await fetch(`/facturas/obtener-servicio-cliente/${clienteId}`);
+                const data = await response.json();
+                
+                if (data.servicioId) {
+                    // Pre-seleccionar el servicio del cliente
+                    servicioSelect.value = data.servicioId;
+                    
+                    // Actualizar el monto automáticamente
+                    const selectedOption = servicioSelect.options[servicioSelect.selectedIndex];
+                    const precio = selectedOption.getAttribute('data-precio');
+                    
+                    if (precio) {
+                        montoDisplay.value = 'C$ ' + parseFloat(precio).toLocaleString('es-NI', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error al obtener servicio del cliente:', error);
+            }
+        }
+    });
+    
+    // Actualizar monto cuando se cambia el servicio
     servicioSelect.addEventListener('change', function() {
         const selectedOption = servicioSelect.options[servicioSelect.selectedIndex];
         const precio = selectedOption.getAttribute('data-precio');
