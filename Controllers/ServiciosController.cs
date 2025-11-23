@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using billing_system.Models.Entities;
 using billing_system.Services.IServices;
 using billing_system.Utils;
+using Microsoft.AspNetCore.Http;
 
 namespace billing_system.Controllers;
 
@@ -39,14 +40,7 @@ public class ServiciosController : Controller
     public IActionResult Crear([FromForm] Servicio servicio)
     {
         // Manejar el checkbox Activo
-        if (Request.Form["Activo"].ToString() == "true")
-        {
-            servicio.Activo = true;
-        }
-        else
-        {
-            servicio.Activo = false;
-        }
+        servicio.Activo = FormHelper.GetCheckboxValue(Request.Form, "Activo");
 
         // Validaciones
         if (string.IsNullOrWhiteSpace(servicio.Nombre))
@@ -93,13 +87,13 @@ public class ServiciosController : Controller
 
     [Authorize(Policy = "Administrador")]
     [HttpPost("/servicios/editar/{id}")]
+    [ValidateAntiForgeryToken]
     public IActionResult Editar(int id, [FromForm] Servicio servicio)
     {
         servicio.Id = id;
 
         // Manejar el checkbox Activo
-        var activoValues = Request.Form["Activo"];
-        servicio.Activo = activoValues.Contains("true");
+        servicio.Activo = FormHelper.GetCheckboxValue(Request.Form, "Activo");
 
         // Validaciones
         if (string.IsNullOrWhiteSpace(servicio.Nombre))
@@ -132,6 +126,7 @@ public class ServiciosController : Controller
 
     [Authorize(Policy = "Administrador")]
     [HttpPost("/servicios/eliminar/{id}")]
+    [ValidateAntiForgeryToken]
     public IActionResult Eliminar(int id)
     {
         try

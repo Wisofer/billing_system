@@ -23,16 +23,22 @@ public class HomeController : Controller
     [HttpGet("/")]
     public IActionResult Index()
     {
+        // Optimizar: calcular valores una sola vez
+        var pagosPendientes = _facturaService.CalcularTotalPendiente();
+        var pagosRealizados = _pagoService.CalcularTotalIngresos();
+        var totalClientes = _clienteService.ObtenerTotal();
+        var totalFacturas = _facturaService.ObtenerTotal();
+        var totalPagos = _pagoService.ObtenerTodos().Count;
 
         var viewModel = new DashboardViewModel
         {
-            PagosPendientes = _facturaService.CalcularTotalPendiente(),
-            PagosRealizados = _pagoService.CalcularTotalIngresos(),
-            IngresoTotal = _pagoService.CalcularTotalIngresos(),
-            IngresoFaltante = _facturaService.CalcularTotalPendiente() - _pagoService.CalcularTotalIngresos(),
-            TotalClientes = _clienteService.ObtenerTodos().Count,
-            TotalFacturas = _facturaService.ObtenerTodas().Count,
-            TotalPagos = _pagoService.ObtenerTodos().Count
+            PagosPendientes = pagosPendientes,
+            PagosRealizados = pagosRealizados,
+            IngresoTotal = pagosRealizados,
+            IngresoFaltante = pagosPendientes - pagosRealizados,
+            TotalClientes = totalClientes,
+            TotalFacturas = totalFacturas,
+            TotalPagos = totalPagos
         };
 
         return View(viewModel);

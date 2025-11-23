@@ -158,15 +158,7 @@ public class ClientesController : Controller
         }
 
         // Manejar el checkbox Activo
-        // Cuando el checkbox está marcado, se envía "true" (y también el hidden "false")
-        // Cuando no está marcado, solo se envía el hidden input con "false"
-        // Request.Form["Activo"] es una StringValues que puede contener múltiples valores
-        // Si contiene "true", el checkbox está marcado; si solo contiene "false", no está marcado
-        var activoFormValues = Request.Form["Activo"];
-        // Verificar si el checkbox está marcado (contiene "true")
-        // Si solo contiene "false", significa que el checkbox no está marcado
-        bool activo = activoFormValues.Count > 0 && activoFormValues.Any(v => v == "true");
-        cliente.Activo = activo;
+        cliente.Activo = FormHelper.GetCheckboxValue(Request.Form, "Activo");
 
         // Validaciones
         if (string.IsNullOrWhiteSpace(cliente.Codigo))

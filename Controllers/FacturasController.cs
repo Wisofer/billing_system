@@ -106,8 +106,7 @@ public class FacturasController : Controller
     [HttpGet("/facturas/crear")]
     public IActionResult Crear()
     {
-        ViewBag.Clientes = _clienteService.ObtenerTodos().Where(c => c.Activo).ToList();
-        ViewBag.Servicios = _servicioService.ObtenerActivos();
+        ControllerHelper.SetClientesYServicios(ViewBag, _clienteService, _servicioService);
         return View();
     }
 
@@ -162,8 +161,7 @@ public class FacturasController : Controller
 
         if (!ModelState.IsValid)
         {
-            ViewBag.Clientes = _clienteService.ObtenerTodos().Where(c => c.Activo).ToList();
-            ViewBag.Servicios = _servicioService.ObtenerActivos();
+            ControllerHelper.SetClientesYServicios(ViewBag, _clienteService, _servicioService);
             return View(factura);
         }
 
@@ -176,8 +174,7 @@ public class FacturasController : Controller
         catch (Exception ex)
         {
             TempData["Error"] = $"Error al crear factura: {ex.Message}";
-            ViewBag.Clientes = _clienteService.ObtenerTodos().Where(c => c.Activo).ToList();
-            ViewBag.Servicios = _servicioService.ObtenerActivos();
+            ControllerHelper.SetClientesYServicios(ViewBag, _clienteService, _servicioService);
             return View(factura);
         }
     }
@@ -186,7 +183,6 @@ public class FacturasController : Controller
     [HttpPost("/facturas/generar-automaticas")]
     public IActionResult GenerarAutomaticas()
     {
-
         try
         {
             _facturaService.GenerarFacturasAutomaticas();
@@ -228,13 +224,13 @@ public class FacturasController : Controller
             return Redirect("/facturas");
         }
 
-        ViewBag.Clientes = _clienteService.ObtenerTodos().Where(c => c.Activo).ToList();
-        ViewBag.Servicios = _servicioService.ObtenerActivos();
+        ControllerHelper.SetClientesYServicios(ViewBag, _clienteService, _servicioService);
         return View(factura);
     }
 
     [Authorize(Policy = "Administrador")]
     [HttpPost("/facturas/editar/{id}")]
+    [ValidateAntiForgeryToken]
     public IActionResult Editar(int id, [FromForm] string Estado, [FromForm] string? ArchivoPDF)
     {
         var factura = _facturaService.ObtenerPorId(id);
@@ -253,8 +249,7 @@ public class FacturasController : Controller
 
         if (!ModelState.IsValid)
         {
-            ViewBag.Clientes = _clienteService.ObtenerTodos().Where(c => c.Activo).ToList();
-            ViewBag.Servicios = _servicioService.ObtenerActivos();
+            ControllerHelper.SetClientesYServicios(ViewBag, _clienteService, _servicioService);
             return View(factura);
         }
 
@@ -303,8 +298,7 @@ public class FacturasController : Controller
         catch (Exception ex)
         {
             TempData["Error"] = $"Error al actualizar factura: {ex.Message}";
-            ViewBag.Clientes = _clienteService.ObtenerTodos().Where(c => c.Activo).ToList();
-            ViewBag.Servicios = _servicioService.ObtenerActivos();
+            ControllerHelper.SetClientesYServicios(ViewBag, _clienteService, _servicioService);
             return View(factura);
         }
     }

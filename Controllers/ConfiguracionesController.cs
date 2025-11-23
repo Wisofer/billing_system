@@ -41,7 +41,6 @@ public class ConfiguracionesController : Controller
     public IActionResult CrearUsuario([FromForm] string nombreUsuario, [FromForm] string contrasena, 
         [FromForm] string nombreCompleto, [FromForm] string rol, [FromForm] bool activo)
     {
-
         if (string.IsNullOrWhiteSpace(nombreUsuario) || string.IsNullOrWhiteSpace(contrasena))
         {
             return Json(new { success = false, message = "El nombre de usuario y la contraseña son requeridos." });
@@ -74,7 +73,6 @@ public class ConfiguracionesController : Controller
         [FromForm] string? contrasena, [FromForm] string nombreCompleto, 
         [FromForm] string rol, [FromForm] bool activo)
     {
-
         var usuario = _usuarioService.ObtenerPorId(id);
         if (usuario == null)
         {

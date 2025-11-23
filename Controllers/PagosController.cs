@@ -48,11 +48,12 @@ public class PagosController : Controller
 
         var pagosLista = pagos.ToList();
 
-        // Estadísticas
-        var totalPagos = _pagoService.ObtenerTodos().Count;
+        // Estadísticas (optimizado: calcular una sola vez)
+        var todosPagos = _pagoService.ObtenerTodos();
+        var totalPagos = todosPagos.Count;
         var montoTotal = _pagoService.CalcularTotalIngresos();
-        var pagosFisicos = _pagoService.ObtenerTodos().Count(p => p.TipoPago == SD.TipoPagoFisico);
-        var pagosElectronicos = _pagoService.ObtenerTodos().Count(p => p.TipoPago == SD.TipoPagoElectronico);
+        var pagosFisicos = todosPagos.Count(p => p.TipoPago == SD.TipoPagoFisico);
+        var pagosElectronicos = todosPagos.Count(p => p.TipoPago == SD.TipoPagoElectronico);
 
         ViewBag.TotalPagos = totalPagos;
         ViewBag.MontoTotal = montoTotal;
@@ -70,7 +71,6 @@ public class PagosController : Controller
     [HttpGet("/pagos/crear")]
     public IActionResult Crear(string? clienteBusqueda)
     {
-
         ViewBag.ClienteBusqueda = clienteBusqueda;
         ViewBag.Clientes = string.IsNullOrWhiteSpace(clienteBusqueda)
             ? new List<Cliente>()
