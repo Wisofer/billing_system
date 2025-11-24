@@ -356,6 +356,7 @@ public class ClienteService : IClienteService
                 {
                     ClienteId = clienteId,
                     ServicioId = servicioId,
+                    Cantidad = 1, // Por defecto 1
                     Activo = true,
                     FechaInicio = DateTime.Now,
                     FechaCreacion = DateTime.Now
@@ -377,6 +378,72 @@ public class ClienteService : IClienteService
         else
         {
             cliente.ServicioId = null;
+        }
+
+        _context.SaveChanges();
+    }
+
+    public void AsignarServiciosConCantidad(int clienteId, Dictionary<int, int> serviciosConCantidad)
+    {
+        if (serviciosConCantidad == null || !serviciosConCantidad.Any())
+            return;
+
+        var cliente = ObtenerPorId(clienteId);
+        if (cliente == null)
+            throw new Exception("Cliente no encontrado");
+
+        // Obtener servicios actuales activos del cliente
+        var serviciosActuales = _context.ClienteServicios
+            .Where(cs => cs.ClienteId == clienteId && cs.Activo)
+            .ToList();
+
+        var servicioIds = serviciosConCantidad.Keys.ToList();
+
+        // Desactivar servicios que ya no están en la lista
+        var serviciosADesactivar = serviciosActuales
+            .Where(cs => !servicioIds.Contains(cs.ServicioId))
+            .ToList();
+
+        foreach (var clienteServicio in serviciosADesactivar)
+        {
+            clienteServicio.Activo = false;
+            clienteServicio.FechaFin = DateTime.Now;
+        }
+
+        // Activar o crear servicios nuevos con cantidad
+        foreach (var kvp in serviciosConCantidad)
+        {
+            var servicioId = kvp.Key;
+            var cantidad = kvp.Value > 0 ? kvp.Value : 1; // Mínimo 1
+
+            var clienteServicioExistente = serviciosActuales
+                .FirstOrDefault(cs => cs.ServicioId == servicioId);
+
+            if (clienteServicioExistente != null)
+            {
+                // Si existe, actualizar cantidad y reactivar si está desactivado
+                clienteServicioExistente.Cantidad = cantidad;
+                if (!clienteServicioExistente.Activo)
+                {
+                    clienteServicioExistente.Activo = true;
+                    clienteServicioExistente.FechaInicio = DateTime.Now;
+                    clienteServicioExistente.FechaFin = null;
+                }
+            }
+            else
+            {
+                // Crear nuevo ClienteServicio con cantidad
+                var nuevoClienteServicio = new ClienteServicio
+                {
+                    ClienteId = clienteId,
+                    ServicioId = servicioId,
+                    Cantidad = cantidad,
+                    Activo = true,
+                    FechaInicio = DateTime.Now,
+                    FechaCreacion = DateTime.Now
+                };
+                _context.ClienteServicios.Add(nuevoClienteServicio);
+            }
         }
 
         _context.SaveChanges();

@@ -3,6 +3,8 @@ using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using billing_system.Models.Entities;
 using billing_system.Utils;
+using billing_system.Data;
+using Microsoft.EntityFrameworkCore;
 using System.IO;
 
 namespace billing_system.Services;
@@ -10,15 +12,244 @@ namespace billing_system.Services;
 public class PdfService : IPdfService
 {
     private readonly IWebHostEnvironment? _environment;
+    private readonly ApplicationDbContext? _context;
 
-    public PdfService(IWebHostEnvironment? environment = null)
+    public PdfService(IWebHostEnvironment? environment = null, ApplicationDbContext? context = null)
     {
         QuestPDF.Settings.License = LicenseType.Community;
         _environment = environment;
+        _context = context;
+    }
+
+    /// <summary>
+    /// Genera un PDF simplificado para facturas de Streaming (sin proporcional, sin multa)
+    /// </summary>
+    public byte[] GenerarPdfFacturaStreaming(Factura factura)
+    {
+        var fechaEmision = DateTime.Now;
+        var mesFacturado = factura.MesFacturacion.ToString("MMM/yyyy").ToUpper();
+        
+        // Cargar logo si existe
+        byte[]? logoBytes = null;
+        if (_environment != null)
+        {
+            var logoPath = Path.Combine(_environment.WebRootPath, "images", "logo.png");
+            if (File.Exists(logoPath))
+            {
+                logoBytes = File.ReadAllBytes(logoPath);
+            }
+        }
+        
+        var documento = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(1.5f, Unit.Centimetre);
+                page.PageColor(Colors.White);
+                page.DefaultTextStyle(x => x.FontSize(9));
+
+                // Header simplificado
+                page.Header()
+                    .Column(column =>
+                    {
+                        column.Item().Row(row =>
+                        {
+                            // Logo (si existe)
+                            if (logoBytes != null)
+                            {
+                                row.ConstantItem(80).Height(60).AlignLeft().AlignMiddle()
+                                    .Image(logoBytes).FitArea();
+                            }
+                            else
+                            {
+                                row.ConstantItem(80);
+                            }
+                            
+                            // Información de la Empresa
+                            row.RelativeItem().PaddingLeft(10).Column(empresaColumn =>
+                            {
+                                empresaColumn.Item().Text("Servicios de Streaming").FontSize(16).Bold().FontColor(Colors.Purple.Darken3);
+                                empresaColumn.Item().Text("Sistema de Facturación").FontSize(9).FontColor(Colors.Grey.Darken2);
+                                empresaColumn.Item().Text("Nicaragua").FontSize(8).FontColor(Colors.Grey.Medium);
+                                empresaColumn.Item().Text("Correo: atencion.al.cliente@emsinetsolut.com").FontSize(8).FontColor(Colors.Grey.Medium);
+                                empresaColumn.Item().Text("Teléfonos: 89308058 / 82771485").FontSize(8).FontColor(Colors.Grey.Medium);
+                            });
+                        });
+
+                        column.Item().PaddingTop(10).Row(row =>
+                        {
+                            // Número de Factura destacado - Formato F-0001-STR
+                            row.RelativeItem().Column(facturaColumn =>
+                            {
+                                // Extraer el número del formato "0001-Nombre-MMYYYY-STR" y mostrar como "F-0001-STR"
+                                var numeroFactura = "F-0001-STR";
+                                var partes = factura.Numero.Split('-');
+                                if (partes.Length > 0 && int.TryParse(partes[0], out var num))
+                                {
+                                    numeroFactura = $"F-{num:D4}-STR";
+                                }
+                                facturaColumn.Item().Text(numeroFactura).FontSize(14).Bold().FontColor(Colors.Purple.Darken3);
+                            });
+
+                            // Estado
+                            row.ConstantItem(100).AlignRight().Column(estadoColumn =>
+                            {
+                                estadoColumn.Item().Text("Estado:").FontSize(9).FontColor(Colors.Grey.Darken2);
+                                estadoColumn.Item().PaddingTop(2).Text(factura.Estado).FontSize(11).Bold()
+                                    .FontColor(factura.Estado == "Pagada" ? Colors.Green.Darken2 : 
+                                              factura.Estado == "Cancelada" ? Colors.Red.Darken2 : 
+                                              Colors.Orange.Darken2);
+                            });
+                        });
+                    });
+
+                page.Content()
+                    .PaddingVertical(0.8f, Unit.Centimetre)
+                    .Column(column =>
+                    {
+                        column.Spacing(15);
+
+                        // Información del Cliente (simplificada)
+                        column.Item().Background(Colors.Grey.Lighten4).Padding(10).Border(1).BorderColor(Colors.Grey.Lighten2)
+                            .Column(clienteColumn =>
+                            {
+                                clienteColumn.Item().Text("DATOS DEL CLIENTE").FontSize(11).Bold().FontColor(Colors.Grey.Darken3);
+                                clienteColumn.Item().PaddingTop(5).Row(clienteRow =>
+                                {
+                                    clienteRow.RelativeItem().Column(datosColumn =>
+                                    {
+                                        datosColumn.Item().Text($"Cliente: {factura.Cliente.Nombre}").FontSize(9);
+                                        if (!string.IsNullOrEmpty(factura.Cliente.Cedula))
+                                        {
+                                            datosColumn.Item().Text($"Cédula: {factura.Cliente.Cedula}").FontSize(9);
+                                        }
+                                        datosColumn.Item().Text($"Código: {factura.Cliente.Codigo}").FontSize(9);
+                                        datosColumn.Item().Text($"Fecha: {fechaEmision:dd/MM/yyyy}").FontSize(9);
+                                    });
+                                    clienteRow.RelativeItem().Column(contactoColumn =>
+                                    {
+                                        if (!string.IsNullOrEmpty(factura.Cliente.Telefono))
+                                        {
+                                            contactoColumn.Item().Text($"Teléfono: {factura.Cliente.Telefono}").FontSize(9);
+                                        }
+                                        if (!string.IsNullOrEmpty(factura.Cliente.Email))
+                                        {
+                                            contactoColumn.Item().Text($"E-mail: {factura.Cliente.Email}").FontSize(9);
+                                        }
+                                        contactoColumn.Item().Text($"Mes facturado: {mesFacturado}").FontSize(9);
+                                    });
+                                });
+                            });
+
+                        // Descripción del Servicio Consumido (simplificada)
+                        column.Item().Column(servicioColumn =>
+                        {
+                            servicioColumn.Item().Text("Descripción del servicio consumido").FontSize(11).Bold().FontColor(Colors.Grey.Darken3);
+                            servicioColumn.Item().PaddingTop(5).Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.RelativeColumn(3);
+                                    columns.ConstantColumn(120);
+                                });
+
+                                // Header de la tabla
+                                table.Header(header =>
+                                {
+                                    header.Cell().Element(HeaderCellStyle).Text("Descripción del servicio consumido").FontSize(10).Bold();
+                                    header.Cell().Element(HeaderCellStyle).AlignRight().Text("Monto C$").FontSize(10).Bold();
+                                });
+
+                                // Mostrar servicios
+                                if (factura.FacturaServicios != null && factura.FacturaServicios.Any())
+                                {
+                                    foreach (var facturaServicio in factura.FacturaServicios)
+                                    {
+                                        var servicio = facturaServicio.Servicio;
+                                        
+                                        // Si tiene múltiples suscripciones, mostrar cada una
+                                        if (facturaServicio.Cantidad > 1)
+                                        {
+                                            var precioUnitario = servicio.Precio;
+                                            for (int i = 1; i <= facturaServicio.Cantidad; i++)
+                                            {
+                                                table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
+                                                {
+                                                    servicioInfoColumn.Item().Text($"{servicio.Nombre} - Suscripción {i}").FontSize(9);
+                                                    if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
+                                                    {
+                                                        servicioInfoColumn.Item().PaddingTop(2).Text(servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                                    }
+                                                });
+                                                table.Cell().Element(BodyCellStyle).AlignRight().Text($"{precioUnitario:N2}").FontSize(9);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
+                                            {
+                                                servicioInfoColumn.Item().Text(servicio.Nombre).FontSize(9);
+                                                if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
+                                                {
+                                                    servicioInfoColumn.Item().PaddingTop(2).Text(servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                                }
+                                            });
+                                            table.Cell().Element(BodyCellStyle).AlignRight().Text($"{servicio.Precio:N2}").FontSize(9);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    // Fallback: mostrar servicio principal
+                                    table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
+                                    {
+                                        servicioInfoColumn.Item().Text(factura.Servicio.Nombre).FontSize(9);
+                                        if (!string.IsNullOrWhiteSpace(factura.Servicio.Descripcion))
+                                        {
+                                            servicioInfoColumn.Item().PaddingTop(2).Text(factura.Servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                        }
+                                    });
+                                    table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Servicio.Precio:N2}").FontSize(9);
+                                }
+
+                                // Sub-total (sin proporcional para Streaming)
+                                table.Cell().Element(BodyCellStyle).Text("Sub-total C$").FontSize(9);
+                                table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+
+                                // IVA
+                                table.Cell().Element(BodyCellStyle).Text("I.V.A. C$").FontSize(9);
+                                table.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+
+                                // Total
+                                table.Cell().Element(TotalCellStyle).Text("Total C$").FontSize(11).Bold();
+                                table.Cell().Element(TotalCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(11).Bold();
+                            });
+                        });
+                    });
+
+                page.Footer()
+                    .AlignCenter()
+                    .PaddingTop(10)
+                    .Text(x =>
+                    {
+                        x.Span("Sistema de Facturación Servicios de Streaming - ").FontSize(7).FontColor(Colors.Grey.Medium);
+                        x.Span($"Generado el {DateTime.Now:dd/MM/yyyy HH:mm}").FontSize(7).FontColor(Colors.Grey.Medium);
+                    });
+            });
+        });
+
+        return documento.GeneratePdf();
     }
 
     public byte[] GenerarPdfFactura(Factura factura)
     {
+        // Si es Streaming, usar el método específico
+        if (factura.Categoria == SD.CategoriaStreaming)
+        {
+            return GenerarPdfFacturaStreaming(factura);
+        }
+        
         // Fecha de emisión: siempre día 04 del mes de facturación
         var fechaEmision = new DateTime(factura.MesFacturacion.Year, factura.MesFacturacion.Month, 4);
         // Fecha de vencimiento: siempre día 06 del mes de facturación
@@ -166,20 +397,88 @@ public class PdfService : IPdfService
                                     header.Cell().Element(HeaderCellStyle).AlignRight().Text("Monto C$").FontSize(10).Bold();
                                 });
 
-                                // Servicio con descripción
-                                table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
+                                // Calcular subtotal sin proporcional para mostrar descuento si aplica
+                                decimal subtotalSinProporcional = 0;
+                                
+                                // Si la factura tiene FacturaServicios (múltiples servicios), mostrar todos
+                                if (factura.FacturaServicios != null && factura.FacturaServicios.Any())
                                 {
-                                    servicioInfoColumn.Item().Text(factura.Servicio.Nombre).FontSize(9);
-                                    if (!string.IsNullOrWhiteSpace(factura.Servicio.Descripcion))
+                                    foreach (var facturaServicio in factura.FacturaServicios)
                                     {
-                                        servicioInfoColumn.Item().PaddingTop(2).Text(factura.Servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                        var servicio = facturaServicio.Servicio;
+                                        
+                                        // Si es Streaming y tiene múltiples suscripciones, mostrar cada una
+                                        if (servicio.Categoria == SD.CategoriaStreaming && facturaServicio.Cantidad > 1)
+                                        {
+                                            // Mostrar el precio completo del servicio por cada suscripción
+                                            var precioUnitario = servicio.Precio;
+                                            subtotalSinProporcional += precioUnitario * facturaServicio.Cantidad;
+                                            
+                                            for (int i = 1; i <= facturaServicio.Cantidad; i++)
+                                            {
+                                                table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
+                                                {
+                                                    servicioInfoColumn.Item().Text($"{servicio.Nombre} - Suscripción {i}").FontSize(9);
+                                                    if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
+                                                    {
+                                                        servicioInfoColumn.Item().PaddingTop(2).Text(servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                                    }
+                                                });
+                                                table.Cell().Element(BodyCellStyle).AlignRight().Text($"{precioUnitario:N2}").FontSize(9);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // Servicio único o Internet - mostrar precio completo
+                                            var precioCompleto = servicio.Precio;
+                                            subtotalSinProporcional += precioCompleto;
+                                            
+                                            table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
+                                            {
+                                                servicioInfoColumn.Item().Text(servicio.Nombre).FontSize(9);
+                                                if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
+                                                {
+                                                    servicioInfoColumn.Item().PaddingTop(2).Text(servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                                }
+                                            });
+                                            table.Cell().Element(BodyCellStyle).AlignRight().Text($"{precioCompleto:N2}").FontSize(9);
+                                        }
                                     }
-                                });
-                                table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+                                }
+                                else
+                                {
+                                    // Fallback: mostrar servicio principal (compatibilidad con facturas antiguas)
+                                    subtotalSinProporcional = factura.Servicio.Precio;
+                                    table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
+                                    {
+                                        servicioInfoColumn.Item().Text(factura.Servicio.Nombre).FontSize(9);
+                                        if (!string.IsNullOrWhiteSpace(factura.Servicio.Descripcion))
+                                        {
+                                            servicioInfoColumn.Item().PaddingTop(2).Text(factura.Servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                        }
+                                    });
+                                    table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Servicio.Precio:N2}").FontSize(9);
+                                }
 
-                                // Sub-total
-                                table.Cell().Element(BodyCellStyle).Text("Sub-total C$").FontSize(9);
-                                table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+                                // Sub-total (sin proporcional si aplica)
+                                if (subtotalSinProporcional > 0 && Math.Abs(subtotalSinProporcional - factura.Monto) > 0.01m)
+                                {
+                                    table.Cell().Element(BodyCellStyle).Text("Sub-total C$").FontSize(9);
+                                    table.Cell().Element(BodyCellStyle).AlignRight().Text($"{subtotalSinProporcional:N2}").FontSize(9);
+                                    
+                                    // Descuento proporcional
+                                    var descuentoProporcional = subtotalSinProporcional - factura.Monto;
+                                    if (descuentoProporcional > 0)
+                                    {
+                                        table.Cell().Element(BodyCellStyle).Text("Descuento proporcional C$").FontSize(9).FontColor(Colors.Red.Darken1);
+                                        table.Cell().Element(BodyCellStyle).AlignRight().Text($"-{descuentoProporcional:N2}").FontSize(9).FontColor(Colors.Red.Darken1);
+                                    }
+                                }
+                                else
+                                {
+                                    table.Cell().Element(BodyCellStyle).Text("Sub-total C$").FontSize(9);
+                                    table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+                                }
 
                                 // IVA
                                 table.Cell().Element(BodyCellStyle).Text("I.V.A. C$").FontSize(9);

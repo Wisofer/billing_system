@@ -126,7 +126,8 @@ public class FacturasController : Controller
                 id = cs.ServicioId, 
                 nombre = cs.Servicio!.Nombre,
                 precio = cs.Servicio.Precio,
-                categoria = cs.Servicio.Categoria
+                categoria = cs.Servicio.Categoria,
+                cantidad = cs.Cantidad // Incluir la cantidad de suscripciones
             })
             .ToList();
 
@@ -140,7 +141,8 @@ public class FacturasController : Controller
                     id = servicio.Id, 
                     nombre = servicio.Nombre,
                     precio = servicio.Precio,
-                    categoria = servicio.Categoria
+                    categoria = servicio.Categoria,
+                    cantidad = 1 // Default para compatibilidad
                 });
             }
         }
@@ -193,46 +195,19 @@ public class FacturasController : Controller
 
         try
         {
-            int facturasCreadas = 0;
-            var errores = new List<string>();
+            // Crear facturas agrupadas por categoría
+            var facturasCreadas = _facturaService.CrearFacturasAgrupadasPorCategoria(ClienteId, servicioIds, mesFecha);
 
-            // Crear una factura por cada servicio seleccionado
-            foreach (var servicioId in servicioIds)
+            if (facturasCreadas.Any())
             {
-                try
-                {
-                    var factura = new Factura
-                    {
-                        ClienteId = ClienteId,
-                        ServicioId = servicioId,
-                        MesFacturacion = mesFecha
-                    };
-                    
-                    _facturaService.Crear(factura);
-                    facturasCreadas++;
-                }
-                catch (Exception ex)
-                {
-                    errores.Add($"Error al crear factura para servicio {servicioId}: {ex.Message}");
-                }
-            }
-
-            if (facturasCreadas > 0)
-            {
-                if (facturasCreadas == servicioIds.Count)
-                {
-                    TempData["Success"] = $"{facturasCreadas} factura(s) creada(s) exitosamente.";
-                }
-                else
-                {
-                    TempData["Warning"] = $"Se crearon {facturasCreadas} de {servicioIds.Count} factura(s). " + string.Join(" ", errores);
-                }
+                var categorias = facturasCreadas.Select(f => f.Categoria).Distinct().ToList();
+                TempData["Success"] = $"{facturasCreadas.Count} factura(s) creada(s) exitosamente " +
+                    $"(Internet: {categorias.Count(c => c == SD.CategoriaInternet)}, " +
+                    $"Streaming: {categorias.Count(c => c == SD.CategoriaStreaming)}).";
             }
             else
             {
-                TempData["Error"] = "No se pudo crear ninguna factura. " + string.Join(" ", errores);
-                ControllerHelper.SetClientesYServicios(ViewBag, _clienteService, _servicioService);
-                return View(new Factura { ClienteId = ClienteId });
+                TempData["Warning"] = "No se pudieron crear facturas. Puede que ya existan facturas para los servicios seleccionados en este mes.";
             }
 
             return Redirect("/facturas");

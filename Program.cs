@@ -71,7 +71,12 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IServicioService, ServicioService>();
 builder.Services.AddScoped<IFacturaService, FacturaService>();
 builder.Services.AddScoped<IPagoService, PagoService>();
-builder.Services.AddScoped<IPdfService, PdfService>();
+builder.Services.AddScoped<IPdfService>(sp => 
+{
+    var environment = sp.GetRequiredService<IWebHostEnvironment>();
+    var context = sp.GetRequiredService<ApplicationDbContext>();
+    return new PdfService(environment, context);
+});
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
 var app = builder.Build();

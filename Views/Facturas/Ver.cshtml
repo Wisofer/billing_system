@@ -80,7 +80,13 @@
                         }
                         else if (Model.Servicio.Categoria == "Streaming")
                         {
+                            var clienteServicio = Model.Cliente?.ClienteServicios?.FirstOrDefault(cs => cs.ServicioId == Model.ServicioId && cs.Activo);
+                            var cantidad = clienteServicio?.Cantidad ?? 1;
                             <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Streaming</span>
+                            @if (cantidad > 1)
+                            {
+                                <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">(@cantidad suscripciones)</span>
+                            }
                         }
                     </div>
                     @if (!string.IsNullOrWhiteSpace(Model.Servicio.Descripcion))

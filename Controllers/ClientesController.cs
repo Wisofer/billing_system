@@ -60,7 +60,7 @@ public class ClientesController : Controller
 
     [Authorize(Policy = "Administrador")]
     [HttpPost("/clientes/crear")]
-    public IActionResult Crear([FromBody] Cliente cliente)
+    public IActionResult Crear([FromForm] Cliente cliente)
     {
         // Validaciones básicas
         if (string.IsNullOrWhiteSpace(cliente.Nombre))
@@ -116,21 +116,48 @@ public class ClientesController : Controller
                     .Where(id => int.TryParse(id.ToString(), out _))
                     .Select(id => int.Parse(id.ToString()))
                     .ToList();
-            }
-            // Si no hay en FormData, intentar desde JSON body
-            else if (Request.ContentType?.Contains("application/json") == true)
-            {
-                // Para JSON, se manejaría diferente, pero por ahora usamos FormData
+                
+                // Procesar todos los servicios (Internet y Streaming)
+                var serviciosConCantidad = new Dictionary<int, int>();
+                
+                foreach (var servicioId in servicioIds)
+                {
+                    var servicio = _servicioService.ObtenerPorId(servicioId);
+                    if (servicio == null) continue;
+                    
+                    // Si es Streaming, obtener cantidad del formulario o usar default
+                    if (servicio.Categoria == SD.CategoriaStreaming)
+                    {
+                        var cantidadKey = $"Cantidad_{servicioId}";
+                        int cantidad = 1;
+                        
+                        if (Request.Form.ContainsKey(cantidadKey))
+                        {
+                            if (int.TryParse(Request.Form[cantidadKey].ToString(), out int cant) && cant > 0)
+                            {
+                                cantidad = cant;
+                            }
+                        }
+                        
+                        serviciosConCantidad[servicioId] = cantidad;
+                    }
+                    else
+                    {
+                        // Para Internet, cantidad siempre es 1
+                        serviciosConCantidad[servicioId] = 1;
+                    }
+                }
+                
+                // Usar AsignarServiciosConCantidad para todos los servicios
+                if (serviciosConCantidad.Any())
+                {
+                    _clienteService.AsignarServiciosConCantidad(clienteCreado.Id, serviciosConCantidad);
+                }
             }
             
-            if (servicioIds.Any())
-            {
-                _clienteService.AsignarServicios(clienteCreado.Id, servicioIds);
-            }
-            
-            // Siempre devolver JSON para peticiones AJAX
-            var contentType = Request.Headers["Content-Type"].ToString();
-            if (contentType.Contains("application/json") || Request.Headers["Accept"].ToString().Contains("application/json"))
+            // Siempre devolver JSON para peticiones AJAX (verificar Accept header)
+            var acceptHeader = Request.Headers["Accept"].ToString();
+            if (acceptHeader.Contains("application/json"))
             {
                 return Json(new { success = true, message = "Cliente creado exitosamente." });
             }
@@ -140,8 +167,8 @@ public class ClientesController : Controller
         }
         catch (Exception ex)
         {
-            var contentType = Request.Headers["Content-Type"].ToString();
-            if (contentType.Contains("application/json") || Request.Headers["Accept"].ToString().Contains("application/json"))
+            var acceptHeader = Request.Headers["Accept"].ToString();
+            if (acceptHeader.Contains("application/json"))
             {
                 return Json(new { success = false, message = $"Error al crear cliente: {ex.Message}" });
             }
@@ -243,9 +270,46 @@ public class ClientesController : Controller
                     .Where(id => int.TryParse(id.ToString(), out _))
                     .Select(id => int.Parse(id.ToString()))
                     .ToList();
+                
+                // Verificar si hay servicios de Streaming (que requieren cantidad)
+                var serviciosConCantidad = new Dictionary<int, int>();
+                bool tieneServiciosStreaming = false;
+                
+                foreach (var servicioId in servicioIds)
+                {
+                    var servicio = _servicioService.ObtenerPorId(servicioId);
+                    if (servicio == null) continue;
+                    
+                    // Si es Streaming, obtener cantidad del formulario o usar default
+                    if (servicio.Categoria == SD.CategoriaStreaming)
+                    {
+                        tieneServiciosStreaming = true;
+                        var cantidadKey = $"Cantidad_{servicioId}";
+                        int cantidad = 1;
+                        
+                        if (Request.Form.ContainsKey(cantidadKey))
+                        {
+                            if (int.TryParse(Request.Form[cantidadKey].ToString(), out int cant) && cant > 0)
+                            {
+                                cantidad = cant;
+                            }
+                        }
+                        
+                        serviciosConCantidad[servicioId] = cantidad;
+                    }
+                    else
+                    {
+                        // Para Internet, cantidad siempre es 1
+                        serviciosConCantidad[servicioId] = 1;
+                    }
+                }
+                
+                // Usar AsignarServiciosConCantidad si hay servicios (todos se manejan igual ahora)
+                if (serviciosConCantidad.Any())
+                {
+                    _clienteService.AsignarServiciosConCantidad(id, serviciosConCantidad);
+                }
             }
-            
-            _clienteService.AsignarServicios(id, servicioIds);
             
             TempData["Success"] = "Cliente actualizado exitosamente.";
             return Redirect("/clientes");

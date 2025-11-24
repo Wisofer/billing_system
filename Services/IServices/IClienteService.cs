@@ -26,6 +26,7 @@ public interface IClienteService
     List<ClienteServicio> ObtenerServiciosActivos(int clienteId);
     List<ClienteServicio> ObtenerServicios(int clienteId);
     void AsignarServicios(int clienteId, List<int> servicioIds);
+    void AsignarServiciosConCantidad(int clienteId, Dictionary<int, int> serviciosConCantidad);
     void ActivarServicio(int clienteId, int servicioId);
     void DesactivarServicio(int clienteId, int servicioId);
     bool TieneServicioActivo(int clienteId, int servicioId);

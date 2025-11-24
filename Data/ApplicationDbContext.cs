@@ -13,6 +13,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Cliente> Clientes { get; set; }
     public DbSet<Servicio> Servicios { get; set; }
     public DbSet<Factura> Facturas { get; set; }
+    public DbSet<FacturaServicio> FacturaServicios { get; set; }
     public DbSet<Pago> Pagos { get; set; }
     public DbSet<Usuario> Usuarios { get; set; }
     public DbSet<ClienteServicio> ClienteServicios { get; set; }
@@ -57,6 +58,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Numero).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Monto).HasColumnType("decimal(18,2)");
             entity.Property(e => e.Estado).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Categoria).IsRequired().HasMaxLength(50).HasDefaultValue("Internet");
             entity.Property(e => e.ArchivoPDF).HasMaxLength(500);
             
             entity.HasOne(e => e.Cliente)
@@ -66,6 +68,24 @@ public class ApplicationDbContext : DbContext
             
             entity.HasOne(e => e.Servicio)
                 .WithMany(s => s.Facturas)
+                .HasForeignKey(e => e.ServicioId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configuración de FacturaServicio
+        modelBuilder.Entity<FacturaServicio>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Monto).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Cantidad).IsRequired().HasDefaultValue(1);
+            
+            entity.HasOne(e => e.Factura)
+                .WithMany(f => f.FacturaServicios)
+                .HasForeignKey(e => e.FacturaId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.Servicio)
+                .WithMany()
                 .HasForeignKey(e => e.ServicioId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
@@ -105,6 +125,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ClienteServicio>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Cantidad).IsRequired().HasDefaultValue(1);
             
             entity.HasOne(e => e.Cliente)
                 .WithMany(c => c.ClienteServicios)

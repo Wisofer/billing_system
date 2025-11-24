@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using billing_system.Data;
 
@@ -11,9 +12,11 @@ using billing_system.Data;
 namespace billing_system.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251124222329_AgregarCantidadAClienteServicio")]
+    partial class AgregarCantidadAClienteServicio
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,13 +131,6 @@ namespace billing_system.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
-                    b.Property<string>("Categoria")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
-                        .HasDefaultValue("Internet");
-
                     b.Property<int>("ClienteId")
                         .HasColumnType("int");
 
@@ -167,37 +163,6 @@ namespace billing_system.Migrations
                     b.HasIndex("ServicioId");
 
                     b.ToTable("Facturas");
-                });
-
-            modelBuilder.Entity("billing_system.Models.Entities.FacturaServicio", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Cantidad")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
-
-                    b.Property<int>("FacturaId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Monto")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("ServicioId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FacturaId");
-
-                    b.HasIndex("ServicioId");
-
-                    b.ToTable("FacturaServicios");
                 });
 
             modelBuilder.Entity("billing_system.Models.Entities.Pago", b =>
@@ -385,25 +350,6 @@ namespace billing_system.Migrations
                     b.Navigation("Servicio");
                 });
 
-            modelBuilder.Entity("billing_system.Models.Entities.FacturaServicio", b =>
-                {
-                    b.HasOne("billing_system.Models.Entities.Factura", "Factura")
-                        .WithMany("FacturaServicios")
-                        .HasForeignKey("FacturaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("billing_system.Models.Entities.Servicio", "Servicio")
-                        .WithMany()
-                        .HasForeignKey("ServicioId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Factura");
-
-                    b.Navigation("Servicio");
-                });
-
             modelBuilder.Entity("billing_system.Models.Entities.Pago", b =>
                 {
                     b.HasOne("billing_system.Models.Entities.Cliente", null)
@@ -430,8 +376,6 @@ namespace billing_system.Migrations
 
             modelBuilder.Entity("billing_system.Models.Entities.Factura", b =>
                 {
-                    b.Navigation("FacturaServicios");
-
                     b.Navigation("Pagos");
                 });
 

@@ -32,7 +32,10 @@ public class FacturaService : IFacturaService
     {
         return _context.Facturas
             .Include(f => f.Cliente)
+                .ThenInclude(c => c.ClienteServicios)
             .Include(f => f.Servicio)
+            .Include(f => f.FacturaServicios)
+                .ThenInclude(fs => fs.Servicio)
             .FirstOrDefault(f => f.Id == id);
     }
 
@@ -66,14 +69,16 @@ public class FacturaService : IFacturaService
             .ToList();
     }
 
-    public string GenerarNumeroFactura(Cliente cliente, DateTime mes)
+    public string GenerarNumeroFactura(Cliente cliente, DateTime mes, string? categoria = null)
     {
         var mesStr = mes.ToString("MM");
         var añoStr = mes.ToString("yyyy");
         
-        // Obtener el último número de factura para este mes y año
+        // Obtener el último número de factura para este mes y año de la misma categoría
         var ultimoNumero = _context.Facturas
-            .Where(f => f.MesFacturacion.Year == mes.Year && f.MesFacturacion.Month == mes.Month)
+            .Where(f => f.MesFacturacion.Year == mes.Year && 
+                       f.MesFacturacion.Month == mes.Month &&
+                       (categoria == null || f.Categoria == categoria))
             .OrderByDescending(f => f.Id)
             .Select(f => f.Numero)
             .FirstOrDefault();
@@ -81,7 +86,7 @@ public class FacturaService : IFacturaService
         int numero = 1;
         if (!string.IsNullOrEmpty(ultimoNumero))
         {
-            // Extraer el número del formato "XXXX-Nombre-MMYYYY"
+            // Extraer el número del formato "XXXX-Nombre-MMYYYY" o "XXXX-Nombre-MMYYYY-STR"
             var partes = ultimoNumero.Split('-');
             if (partes.Length > 0 && int.TryParse(partes[0], out var num))
             {
@@ -90,7 +95,8 @@ public class FacturaService : IFacturaService
         }
         
         var nombreCliente = cliente.Nombre.Replace(" ", "").Substring(0, Math.Min(10, cliente.Nombre.Length));
-        return $"{numero:D4}-{nombreCliente}-{mesStr}{añoStr}";
+        var sufijo = categoria == SD.CategoriaStreaming ? "-STR" : "";
+        return $"{numero:D4}-{nombreCliente}-{mesStr}{añoStr}{sufijo}";
     }
 
     /// <summary>
@@ -166,9 +172,23 @@ public class FacturaService : IFacturaService
         if (servicio == null)
             throw new Exception("Servicio no encontrado");
 
-        factura.Numero = GenerarNumeroFactura(cliente, factura.MesFacturacion);
-        // Calcular monto aplicando lógica proporcional si es necesario
-        factura.Monto = CalcularMontoProporcional(cliente, servicio, factura.MesFacturacion);
+        factura.Numero = GenerarNumeroFactura(cliente, factura.MesFacturacion, servicio.Categoria);
+        
+        // Calcular monto: Streaming sin proporcional, Internet con proporcional
+        if (servicio.Categoria == SD.CategoriaStreaming)
+        {
+            // Streaming: siempre precio completo (precio * cantidad)
+            var clienteServicio = _context.ClienteServicios
+                .FirstOrDefault(cs => cs.ClienteId == cliente.Id && cs.ServicioId == servicio.Id && cs.Activo);
+            var cantidad = clienteServicio?.Cantidad ?? 1;
+            factura.Monto = servicio.Precio * cantidad;
+        }
+        else
+        {
+            // Internet: aplicar proporcional
+            factura.Monto = CalcularMontoProporcional(cliente, servicio, factura.MesFacturacion);
+        }
+        
         factura.Estado = SD.EstadoFacturaPendiente;
         factura.FechaCreacion = DateTime.Now;
 
@@ -181,6 +201,113 @@ public class FacturaService : IFacturaService
         
         _context.SaveChanges();
         return factura;
+    }
+
+    public List<Factura> CrearFacturasAgrupadasPorCategoria(int clienteId, List<int> servicioIds, DateTime mesFacturacion)
+    {
+        var cliente = _clienteService.ObtenerPorId(clienteId);
+        if (cliente == null)
+            throw new Exception("Cliente no encontrado");
+
+        var facturasCreadas = new List<Factura>();
+
+        // Obtener servicios y agrupar por categoría
+        var serviciosConInfo = servicioIds
+            .Select(id => new
+            {
+                ServicioId = id,
+                Servicio = _servicioService.ObtenerPorId(id),
+                ClienteServicio = _context.ClienteServicios
+                    .FirstOrDefault(cs => cs.ClienteId == clienteId && cs.ServicioId == id && cs.Activo)
+            })
+            .Where(x => x.Servicio != null && x.Servicio.Activo)
+            .GroupBy(x => x.Servicio!.Categoria)
+            .ToList();
+
+        foreach (var grupoCategoria in serviciosConInfo)
+        {
+            var categoria = grupoCategoria.Key;
+            var serviciosDelGrupo = grupoCategoria.ToList();
+
+            // Verificar si ya existe factura para esta categoría en este mes
+            var existeFactura = _context.Facturas.Any(f =>
+                f.ClienteId == clienteId &&
+                f.Categoria == categoria &&
+                f.MesFacturacion.Year == mesFacturacion.Year &&
+                f.MesFacturacion.Month == mesFacturacion.Month);
+
+            if (existeFactura)
+            {
+                continue; // Ya existe factura para esta categoría
+            }
+
+            // Calcular montos y crear FacturaServicios
+            decimal montoTotal = 0;
+            var primerServicio = serviciosDelGrupo.First().Servicio!;
+            var facturaServicios = new List<FacturaServicio>();
+
+            foreach (var item in serviciosDelGrupo)
+            {
+                var servicio = item.Servicio!;
+                var clienteServicio = item.ClienteServicio;
+                int cantidad = 1;
+                
+                // Para Streaming, obtener la cantidad de suscripciones
+                if (servicio.Categoria == SD.CategoriaStreaming && clienteServicio != null)
+                {
+                    cantidad = clienteServicio.Cantidad;
+                }
+                
+                // Para Streaming: precio completo sin proporcional
+                // Para Internet: aplicar proporcional si aplica
+                decimal montoServicio;
+                
+                if (servicio.Categoria == SD.CategoriaStreaming)
+                {
+                    // Streaming: siempre precio completo (precio * cantidad)
+                    montoServicio = servicio.Precio * cantidad;
+                }
+                else
+                {
+                    // Internet: aplicar proporcional
+                    var precioTotalSinProporcional = servicio.Precio * cantidad;
+                    var fechaInicio = clienteServicio?.FechaInicio ?? cliente.FechaCreacion;
+                    var montoProporcionalUnitario = CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesFacturacion, fechaInicio);
+                    var factorProporcional = servicio.Precio > 0 ? montoProporcionalUnitario / servicio.Precio : 1;
+                    montoServicio = precioTotalSinProporcional * factorProporcional;
+                }
+
+                montoTotal += montoServicio;
+
+                // Crear FacturaServicio - guardar el monto total y la cantidad
+                facturaServicios.Add(new FacturaServicio
+                {
+                    ServicioId = servicio.Id,
+                    Cantidad = cantidad,
+                    Monto = montoServicio
+                });
+            }
+
+            // Crear la factura consolidada
+            var factura = new Factura
+            {
+                ClienteId = clienteId,
+                ServicioId = primerServicio.Id, // Servicio principal para compatibilidad
+                Categoria = categoria,
+                MesFacturacion = mesFacturacion,
+                Numero = GenerarNumeroFactura(cliente, mesFacturacion, categoria),
+                Monto = montoTotal,
+                Estado = SD.EstadoFacturaPendiente,
+                FechaCreacion = DateTime.Now,
+                FacturaServicios = facturaServicios
+            };
+
+            _context.Facturas.Add(factura);
+            facturasCreadas.Add(factura);
+        }
+
+        _context.SaveChanges();
+        return facturasCreadas;
     }
 
     public Factura Actualizar(Factura factura)
@@ -307,11 +434,12 @@ public class FacturaService : IFacturaService
         }
 
         var facturasACrear = new List<Factura>();
+        var facturaServiciosACrear = new List<FacturaServicio>();
         int contadorFacturas = 0;
 
         foreach (var cliente in clientes)
         {
-            // Obtener todos los servicios activos del cliente usando la nueva relación
+            // Obtener todos los servicios activos del cliente
             var serviciosActivos = _clienteService.ObtenerServiciosActivos(cliente.Id);
 
             if (!serviciosActivos.Any())
@@ -319,53 +447,101 @@ public class FacturaService : IFacturaService
                 continue; // Saltar clientes sin servicios activos
             }
 
-            foreach (var clienteServicio in serviciosActivos)
-            {
-                var servicio = clienteServicio.Servicio;
-                
-                // Verificar que el servicio existe y está activo
-                if (servicio == null || !servicio.Activo)
-                {
-                    continue; // Saltar si el servicio no existe o no está activo
-                }
+            // Agrupar servicios por categoría
+            var serviciosPorCategoria = serviciosActivos
+                .Where(cs => cs.Servicio != null && cs.Servicio.Activo)
+                .GroupBy(cs => cs.Servicio!.Categoria)
+                .ToList();
 
-                // Verificar si ya existe factura para este cliente y servicio en este mes
-                var existe = _context.Facturas.Any(f =>
+            foreach (var grupoCategoria in serviciosPorCategoria)
+            {
+                var categoria = grupoCategoria.Key;
+                var serviciosDelGrupo = grupoCategoria.ToList();
+
+                // Verificar si ya existe factura para este cliente y categoría en este mes
+                var existeFactura = _context.Facturas.Any(f =>
                     f.ClienteId == cliente.Id &&
-                    f.ServicioId == servicio.Id &&
+                    f.Categoria == categoria &&
                     f.MesFacturacion.Year == mesActual.Year &&
                     f.MesFacturacion.Month == mesActual.Month);
 
-                if (!existe)
+                if (existeFactura)
                 {
-                    contadorFacturas++;
-                    var mesStr = mesActual.ToString("MM");
-                    var añoStr = mesActual.ToString("yyyy");
-                    var nombreCliente = cliente.Nombre.Replace(" ", "").Substring(0, Math.Min(10, cliente.Nombre.Length));
-                    
-                    // Calcular monto aplicando lógica proporcional si es necesario
-                    // Para servicios activados después del día 5, usar la fecha de inicio del servicio
-                    var monto = CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesActual, clienteServicio.FechaInicio);
-                    
-                    var factura = new Factura
-                    {
-                        ClienteId = cliente.Id,
-                        ServicioId = servicio.Id,
-                        MesFacturacion = mesActual,
-                        Numero = $"{contadorFacturas:D4}-{nombreCliente}-{mesStr}{añoStr}",
-                        Monto = monto,
-                        Estado = SD.EstadoFacturaPendiente,
-                        FechaCreacion = DateTime.Now
-                    };
-                    facturasACrear.Add(factura);
+                    continue; // Ya existe factura para esta categoría
                 }
+
+                // Calcular montos y crear FacturaServicios
+                decimal montoTotal = 0;
+                var primerServicio = serviciosDelGrupo.First().Servicio!;
+                var facturaServicios = new List<FacturaServicio>();
+
+                foreach (var clienteServicio in serviciosDelGrupo)
+                {
+                    var servicio = clienteServicio.Servicio!;
+                    int cantidad = 1;
+                    
+                    // Para Streaming, obtener la cantidad de suscripciones
+                    if (servicio.Categoria == SD.CategoriaStreaming)
+                    {
+                        cantidad = clienteServicio.Cantidad;
+                    }
+                    
+                    // Para Streaming: precio completo sin proporcional
+                    // Para Internet: aplicar proporcional si aplica
+                    decimal montoServicio;
+                    
+                    if (servicio.Categoria == SD.CategoriaStreaming)
+                    {
+                        // Streaming: siempre precio completo (precio * cantidad)
+                        montoServicio = servicio.Precio * cantidad;
+                    }
+                    else
+                    {
+                        // Internet: aplicar proporcional
+                        var precioTotalSinProporcional = servicio.Precio * cantidad;
+                        var montoProporcionalUnitario = CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesActual, clienteServicio.FechaInicio);
+                        var factorProporcional = servicio.Precio > 0 ? montoProporcionalUnitario / servicio.Precio : 1;
+                        montoServicio = precioTotalSinProporcional * factorProporcional;
+                    }
+
+                    montoTotal += montoServicio;
+
+                    // Crear FacturaServicio - guardar el monto total y la cantidad
+                    facturaServicios.Add(new FacturaServicio
+                    {
+                        ServicioId = servicio.Id,
+                        Cantidad = cantidad,
+                        Monto = montoServicio
+                    });
+                }
+
+                // Crear la factura consolidada
+                contadorFacturas++;
+                var mesStr = mesActual.ToString("MM");
+                var añoStr = mesActual.ToString("yyyy");
+                var nombreCliente = cliente.Nombre.Replace(" ", "").Substring(0, Math.Min(10, cliente.Nombre.Length));
+                var sufijo = categoria == SD.CategoriaStreaming ? "-STR" : "";
+                
+                var factura = new Factura
+                {
+                    ClienteId = cliente.Id,
+                    ServicioId = primerServicio.Id, // Servicio principal para compatibilidad
+                    Categoria = categoria,
+                    MesFacturacion = mesActual,
+                    Numero = $"{contadorFacturas:D4}-{nombreCliente}-{mesStr}{añoStr}{sufijo}",
+                    Monto = montoTotal,
+                    Estado = SD.EstadoFacturaPendiente,
+                    FechaCreacion = DateTime.Now,
+                    FacturaServicios = facturaServicios
+                };
+
+                facturasACrear.Add(factura);
             }
         }
 
         // Guardar todas las facturas en una sola transacción
         if (facturasACrear.Any())
         {
-            // NO incrementar TotalFacturas aquí - solo se incrementa cuando la factura se marca como Pagada
             _context.Facturas.AddRange(facturasACrear);
             _context.SaveChanges();
         }

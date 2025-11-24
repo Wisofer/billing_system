@@ -43,6 +43,24 @@ function cerrarModalCrear() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Manejar mostrar/ocultar campo de cantidad para servicios Streaming
+    const servicioCheckboxes = document.querySelectorAll('.servicio-checkbox');
+    servicioCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const servicioItem = this.closest('.servicio-item');
+            const cantidadContainer = servicioItem?.querySelector('.cantidad-container');
+            const categoria = this.getAttribute('data-categoria');
+            
+            if (categoria === 'Streaming' && cantidadContainer) {
+                if (this.checked) {
+                    cantidadContainer.classList.remove('hidden');
+                } else {
+                    cantidadContainer.classList.add('hidden');
+                }
+            }
+        });
+    });
+    
     const form = document.getElementById('formCrearCliente');
     if (!form) return;
     
@@ -69,7 +87,21 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.Telefono) formDataToSend.append('Telefono', data.Telefono);
         if (data.Cedula) formDataToSend.append('Cedula', data.Cedula);
         if (data.Email) formDataToSend.append('Email', data.Email);
-        servicioIds.forEach(id => formDataToSend.append('ServicioIds', id.toString()));
+        
+        // Agregar servicios con sus cantidades
+        servicioIds.forEach(id => {
+            formDataToSend.append('ServicioIds', id.toString());
+            // Obtener cantidad si es Streaming
+            const servicioItem = document.querySelector(`[data-servicio-id="${id}"]`);
+            if (servicioItem) {
+                const categoria = servicioItem.getAttribute('data-categoria');
+                if (categoria === 'Streaming') {
+                    const cantidadInput = servicioItem.querySelector('.cantidad-input');
+                    const cantidad = cantidadInput ? parseInt(cantidadInput.value) || 1 : 1;
+                    formDataToSend.append(`Cantidad_${id}`, cantidad.toString());
+                }
+            }
+        });
         
         document.querySelectorAll('#formCrearCliente .text-red-500').forEach(el => el.textContent = '');
         

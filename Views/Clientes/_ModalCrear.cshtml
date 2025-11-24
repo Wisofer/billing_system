@@ -50,20 +50,31 @@
                             {
                                 @foreach (var servicio in servicios)
                                 {
-                                    <div class="flex items-center space-x-2 py-2">
-                                        <input type="checkbox" name="ServicioIds" value="@servicio.Id" id="servicio_@servicio.Id" 
-                                               class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
-                                        <label for="servicio_@servicio.Id" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center space-x-2">
-                                            <span>@servicio.Nombre - C$ @servicio.Precio.ToString("N2")</span>
-                                            @if (servicio.Categoria == "Internet")
-                                            {
-                                                <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Internet</span>
-                                            }
-                                            else if (servicio.Categoria == "Streaming")
-                                            {
-                                                <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Streaming</span>
-                                            }
-                                        </label>
+                                    <div class="servicio-item py-2" data-servicio-id="@servicio.Id" data-categoria="@servicio.Categoria">
+                                        <div class="flex items-center space-x-2">
+                                            <input type="checkbox" name="ServicioIds" value="@servicio.Id" id="servicio_@servicio.Id" 
+                                                   class="servicio-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                                                   data-categoria="@servicio.Categoria">
+                                            <label for="servicio_@servicio.Id" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center space-x-2 flex-1">
+                                                <span>@servicio.Nombre - C$ @servicio.Precio.ToString("N2")</span>
+                                                @if (servicio.Categoria == "Internet")
+                                                {
+                                                    <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Internet</span>
+                                                }
+                                                else if (servicio.Categoria == "Streaming")
+                                                {
+                                                    <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Streaming</span>
+                                                }
+                                            </label>
+                                        </div>
+                                        @if (servicio.Categoria == "Streaming")
+                                        {
+                                            <div class="cantidad-container ml-6 mt-2 hidden">
+                                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Cantidad de suscripciones</label>
+                                                <input type="number" name="Cantidad_@servicio.Id" min="1" value="1" 
+                                                       class="cantidad-input w-24 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700">
+                                            </div>
+                                        }
                                     </div>
                                 }
                             }
