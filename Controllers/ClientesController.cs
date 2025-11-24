@@ -104,7 +104,30 @@ public class ClientesController : Controller
 
         try
         {
-            _clienteService.Crear(cliente);
+            var clienteCreado = _clienteService.Crear(cliente);
+            
+            // Asignar servicios si vienen en el request (desde FormData o JSON)
+            List<int> servicioIds = new List<int>();
+            
+            // Intentar obtener desde FormData (múltiples valores con el mismo nombre)
+            if (Request.Form.ContainsKey("ServicioIds"))
+            {
+                servicioIds = Request.Form["ServicioIds"]
+                    .Where(id => int.TryParse(id.ToString(), out _))
+                    .Select(id => int.Parse(id.ToString()))
+                    .ToList();
+            }
+            // Si no hay en FormData, intentar desde JSON body
+            else if (Request.ContentType?.Contains("application/json") == true)
+            {
+                // Para JSON, se manejaría diferente, pero por ahora usamos FormData
+            }
+            
+            if (servicioIds.Any())
+            {
+                _clienteService.AsignarServicios(clienteCreado.Id, servicioIds);
+            }
+            
             // Siempre devolver JSON para peticiones AJAX
             var contentType = Request.Headers["Content-Type"].ToString();
             if (contentType.Contains("application/json") || Request.Headers["Accept"].ToString().Contains("application/json"))
@@ -210,6 +233,20 @@ public class ClientesController : Controller
         try
         {
             _clienteService.Actualizar(cliente);
+            
+            // Asignar servicios si vienen en el request
+            List<int> servicioIds = new List<int>();
+            
+            if (Request.Form.ContainsKey("ServicioIds"))
+            {
+                servicioIds = Request.Form["ServicioIds"]
+                    .Where(id => int.TryParse(id.ToString(), out _))
+                    .Select(id => int.Parse(id.ToString()))
+                    .ToList();
+            }
+            
+            _clienteService.AsignarServicios(id, servicioIds);
+            
             TempData["Success"] = "Cliente actualizado exitosamente.";
             return Redirect("/clientes");
         }

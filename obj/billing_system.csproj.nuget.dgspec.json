@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/william/Documentos/aplicaciones/billing_system/billing_system.csproj": {}
+    "/home/william/Documentos/billing_system/billing_system.csproj": {}
   },
   "projects": {
-    "/home/william/Documentos/aplicaciones/billing_system/billing_system.csproj": {
+    "/home/william/Documentos/billing_system/billing_system.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/william/Documentos/aplicaciones/billing_system/billing_system.csproj",
+        "projectUniqueName": "/home/william/Documentos/billing_system/billing_system.csproj",
         "projectName": "billing_system",
-        "projectPath": "/home/william/Documentos/aplicaciones/billing_system/billing_system.csproj",
+        "projectPath": "/home/william/Documentos/billing_system/billing_system.csproj",
         "packagesPath": "/home/william/.nuget/packages/",
-        "outputPath": "/home/william/Documentos/aplicaciones/billing_system/obj/",
+        "outputPath": "/home/william/Documentos/billing_system/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/william/.nuget/NuGet/NuGet.Config"

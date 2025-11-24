@@ -72,7 +72,17 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Servicio</label>
-                    <p class="text-sm text-gray-900">@Model.Servicio.Nombre</p>
+                    <div class="flex items-center space-x-2">
+                        <p class="text-sm text-gray-900">@Model.Servicio.Nombre</p>
+                        @if (Model.Servicio.Categoria == "Internet")
+                        {
+                            <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Internet</span>
+                        }
+                        else if (Model.Servicio.Categoria == "Streaming")
+                        {
+                            <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Streaming</span>
+                        }
+                    </div>
                     @if (!string.IsNullOrWhiteSpace(Model.Servicio.Descripcion))
                     {
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 italic">@Model.Servicio.Descripcion</p>

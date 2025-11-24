@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Factura> Facturas { get; set; }
     public DbSet<Pago> Pagos { get; set; }
     public DbSet<Usuario> Usuarios { get; set; }
+    public DbSet<ClienteServicio> ClienteServicios { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -46,6 +47,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Nombre).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Descripcion).HasMaxLength(500);
             entity.Property(e => e.Precio).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Categoria).IsRequired().HasMaxLength(50).HasDefaultValue("Internet");
         });
 
         // Configuración de Factura
@@ -97,6 +99,25 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Rol).IsRequired().HasMaxLength(50);
             entity.Property(e => e.NombreCompleto).IsRequired().HasMaxLength(200);
             entity.HasIndex(e => e.NombreUsuario).IsUnique();
+        });
+
+        // Configuración de ClienteServicio (relación muchos-a-muchos)
+        modelBuilder.Entity<ClienteServicio>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.HasOne(e => e.Cliente)
+                .WithMany(c => c.ClienteServicios)
+                .HasForeignKey(e => e.ClienteId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.Servicio)
+                .WithMany(s => s.ClienteServicios)
+                .HasForeignKey(e => e.ServicioId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            // Índice compuesto para mejorar búsquedas
+            entity.HasIndex(e => new { e.ClienteId, e.ServicioId });
         });
     }
 }

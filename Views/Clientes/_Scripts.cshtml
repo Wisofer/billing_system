@@ -51,15 +51,25 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
         
         const formData = new FormData(this);
-        const servicioId = formData.get('ServicioId');
+        // Obtener todos los servicios seleccionados (checkboxes)
+        const servicioIds = formData.getAll('ServicioIds').map(id => parseInt(id)).filter(id => !isNaN(id));
         const data = {
             Codigo: formData.get('Codigo') || '',
             Nombre: formData.get('Nombre') || '',
             Telefono: formData.get('Telefono') || null,
             Cedula: formData.get('Cedula') || null,
             Email: formData.get('Email') || null,
-            ServicioId: servicioId && servicioId !== '' ? parseInt(servicioId) : null
+            ServicioId: servicioIds.length > 0 ? servicioIds[0] : null // Mantener compatibilidad
         };
+        
+        // Agregar los servicios seleccionados al FormData para enviarlos al servidor
+        const formDataToSend = new FormData();
+        formDataToSend.append('Codigo', data.Codigo);
+        formDataToSend.append('Nombre', data.Nombre);
+        if (data.Telefono) formDataToSend.append('Telefono', data.Telefono);
+        if (data.Cedula) formDataToSend.append('Cedula', data.Cedula);
+        if (data.Email) formDataToSend.append('Email', data.Email);
+        servicioIds.forEach(id => formDataToSend.append('ServicioIds', id.toString()));
         
         document.querySelectorAll('#formCrearCliente .text-red-500').forEach(el => el.textContent = '');
         
@@ -67,10 +77,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch('/clientes/crear', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify(data)
+                body: formDataToSend
             });
             
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

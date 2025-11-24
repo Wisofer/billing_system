@@ -1,0 +1,17 @@
+namespace billing_system.Models.Entities;
+
+public class ClienteServicio
+{
+    public int Id { get; set; }
+    public int ClienteId { get; set; }
+    public int ServicioId { get; set; }
+    public bool Activo { get; set; } = true;
+    public DateTime FechaInicio { get; set; } = DateTime.Now;
+    public DateTime? FechaFin { get; set; } // Para historial cuando se desactiva
+    public DateTime FechaCreacion { get; set; } = DateTime.Now;
+    
+    // Relaciones
+    public virtual Cliente Cliente { get; set; } = null!;
+    public virtual Servicio Servicio { get; set; } = null!;
+}
+

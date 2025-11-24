@@ -1,7 +1,6 @@
 using billing_system.Data;
 using billing_system.Models.Entities;
 using billing_system.Services;
-using billing_system.Services;
 using billing_system.Services.IServices;
 using billing_system.Utils;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -95,10 +94,10 @@ using (var scope = app.Services.CreateScope())
             
             var servicios = new List<Servicio>
             {
-                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio1, Precio = SD.ServiciosPrincipales.PrecioServicio1, Activo = true, FechaCreacion = DateTime.Now },
-                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio2, Precio = SD.ServiciosPrincipales.PrecioServicio2, Activo = true, FechaCreacion = DateTime.Now },
-                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio3, Precio = SD.ServiciosPrincipales.PrecioServicio3, Activo = true, FechaCreacion = DateTime.Now },
-                new Servicio { Nombre = SD.ServiciosPrincipales.ServicioEspecial, Precio = SD.ServiciosPrincipales.PrecioServicioEspecial, Activo = true, FechaCreacion = DateTime.Now }
+                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio1, Precio = SD.ServiciosPrincipales.PrecioServicio1, Categoria = SD.CategoriaInternet, Activo = true, FechaCreacion = DateTime.Now },
+                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio2, Precio = SD.ServiciosPrincipales.PrecioServicio2, Categoria = SD.CategoriaInternet, Activo = true, FechaCreacion = DateTime.Now },
+                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio3, Precio = SD.ServiciosPrincipales.PrecioServicio3, Categoria = SD.CategoriaInternet, Activo = true, FechaCreacion = DateTime.Now },
+                new Servicio { Nombre = SD.ServiciosPrincipales.ServicioEspecial, Precio = SD.ServiciosPrincipales.PrecioServicioEspecial, Categoria = SD.CategoriaInternet, Activo = true, FechaCreacion = DateTime.Now }
             };
             
             dbContext.Servicios.AddRange(servicios);
@@ -108,6 +107,9 @@ using (var scope = app.Services.CreateScope())
 
         // Migrar datos de la tabla antigua 'clientes' a 'Clientes'
         MigrateClientesData.MigrateOldClientesToNew(dbContext, logger);
+
+        // Migrar ServicioId existentes a ClienteServicios
+        MigrateClienteServicios.MigrateServiciosToClienteServicios(dbContext, logger);
 
         // Crear usuario admin si no existe
         InicializarUsuarioAdmin.CrearAdminSiNoExiste(dbContext, logger);

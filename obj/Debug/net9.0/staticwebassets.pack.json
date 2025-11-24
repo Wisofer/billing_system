@@ -1,11 +1,11 @@
 {
   "Files": [
     {
-      "Id": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/tailwind.css",
+      "Id": "/home/william/Documentos/billing_system/wwwroot/css/tailwind.css",
       "PackagePath": "staticwebassets/css/tailwind.css"
     },
     {
-      "Id": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/images/logo.png",
+      "Id": "/home/william/Documentos/billing_system/wwwroot/images/logo.png",
       "PackagePath": "staticwebassets/images/logo.png"
     },
     {

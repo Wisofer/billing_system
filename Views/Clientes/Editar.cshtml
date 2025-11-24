@@ -3,6 +3,7 @@
     ViewData["Title"] = "Editar Cliente";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var servicios = ViewBag.Servicios as List<billing_system.Models.Entities.Servicio> ?? new List<billing_system.Models.Entities.Servicio>();
+    var serviciosActivos = Model.ClienteServicios?.Where(cs => cs.Activo).Select(cs => cs.ServicioId).ToList() ?? new List<int>();
 }
 
 <div class="mb-6">
@@ -59,16 +60,38 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Formato: Año-Mes-Día Hora:Minuto</p>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Servicio</label>
-                <select name="ServicioId" id="ServicioId" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                    <option value="">Sin servicio asignado</option>
-                    @foreach (var servicio in servicios)
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Servicios</label>
+                <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-3 max-h-48 overflow-y-auto dark:bg-gray-700">
+                    @if (servicios.Any())
                     {
-                        <option value="@servicio.Id" @(Model.ServicioId == servicio.Id ? "selected" : "")>@servicio.Nombre - C$ @servicio.Precio.ToString("N2")</option>
+                        @foreach (var servicio in servicios)
+                        {
+                            var estaActivo = serviciosActivos.Contains(servicio.Id);
+                            <div class="flex items-center space-x-2 py-2">
+                                <input type="checkbox" name="ServicioIds" value="@servicio.Id" id="servicio_@servicio.Id" 
+                                       @(estaActivo ? "checked" : "")
+                                       class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                                <label for="servicio_@servicio.Id" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center space-x-2">
+                                    <span>@servicio.Nombre - C$ @servicio.Precio.ToString("N2")</span>
+                                    @if (servicio.Categoria == "Internet")
+                                    {
+                                        <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Internet</span>
+                                    }
+                                    else if (servicio.Categoria == "Streaming")
+                                    {
+                                        <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Streaming</span>
+                                    }
+                                </label>
+                            </div>
+                        }
                     }
-                </select>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Último servicio usado por el cliente</p>
+                    else
+                    {
+                        <p class="text-sm text-gray-500 dark:text-gray-400">No hay servicios disponibles</p>
+                    }
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Selecciona uno o más servicios para el cliente</p>
             </div>
 
             <div>

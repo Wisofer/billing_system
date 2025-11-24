@@ -24,6 +24,16 @@ public class ServicioService : IServicioService
         return _context.Servicios.Where(s => s.Activo).ToList();
     }
 
+    public List<Servicio> ObtenerPorCategoria(string categoria)
+    {
+        return _context.Servicios.Where(s => s.Categoria == categoria).ToList();
+    }
+
+    public List<Servicio> ObtenerActivosPorCategoria(string categoria)
+    {
+        return _context.Servicios.Where(s => s.Activo && s.Categoria == categoria).ToList();
+    }
+
     public Servicio? ObtenerPorId(int id)
     {
         return _context.Servicios.FirstOrDefault(s => s.Id == id);
@@ -47,6 +57,7 @@ public class ServicioService : IServicioService
         existente.Nombre = servicio.Nombre;
         existente.Descripcion = servicio.Descripcion;
         existente.Precio = servicio.Precio;
+        existente.Categoria = servicio.Categoria;
         existente.Activo = servicio.Activo;
 
         _context.SaveChanges();

@@ -116,20 +116,49 @@ public class FacturasController : Controller
         var cliente = _clienteService.ObtenerPorId(clienteId);
         if (cliente == null)
         {
-            return Json(new { servicioId = (int?)null });
+            return Json(new { servicioId = (int?)null, serviciosActivos = new List<object>() });
         }
 
-        return Json(new { servicioId = cliente.ServicioId });
+        // Obtener servicios activos del cliente desde ClienteServicios
+        var serviciosActivos = _clienteService.ObtenerServiciosActivos(clienteId)
+            .Where(cs => cs.Servicio != null && cs.Servicio.Activo) // Asegurar que el servicio esté activo
+            .Select(cs => new { 
+                id = cs.ServicioId, 
+                nombre = cs.Servicio!.Nombre,
+                precio = cs.Servicio.Precio,
+                categoria = cs.Servicio.Categoria
+            })
+            .ToList();
+
+        // Si no hay servicios en ClienteServicios pero el cliente tiene un ServicioId (compatibilidad)
+        if (!serviciosActivos.Any() && cliente.ServicioId.HasValue)
+        {
+            var servicio = _servicioService.ObtenerPorId(cliente.ServicioId.Value);
+            if (servicio != null && servicio.Activo)
+            {
+                serviciosActivos.Add(new { 
+                    id = servicio.Id, 
+                    nombre = servicio.Nombre,
+                    precio = servicio.Precio,
+                    categoria = servicio.Categoria
+                });
+            }
+        }
+
+        return Json(new { 
+            servicioId = cliente.ServicioId, // Mantener para compatibilidad
+            serviciosActivos = serviciosActivos 
+        });
     }
 
     [HttpPost("/facturas/crear")]
-    public IActionResult Crear([FromForm] int ClienteId, [FromForm] int ServicioId, [FromForm] string MesFacturacion)
+    public IActionResult Crear([FromForm] int ClienteId, [FromForm] string MesFacturacion)
     {
-        var factura = new Factura
-        {
-            ClienteId = ClienteId,
-            ServicioId = ServicioId
-        };
+        // Obtener servicios seleccionados
+        var servicioIds = Request.Form["ServicioIds"]
+            .Where(id => int.TryParse(id.ToString(), out _))
+            .Select(id => int.Parse(id.ToString()))
+            .ToList();
 
         // Validar campos requeridos
         if (ClienteId == 0)
@@ -137,23 +166,20 @@ public class FacturasController : Controller
             ModelState.AddModelError("ClienteId", "Debe seleccionar un cliente");
         }
 
-        if (ServicioId == 0)
+        if (!servicioIds.Any())
         {
-            ModelState.AddModelError("ServicioId", "Debe seleccionar un servicio");
+            ModelState.AddModelError("ServicioIds", "Debe seleccionar al menos un servicio");
         }
 
         // Convertir el string del mes (YYYY-MM) a DateTime
+        DateTime mesFecha = DateTime.Now;
         if (string.IsNullOrWhiteSpace(MesFacturacion))
         {
             ModelState.AddModelError("MesFacturacion", "Debe seleccionar un mes de facturación");
         }
         else
         {
-            if (DateTime.TryParse(MesFacturacion + "-01", out var mesFecha))
-            {
-                factura.MesFacturacion = mesFecha;
-            }
-            else
+            if (!DateTime.TryParse(MesFacturacion + "-01", out mesFecha))
             {
                 ModelState.AddModelError("MesFacturacion", "El mes de facturación no es válido");
             }
@@ -162,20 +188,60 @@ public class FacturasController : Controller
         if (!ModelState.IsValid)
         {
             ControllerHelper.SetClientesYServicios(ViewBag, _clienteService, _servicioService);
-            return View(factura);
+            return View(new Factura { ClienteId = ClienteId });
         }
 
         try
         {
-            _facturaService.Crear(factura);
-            TempData["Success"] = "Factura creada exitosamente.";
+            int facturasCreadas = 0;
+            var errores = new List<string>();
+
+            // Crear una factura por cada servicio seleccionado
+            foreach (var servicioId in servicioIds)
+            {
+                try
+                {
+                    var factura = new Factura
+                    {
+                        ClienteId = ClienteId,
+                        ServicioId = servicioId,
+                        MesFacturacion = mesFecha
+                    };
+                    
+                    _facturaService.Crear(factura);
+                    facturasCreadas++;
+                }
+                catch (Exception ex)
+                {
+                    errores.Add($"Error al crear factura para servicio {servicioId}: {ex.Message}");
+                }
+            }
+
+            if (facturasCreadas > 0)
+            {
+                if (facturasCreadas == servicioIds.Count)
+                {
+                    TempData["Success"] = $"{facturasCreadas} factura(s) creada(s) exitosamente.";
+                }
+                else
+                {
+                    TempData["Warning"] = $"Se crearon {facturasCreadas} de {servicioIds.Count} factura(s). " + string.Join(" ", errores);
+                }
+            }
+            else
+            {
+                TempData["Error"] = "No se pudo crear ninguna factura. " + string.Join(" ", errores);
+                ControllerHelper.SetClientesYServicios(ViewBag, _clienteService, _servicioService);
+                return View(new Factura { ClienteId = ClienteId });
+            }
+
             return Redirect("/facturas");
         }
         catch (Exception ex)
         {
-            TempData["Error"] = $"Error al crear factura: {ex.Message}";
+            TempData["Error"] = $"Error al crear facturas: {ex.Message}";
             ControllerHelper.SetClientesYServicios(ViewBag, _clienteService, _servicioService);
-            return View(factura);
+            return View(new Factura { ClienteId = ClienteId });
         }
     }
 

@@ -19,19 +19,55 @@ public class ServiciosController : Controller
     }
 
     [HttpGet("/servicios")]
-    public IActionResult Index()
+    public IActionResult Index(string? categoria = null)
     {
-        var servicios = _servicioService.ObtenerTodos();
+        List<Servicio> servicios;
+        if (!string.IsNullOrWhiteSpace(categoria))
+        {
+            servicios = _servicioService.ObtenerPorCategoria(categoria);
+        }
+        else
+        {
+            servicios = _servicioService.ObtenerTodos();
+        }
+        
         var esAdministrador = SecurityHelper.IsAdministrator(User);
 
         ViewBag.EsAdministrador = esAdministrador;
+        ViewBag.Categoria = categoria;
+        ViewBag.CategoriaSeleccionada = categoria ?? "Todos";
         return View(servicios);
+    }
+
+    [HttpGet("/servicios/internet")]
+    public IActionResult Internet()
+    {
+        var servicios = _servicioService.ObtenerPorCategoria(SD.CategoriaInternet);
+        var esAdministrador = SecurityHelper.IsAdministrator(User);
+
+        ViewBag.EsAdministrador = esAdministrador;
+        ViewBag.Categoria = SD.CategoriaInternet;
+        ViewBag.Titulo = "Servicios de Internet";
+        return View("Index", servicios);
+    }
+
+    [HttpGet("/servicios/streaming")]
+    public IActionResult Streaming()
+    {
+        var servicios = _servicioService.ObtenerPorCategoria(SD.CategoriaStreaming);
+        var esAdministrador = SecurityHelper.IsAdministrator(User);
+
+        ViewBag.EsAdministrador = esAdministrador;
+        ViewBag.Categoria = SD.CategoriaStreaming;
+        ViewBag.Titulo = "Servicios de Streaming";
+        return View("Index", servicios);
     }
 
     [Authorize(Policy = "Administrador")]
     [HttpGet("/servicios/crear")]
-    public IActionResult Crear()
+    public IActionResult Crear(string? categoria = null)
     {
+        ViewBag.Categoria = categoria ?? SD.CategoriaInternet;
         return View();
     }
 
@@ -62,6 +98,17 @@ public class ServiciosController : Controller
         {
             _servicioService.Crear(servicio);
             TempData["Success"] = "Servicio creado exitosamente.";
+            
+            // Redirigir a la categoría del servicio creado
+            if (servicio.Categoria == SD.CategoriaInternet)
+            {
+                return Redirect("/servicios/internet");
+            }
+            else if (servicio.Categoria == SD.CategoriaStreaming)
+            {
+                return Redirect("/servicios/streaming");
+            }
+            
             return Redirect("/servicios");
         }
         catch (Exception ex)
@@ -101,6 +148,15 @@ public class ServiciosController : Controller
             ModelState.AddModelError("Nombre", "El nombre es requerido.");
         }
 
+        if (string.IsNullOrWhiteSpace(servicio.Categoria))
+        {
+            ModelState.AddModelError("Categoria", "La categoría es requerida.");
+        }
+        else if (servicio.Categoria != SD.CategoriaInternet && servicio.Categoria != SD.CategoriaStreaming)
+        {
+            ModelState.AddModelError("Categoria", "La categoría debe ser Internet o Streaming.");
+        }
+
         if (servicio.Precio <= 0)
         {
             ModelState.AddModelError("Precio", "El precio debe ser mayor a cero.");
@@ -115,6 +171,17 @@ public class ServiciosController : Controller
         {
             _servicioService.Actualizar(servicio);
             TempData["Success"] = "Servicio actualizado exitosamente.";
+            
+            // Redirigir a la categoría del servicio actualizado
+            if (servicio.Categoria == SD.CategoriaInternet)
+            {
+                return Redirect("/servicios/internet");
+            }
+            else if (servicio.Categoria == SD.CategoriaStreaming)
+            {
+                return Redirect("/servicios/streaming");
+            }
+            
             return Redirect("/servicios");
         }
         catch (Exception ex)

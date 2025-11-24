@@ -40,6 +40,18 @@
             </div>
 
             <div>
+                <label for="Categoria" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Categoría *</label>
+                <select asp-for="Categoria" name="Categoria" required 
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                    <option value="">Seleccionar categoría...</option>
+                    <option value="Internet">Internet</option>
+                    <option value="Streaming">Streaming</option>
+                </select>
+                <span asp-validation-for="Categoria" class="text-red-500 text-xs"></span>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Selecciona si es un servicio de Internet o Streaming</p>
+            </div>
+
+            <div>
                 <label for="Precio" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Precio (C$) *</label>
                 <input type="number" asp-for="Precio" name="Precio" step="0.01" min="0.01" required 
                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
@@ -75,7 +87,11 @@
             </div>
 
             <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
-                <a href="/servicios" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 transition-colors text-sm font-medium text-gray-700">
+                @{
+                    var categoriaActual = ViewBag.Categoria as string ?? "Internet";
+                    var urlCancelar = categoriaActual == "Internet" ? "/servicios/internet" : categoriaActual == "Streaming" ? "/servicios/streaming" : "/servicios";
+                }
+                <a href="@urlCancelar" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 transition-colors text-sm font-medium text-gray-700">
                     Cancelar
                 </a>
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">

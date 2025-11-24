@@ -1,9 +1,11 @@
 @model billing_system.Models.Entities.Factura
+@using System.Text.Json
 @{
     ViewData["Title"] = "Crear Factura";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var clientes = ViewBag.Clientes as List<billing_system.Models.Entities.Cliente> ?? new List<billing_system.Models.Entities.Cliente>();
     var servicios = ViewBag.Servicios as List<billing_system.Models.Entities.Servicio> ?? new List<billing_system.Models.Entities.Servicio>();
+    var serviciosJson = JsonSerializer.Serialize(servicios.Select(s => new { id = s.Id, nombre = s.Nombre, precio = s.Precio, categoria = s.Categoria }));
 }
 
 <div class="max-w-2xl mx-auto">
@@ -41,18 +43,15 @@
                     }
                 </div>
 
-                <div>
-                    <label for="ServicioId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Servicio *</label>
-                    <select name="ServicioId" id="servicioSelect" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Seleccionar servicio...</option>
-                        @foreach (var servicio in servicios)
-                        {
-                            <option value="@servicio.Id" data-precio="@servicio.Precio">@servicio.Nombre - C$ @servicio.Precio.ToString("N2")</option>
-                        }
-                    </select>
-                    @if (ViewData.ModelState["ServicioId"]?.Errors.Count > 0)
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Servicios *</label>
+                    <div id="serviciosContainer" class="border border-gray-300 dark:border-gray-600 rounded-lg p-3 max-h-48 overflow-y-auto dark:bg-gray-700" style="min-height: 100px;">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4" id="servicioHelp">Primero seleccione un cliente para ver sus servicios</p>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Selecciona uno o más servicios para facturar</p>
+                    @if (ViewData.ModelState["ServicioIds"]?.Errors.Count > 0)
                     {
-                        <span class="text-red-500 text-xs">@ViewData.ModelState["ServicioId"].Errors[0].ErrorMessage</span>
+                        <span class="text-red-500 text-xs">@ViewData.ModelState["ServicioIds"].Errors[0].ErrorMessage</span>
                     }
                 </div>
             </div>
@@ -71,11 +70,11 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto Total</label>
                     <input type="text" id="montoDisplay" readonly 
                            value="C$ 0.00"
                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed" />
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Se actualiza automáticamente según el servicio seleccionado</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Suma de los servicios seleccionados</p>
                 </div>
             </div>
 
@@ -88,8 +87,9 @@
                         <p class="font-medium mb-1">Información importante:</p>
                         <ul class="list-disc list-inside space-y-1 text-blue-700">
                             <li>El número de factura se generará automáticamente</li>
-                            <li>El monto se calculará según el precio del servicio seleccionado</li>
-                            <li>La factura se creará con estado "Pendiente"</li>
+                            <li>Se creará una factura por cada servicio seleccionado</li>
+                            <li>El monto se calculará según el precio de cada servicio</li>
+                            <li>Las facturas se crearán con estado "Pendiente"</li>
                         </ul>
                     </div>
                 </div>
@@ -108,55 +108,179 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+(function() {
+    'use strict';
+    
     const clienteSelect = document.getElementById('ClienteId');
-    const servicioSelect = document.getElementById('servicioSelect');
+    const serviciosContainer = document.getElementById('serviciosContainer');
     const montoDisplay = document.getElementById('montoDisplay');
+    const servicioHelp = document.getElementById('servicioHelp');
     
-    // Cuando se selecciona un cliente, cargar su último servicio
-    clienteSelect.addEventListener('change', async function() {
-        const clienteId = clienteSelect.value;
+    if (!clienteSelect || !serviciosContainer) {
+        console.error('Elementos del formulario no encontrados');
+        return;
+    }
+    
+    // Todos los servicios disponibles
+    const todosLosServicios = @Html.Raw(serviciosJson);
+    
+    function actualizarMontoTotal() {
+        const checkboxes = serviciosContainer.querySelectorAll('input[type="checkbox"]:checked');
+        let total = 0;
+        checkboxes.forEach(function(checkbox) {
+            const precio = parseFloat(checkbox.getAttribute('data-precio') || 0);
+            total += precio;
+        });
+        montoDisplay.value = 'C$ ' + total.toLocaleString('es-NI', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+    
+    function cargarServiciosEnCheckboxes(serviciosArray, seleccionarTodos = true) {
+        serviciosContainer.innerHTML = '';
         
-        if (clienteId) {
-            try {
-                const response = await fetch(`/facturas/obtener-servicio-cliente/${clienteId}`);
-                const data = await response.json();
+        if (serviciosArray && serviciosArray.length > 0) {
+            serviciosArray.forEach(function(servicio) {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-2 py-2';
                 
-                if (data.servicioId) {
-                    // Pre-seleccionar el servicio del cliente
-                    servicioSelect.value = data.servicioId;
-                    
-                    // Actualizar el monto automáticamente
-                    const selectedOption = servicioSelect.options[servicioSelect.selectedIndex];
-                    const precio = selectedOption.getAttribute('data-precio');
-                    
-                    if (precio) {
-                        montoDisplay.value = 'C$ ' + parseFloat(precio).toLocaleString('es-NI', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        });
-                    }
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'ServicioIds';
+                checkbox.value = servicio.id;
+                checkbox.id = 'servicio_' + servicio.id;
+                checkbox.className = 'w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700';
+                checkbox.setAttribute('data-precio', servicio.precio);
+                checkbox.checked = seleccionarTodos; // Marcar todos por defecto
+                checkbox.addEventListener('change', actualizarMontoTotal);
+                
+                const label = document.createElement('label');
+                label.htmlFor = 'servicio_' + servicio.id;
+                label.className = 'text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center space-x-2';
+                const precio = parseFloat(servicio.precio);
+                
+                // Crear badge de categoría
+                const categoriaBadge = document.createElement('span');
+                if (servicio.categoria === 'Internet') {
+                    categoriaBadge.className = 'px-2 py-0.5 text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300';
+                    categoriaBadge.textContent = 'Internet';
+                } else if (servicio.categoria === 'Streaming') {
+                    categoriaBadge.className = 'px-2 py-0.5 text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300';
+                    categoriaBadge.textContent = 'Streaming';
+                } else {
+                    categoriaBadge.className = 'px-2 py-0.5 text-xs font-medium rounded-md bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
+                    categoriaBadge.textContent = servicio.categoria || 'N/A';
                 }
-            } catch (error) {
-                console.error('Error al obtener servicio del cliente:', error);
-            }
+                
+                const nombreTexto = document.createTextNode(servicio.nombre + ' - C$ ' + precio.toLocaleString('es-NI', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }));
+                
+                label.appendChild(nombreTexto);
+                label.appendChild(categoriaBadge);
+                
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                serviciosContainer.appendChild(div);
+            });
+            
+            // Actualizar el monto total después de cargar todos los checkboxes
+            setTimeout(actualizarMontoTotal, 100);
+            
+            servicioHelp.textContent = 'Servicios del cliente (ya seleccionados). Puedes desmarcar los que no quieras facturar.';
+        } else {
+            todosLosServicios.forEach(function(servicio) {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-2 py-2';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'ServicioIds';
+                checkbox.value = servicio.id;
+                checkbox.id = 'servicio_' + servicio.id;
+                checkbox.className = 'w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700';
+                checkbox.setAttribute('data-precio', servicio.precio);
+                checkbox.addEventListener('change', actualizarMontoTotal);
+                
+                const label = document.createElement('label');
+                label.htmlFor = 'servicio_' + servicio.id;
+                label.className = 'text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center space-x-2';
+                const precio = parseFloat(servicio.precio);
+                
+                // Crear badge de categoría
+                const categoriaBadge = document.createElement('span');
+                if (servicio.categoria === 'Internet') {
+                    categoriaBadge.className = 'px-2 py-0.5 text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300';
+                    categoriaBadge.textContent = 'Internet';
+                } else if (servicio.categoria === 'Streaming') {
+                    categoriaBadge.className = 'px-2 py-0.5 text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300';
+                    categoriaBadge.textContent = 'Streaming';
+                } else {
+                    categoriaBadge.className = 'px-2 py-0.5 text-xs font-medium rounded-md bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
+                    categoriaBadge.textContent = servicio.categoria || 'N/A';
+                }
+                
+                const nombreTexto = document.createTextNode(servicio.nombre + ' - C$ ' + precio.toLocaleString('es-NI', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }));
+                
+                label.appendChild(nombreTexto);
+                label.appendChild(categoriaBadge);
+                
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                serviciosContainer.appendChild(div);
+            });
+            servicioHelp.textContent = 'El cliente no tiene servicios activos. Puede seleccionar cualquier servicio.';
         }
+    }
+    
+    async function cargarServiciosDelCliente(clienteId) {
+        if (!clienteId) {
+            serviciosContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">Primero seleccione un cliente</p>';
+            servicioHelp.textContent = 'Los servicios se mostrarán al seleccionar un cliente';
+            montoDisplay.value = 'C$ 0.00';
+            return;
+        }
+        
+        serviciosContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">Cargando servicios...</p>';
+        servicioHelp.textContent = 'Cargando servicios del cliente...';
+        montoDisplay.value = 'C$ 0.00';
+        
+        try {
+            const response = await fetch('/facturas/obtener-servicio-cliente/' + clienteId);
+            if (!response.ok) {
+                throw new Error('Error al obtener servicios');
+            }
+            
+            const data = await response.json();
+            
+            if (data.serviciosActivos && data.serviciosActivos.length > 0) {
+                // Cargar servicios activos del cliente, todos seleccionados por defecto
+                cargarServiciosEnCheckboxes(data.serviciosActivos, true);
+            } else {
+                // Si no tiene servicios activos, mostrar todos pero sin seleccionar
+                cargarServiciosEnCheckboxes(todosLosServicios, false);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            serviciosContainer.innerHTML = '<p class="text-sm text-red-500 text-center py-4">Error al cargar servicios: ' + error.message + '</p>';
+            servicioHelp.textContent = 'Error al cargar servicios';
+        }
+    }
+    
+    clienteSelect.addEventListener('change', function() {
+        cargarServiciosDelCliente(this.value);
     });
     
-    // Actualizar monto cuando se cambia el servicio
-    servicioSelect.addEventListener('change', function() {
-        const selectedOption = servicioSelect.options[servicioSelect.selectedIndex];
-        const precio = selectedOption.getAttribute('data-precio');
-        
-        if (precio) {
-            montoDisplay.value = 'C$ ' + parseFloat(precio).toLocaleString('es-NI', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        } else {
-            montoDisplay.value = 'C$ 0.00';
-        }
-    });
-});
+    // Cargar servicios si ya hay un cliente seleccionado
+    if (clienteSelect.value) {
+        setTimeout(function() {
+            cargarServiciosDelCliente(clienteSelect.value);
+        }, 100);
+    }
+})();
 </script>
-

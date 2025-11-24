@@ -35,6 +35,10 @@ public static class SD
     public const string TipoCuentaCordoba = "Cuenta C$";
     public const string TipoCuentaBilletera = "Billetera movil";
 
+    // Categorías de Servicio
+    public const string CategoriaInternet = "Internet";
+    public const string CategoriaStreaming = "Streaming";
+
     // Servicios Principales
     public static class ServiciosPrincipales
     {

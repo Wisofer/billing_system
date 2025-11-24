@@ -1,22 +1,42 @@
 @{
     var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
+    var categoria = ViewBag.Categoria as string;
+    var titulo = ViewBag.Titulo as string ?? "Gestión de Servicios";
 }
 
 <div class="mb-6">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between mb-4">
         <div>
-            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-1">Gestión de Servicios</h2>
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-1">@titulo</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400">Administra los servicios y sus precios</p>
         </div>
         @if (esAdministrador)
         {
-            <a href="/servicios/crear" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center space-x-2">
+            <a href="/servicios/crear?categoria=@categoria" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center space-x-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 <span>Nuevo Servicio</span>
             </a>
         }
+    </div>
+    
+    <!-- Pestañas de categorías -->
+    <div class="border-b border-gray-200 dark:border-gray-700">
+        <nav class="flex space-x-8" aria-label="Tabs">
+            <a href="/servicios/internet" 
+               class="@(categoria == "Internet" || categoria == null ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300") whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Servicios de Internet
+            </a>
+            <a href="/servicios/streaming" 
+               class="@(categoria == "Streaming" ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300") whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Servicios de Streaming
+            </a>
+            <a href="/servicios" 
+               class="@(categoria == null && ViewBag.CategoriaSeleccionada == "Todos" ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300") whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Todos los Servicios
+            </a>
+        </nav>
     </div>
 </div>
 

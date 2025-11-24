@@ -81,6 +81,8 @@ public class ClienteService : IClienteService
     {
         return _context.Clientes
             .Include(c => c.Servicio)
+            .Include(c => c.ClienteServicios)
+                .ThenInclude(cs => cs.Servicio)
             .FirstOrDefault(c => c.Id == id);
     }
 
@@ -167,7 +169,7 @@ public class ClienteService : IClienteService
         existente.Email = cliente.Email;
         existente.Activo = cliente.Activo;
         existente.FechaCreacion = cliente.FechaCreacion;
-        existente.ServicioId = cliente.ServicioId;
+        existente.ServicioId = cliente.ServicioId; // Mantener para compatibilidad
 
         _context.SaveChanges();
         return existente;
@@ -285,6 +287,149 @@ public class ClienteService : IClienteService
         }
 
         return actualizados;
+    }
+
+    // Métodos para gestionar múltiples servicios
+    public List<ClienteServicio> ObtenerServiciosActivos(int clienteId)
+    {
+        return _context.ClienteServicios
+            .Include(cs => cs.Servicio)
+            .Where(cs => cs.ClienteId == clienteId && cs.Activo)
+            .OrderBy(cs => cs.FechaInicio)
+            .ToList();
+    }
+
+    public List<ClienteServicio> ObtenerServicios(int clienteId)
+    {
+        return _context.ClienteServicios
+            .Include(cs => cs.Servicio)
+            .Where(cs => cs.ClienteId == clienteId)
+            .OrderByDescending(cs => cs.FechaInicio)
+            .ToList();
+    }
+
+    public void AsignarServicios(int clienteId, List<int> servicioIds)
+    {
+        if (servicioIds == null || !servicioIds.Any())
+            return;
+
+        var cliente = ObtenerPorId(clienteId);
+        if (cliente == null)
+            throw new Exception("Cliente no encontrado");
+
+        // Obtener servicios actuales activos del cliente
+        var serviciosActuales = _context.ClienteServicios
+            .Where(cs => cs.ClienteId == clienteId && cs.Activo)
+            .ToList();
+
+        // Desactivar servicios que ya no están en la lista
+        var serviciosADesactivar = serviciosActuales
+            .Where(cs => !servicioIds.Contains(cs.ServicioId))
+            .ToList();
+
+        foreach (var clienteServicio in serviciosADesactivar)
+        {
+            clienteServicio.Activo = false;
+            clienteServicio.FechaFin = DateTime.Now;
+        }
+
+        // Activar o crear servicios nuevos
+        foreach (var servicioId in servicioIds)
+        {
+            var clienteServicioExistente = serviciosActuales
+                .FirstOrDefault(cs => cs.ServicioId == servicioId);
+
+            if (clienteServicioExistente != null)
+            {
+                // Si existe pero está desactivado, reactivarlo
+                if (!clienteServicioExistente.Activo)
+                {
+                    clienteServicioExistente.Activo = true;
+                    clienteServicioExistente.FechaInicio = DateTime.Now;
+                    clienteServicioExistente.FechaFin = null;
+                }
+            }
+            else
+            {
+                // Crear nuevo ClienteServicio
+                var nuevoClienteServicio = new ClienteServicio
+                {
+                    ClienteId = clienteId,
+                    ServicioId = servicioId,
+                    Activo = true,
+                    FechaInicio = DateTime.Now,
+                    FechaCreacion = DateTime.Now
+                };
+                _context.ClienteServicios.Add(nuevoClienteServicio);
+            }
+        }
+
+        // Actualizar ServicioId del cliente con el primer servicio activo (para compatibilidad)
+        var primerServicioActivo = _context.ClienteServicios
+            .Where(cs => cs.ClienteId == clienteId && cs.Activo)
+            .OrderBy(cs => cs.FechaInicio)
+            .FirstOrDefault();
+
+        if (primerServicioActivo != null)
+        {
+            cliente.ServicioId = primerServicioActivo.ServicioId;
+        }
+        else
+        {
+            cliente.ServicioId = null;
+        }
+
+        _context.SaveChanges();
+    }
+
+    public void ActivarServicio(int clienteId, int servicioId)
+    {
+        var clienteServicio = _context.ClienteServicios
+            .FirstOrDefault(cs => cs.ClienteId == clienteId && cs.ServicioId == servicioId);
+
+        if (clienteServicio == null)
+        {
+            // Crear nuevo
+            clienteServicio = new ClienteServicio
+            {
+                ClienteId = clienteId,
+                ServicioId = servicioId,
+                Activo = true,
+                FechaInicio = DateTime.Now,
+                FechaCreacion = DateTime.Now
+            };
+            _context.ClienteServicios.Add(clienteServicio);
+        }
+        else
+        {
+            // Reactivar si estaba desactivado
+            clienteServicio.Activo = true;
+            clienteServicio.FechaInicio = DateTime.Now;
+            clienteServicio.FechaFin = null;
+        }
+
+        _context.SaveChanges();
+    }
+
+    public void DesactivarServicio(int clienteId, int servicioId)
+    {
+        var clienteServicio = _context.ClienteServicios
+            .FirstOrDefault(cs => cs.ClienteId == clienteId && cs.ServicioId == servicioId);
+
+        if (clienteServicio != null && clienteServicio.Activo)
+        {
+            clienteServicio.Activo = false;
+            clienteServicio.FechaFin = DateTime.Now;
+            _context.SaveChanges();
+        }
+    }
+
+    public bool TieneServicioActivo(int clienteId, int servicioId)
+    {
+        return _context.ClienteServicios
+            .Any(cs => cs.ClienteId == clienteId && 
+                      cs.ServicioId == servicioId && 
+                      cs.Activo);
     }
 }
 

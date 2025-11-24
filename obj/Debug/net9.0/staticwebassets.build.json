@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "d1MiyGk6oFou2i+8DycSqV4HXrKTDcErWglucRSAOJg=",
+  "Hash": "IyWgp0QG4lTI0zV10FfMrle0uKJKRgtyZLcF74q1HFs=",
   "Source": "billing_system",
   "BasePath": "_content/billing_system",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "billing_system/wwwroot",
       "Source": "billing_system",
-      "ContentRoot": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/",
+      "ContentRoot": "/home/william/Documentos/billing_system/wwwroot/",
       "BasePath": "_content/billing_system",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
+      "Identity": "/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
       "SourceId": "billing_system",
       "SourceType": "Discovered",
-      "ContentRoot": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/",
+      "ContentRoot": "/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/",
       "BasePath": "_content/billing_system",
       "RelativePath": "css/tailwind#[.{fingerprint=zefz65wvgg}]?.css.gz",
       "AssetKind": "All",
@@ -28,20 +28,20 @@
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/tailwind.css",
+      "RelatedAsset": "/home/william/Documentos/billing_system/wwwroot/css/tailwind.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "Fingerprint": "a7r8yjlx12",
       "Integrity": "tlmzBc2GoeRaIQuA7usvlcCw/n0gaDXfaT6eN5IPsoA=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/tailwind.css"
+      "OriginalItemSpec": "/home/william/Documentos/billing_system/wwwroot/css/tailwind.css"
     },
     {
-      "Identity": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/tailwind.css",
+      "Identity": "/home/william/Documentos/billing_system/wwwroot/css/tailwind.css",
       "SourceId": "billing_system",
       "SourceType": "Discovered",
-      "ContentRoot": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/",
+      "ContentRoot": "/home/william/Documentos/billing_system/wwwroot/",
       "BasePath": "_content/billing_system",
       "RelativePath": "css/tailwind#[.{fingerprint}]?.css",
       "AssetKind": "All",
@@ -59,10 +59,10 @@
       "OriginalItemSpec": "wwwroot/css/tailwind.css"
     },
     {
-      "Identity": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/images/logo.png",
+      "Identity": "/home/william/Documentos/billing_system/wwwroot/images/logo.png",
       "SourceId": "billing_system",
       "SourceType": "Discovered",
-      "ContentRoot": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/",
+      "ContentRoot": "/home/william/Documentos/billing_system/wwwroot/",
       "BasePath": "_content/billing_system",
       "RelativePath": "images/logo#[.{fingerprint}]?.png",
       "AssetKind": "All",
@@ -83,7 +83,7 @@
   "Endpoints": [
     {
       "Route": "css/tailwind.css",
-      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
+      "AssetFile": "/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -106,7 +106,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 19 Nov 2025 21:12:49 GMT"
+          "Value": "Mon, 24 Nov 2025 18:55:12 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -138,7 +138,7 @@
     },
     {
       "Route": "css/tailwind.css",
-      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/tailwind.css",
+      "AssetFile": "/home/william/Documentos/billing_system/wwwroot/css/tailwind.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -159,7 +159,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 19 Nov 2025 21:12:49 GMT"
+          "Value": "Mon, 24 Nov 2025 18:55:12 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -175,7 +175,7 @@
     },
     {
       "Route": "css/tailwind.css.gz",
-      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
+      "AssetFile": "/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -196,7 +196,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 19 Nov 2025 21:12:49 GMT"
+          "Value": "Mon, 24 Nov 2025 18:55:12 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -220,7 +220,7 @@
     },
     {
       "Route": "css/tailwind.zefz65wvgg.css",
-      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
+      "AssetFile": "/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -243,7 +243,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 19 Nov 2025 21:12:49 GMT"
+          "Value": "Mon, 24 Nov 2025 18:55:12 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -283,7 +283,7 @@
     },
     {
       "Route": "css/tailwind.zefz65wvgg.css",
-      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/css/tailwind.css",
+      "AssetFile": "/home/william/Documentos/billing_system/wwwroot/css/tailwind.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -304,7 +304,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 19 Nov 2025 21:12:49 GMT"
+          "Value": "Mon, 24 Nov 2025 18:55:12 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -328,7 +328,7 @@
     },
     {
       "Route": "css/tailwind.zefz65wvgg.css.gz",
-      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
+      "AssetFile": "/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -349,7 +349,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 19 Nov 2025 21:12:49 GMT"
+          "Value": "Mon, 24 Nov 2025 18:55:12 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -381,7 +381,7 @@
     },
     {
       "Route": "images/logo.4sj6z0fdl4.png",
-      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/images/logo.png",
+      "AssetFile": "/home/william/Documentos/billing_system/wwwroot/images/logo.png",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -402,7 +402,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 22 Nov 2025 04:10:47 GMT"
+          "Value": "Mon, 24 Nov 2025 18:55:12 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -426,7 +426,7 @@
     },
     {
       "Route": "images/logo.png",
-      "AssetFile": "/home/william/Documentos/aplicaciones/billing_system/wwwroot/images/logo.png",
+      "AssetFile": "/home/william/Documentos/billing_system/wwwroot/images/logo.png",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -447,7 +447,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Sat, 22 Nov 2025 04:10:47 GMT"
+          "Value": "Mon, 24 Nov 2025 18:55:12 GMT"
         },
         {
           "Name": "Cache-Control",
