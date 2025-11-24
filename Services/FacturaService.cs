@@ -94,7 +94,9 @@ public class FacturaService : IFacturaService
             }
         }
         
-        var nombreCliente = cliente.Nombre.Replace(" ", "").Substring(0, Math.Min(10, cliente.Nombre.Length));
+        var nombreSinEspacios = cliente.Nombre.Replace(" ", "");
+        var longitudNombre = Math.Min(10, nombreSinEspacios.Length);
+        var nombreCliente = longitudNombre > 0 ? nombreSinEspacios.Substring(0, longitudNombre) : "Cliente";
         var sufijo = categoria == SD.CategoriaStreaming ? "-STR" : "";
         return $"{numero:D4}-{nombreCliente}-{mesStr}{añoStr}{sufijo}";
     }
@@ -519,7 +521,9 @@ public class FacturaService : IFacturaService
                 contadorFacturas++;
                 var mesStr = mesActual.ToString("MM");
                 var añoStr = mesActual.ToString("yyyy");
-                var nombreCliente = cliente.Nombre.Replace(" ", "").Substring(0, Math.Min(10, cliente.Nombre.Length));
+                var nombreSinEspacios = cliente.Nombre.Replace(" ", "");
+                var longitudNombre = Math.Min(10, nombreSinEspacios.Length);
+                var nombreCliente = longitudNombre > 0 ? nombreSinEspacios.Substring(0, longitudNombre) : "Cliente";
                 var sufijo = categoria == SD.CategoriaStreaming ? "-STR" : "";
                 
                 var factura = new Factura
