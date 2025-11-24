@@ -53,17 +53,18 @@
                                 <div class="text-sm text-gray-500 dark:text-gray-400">@factura.Cliente.Codigo</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-sm text-gray-600 dark:text-gray-300">@factura.Servicio.Nombre</span>
-                                    @if (factura.Servicio.Categoria == "Internet")
-                                    {
-                                        <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Internet</span>
-                                    }
-                                    else if (factura.Servicio.Categoria == "Streaming")
-                                    {
-                                        <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Streaming</span>
-                                    }
-                                </div>
+                                @if (factura.Categoria == "Internet")
+                                {
+                                    <span class="px-2 py-1 text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Internet</span>
+                                }
+                                else if (factura.Categoria == "Streaming")
+                                {
+                                    <span class="px-2 py-1 text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Streaming</span>
+                                }
+                                else
+                                {
+                                    <span class="text-sm text-gray-600 dark:text-gray-300">@factura.Categoria</span>
+                                }
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">@factura.MesFacturacion.ToString("MMMM yyyy")</td>
                             <td class="px-6 py-4 whitespace-nowrap">
