@@ -169,6 +169,7 @@ public class ClienteService : IClienteService
         existente.Email = cliente.Email;
         existente.Activo = cliente.Activo;
         existente.FechaCreacion = cliente.FechaCreacion;
+        existente.TotalFacturas = cliente.TotalFacturas; // Permitir edición manual
         existente.ServicioId = cliente.ServicioId; // Mantener para compatibilidad
 
         _context.SaveChanges();
