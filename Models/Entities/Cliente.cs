@@ -10,6 +10,7 @@ public class Cliente
     public string? Email { get; set; }
     public bool Activo { get; set; } = true;
     public DateTime FechaCreacion { get; set; } = DateTime.Now;
+    public int TotalFacturas { get; set; } = 0; // Contador de facturas del cliente
     public int? ServicioId { get; set; } // Último servicio usado por el cliente
     
     // Relaciones

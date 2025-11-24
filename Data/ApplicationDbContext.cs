@@ -29,6 +29,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Telefono).HasMaxLength(20);
             entity.Property(e => e.Cedula).HasMaxLength(50);
             entity.Property(e => e.Email).HasMaxLength(200);
+            entity.Property(e => e.TotalFacturas).HasDefaultValue(0);
             entity.HasIndex(e => e.Codigo).IsUnique();
             
             // Relación opcional con Servicio (último servicio usado)
@@ -43,6 +44,7 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Nombre).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
             entity.Property(e => e.Precio).HasColumnType("decimal(18,2)");
         });
 

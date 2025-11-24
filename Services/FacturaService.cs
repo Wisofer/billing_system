@@ -113,6 +113,8 @@ public class FacturaService : IFacturaService
         // Actualizar el último servicio usado del cliente
         cliente.ServicioId = factura.ServicioId;
         
+        // NO incrementar TotalFacturas aquí - solo se incrementa cuando la factura se marca como Pagada
+        
         _context.SaveChanges();
         return factura;
     }
@@ -123,11 +125,33 @@ public class FacturaService : IFacturaService
         if (existente == null)
             throw new Exception("Factura no encontrada");
 
+        var estadoAnterior = existente.Estado;
+        var estadoNuevo = factura.Estado;
+
         // Solo actualizar campos permitidos
         existente.Estado = factura.Estado;
         if (!string.IsNullOrWhiteSpace(factura.ArchivoPDF))
         {
             existente.ArchivoPDF = factura.ArchivoPDF;
+        }
+
+        // Incrementar TotalFacturas solo cuando la factura cambia a estado "Pagada"
+        if (estadoAnterior != SD.EstadoFacturaPagada && estadoNuevo == SD.EstadoFacturaPagada)
+        {
+            var cliente = _clienteService.ObtenerPorId(existente.ClienteId);
+            if (cliente != null)
+            {
+                cliente.TotalFacturas++;
+            }
+        }
+        // Decrementar si cambia de Pagada a otro estado (aunque esto no debería pasar normalmente)
+        else if (estadoAnterior == SD.EstadoFacturaPagada && estadoNuevo != SD.EstadoFacturaPagada)
+        {
+            var cliente = _clienteService.ObtenerPorId(existente.ClienteId);
+            if (cliente != null && cliente.TotalFacturas > 0)
+            {
+                cliente.TotalFacturas--;
+            }
         }
 
         _context.SaveChanges();
@@ -144,6 +168,16 @@ public class FacturaService : IFacturaService
         var tienePagos = _context.Pagos.Any(p => p.FacturaId == id);
         if (tienePagos)
             return false; // No se puede eliminar si tiene pagos
+
+        // Decrementar TotalFacturas solo si la factura estaba pagada
+        if (factura.Estado == SD.EstadoFacturaPagada)
+        {
+            var cliente = _clienteService.ObtenerPorId(factura.ClienteId);
+            if (cliente != null && cliente.TotalFacturas > 0)
+            {
+                cliente.TotalFacturas--;
+            }
+        }
 
         _context.Facturas.Remove(factura);
         _context.SaveChanges();
@@ -174,6 +208,16 @@ public class FacturaService : IFacturaService
             {
                 conPagos++;
                 continue;
+            }
+
+            // Decrementar TotalFacturas solo si la factura estaba pagada
+            if (factura.Estado == SD.EstadoFacturaPagada)
+            {
+                var cliente = _clienteService.ObtenerPorId(factura.ClienteId);
+                if (cliente != null && cliente.TotalFacturas > 0)
+                {
+                    cliente.TotalFacturas--;
+                }
             }
 
             _context.Facturas.Remove(factura);
@@ -238,6 +282,7 @@ public class FacturaService : IFacturaService
         // Guardar todas las facturas en una sola transacción
         if (facturasACrear.Any())
         {
+            // NO incrementar TotalFacturas aquí - solo se incrementa cuando la factura se marca como Pagada
             _context.Facturas.AddRange(facturasACrear);
             _context.SaveChanges();
         }

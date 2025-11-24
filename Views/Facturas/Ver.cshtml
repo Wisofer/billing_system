@@ -73,6 +73,10 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Servicio</label>
                     <p class="text-sm text-gray-900">@Model.Servicio.Nombre</p>
+                    @if (!string.IsNullOrWhiteSpace(Model.Servicio.Descripcion))
+                    {
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2 italic">@Model.Servicio.Descripcion</p>
+                    }
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Monto</label>

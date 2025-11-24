@@ -22,6 +22,7 @@
 
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
         <form method="post" action="/servicios/editar/@Model.Id" class="space-y-6">
+            @Html.AntiForgeryToken()
             <input type="hidden" asp-for="Id" name="Id" value="@Model.Id" />
             
             <div>
@@ -29,6 +30,13 @@
                 <input type="text" asp-for="Nombre" name="Nombre" value="@Model.Nombre" required 
                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 <span asp-validation-for="Nombre" class="text-red-500 text-xs"></span>
+            </div>
+
+            <div>
+                <label for="Descripcion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descripción</label>
+                <textarea asp-for="Descripcion" name="Descripcion" rows="3"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">@(Model.Descripcion ?? "")</textarea>
+                <span asp-validation-for="Descripcion" class="text-red-500 text-xs"></span>
             </div>
 
             <div>

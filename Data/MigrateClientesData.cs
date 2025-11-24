@@ -107,19 +107,43 @@ public static class MigrateClientesData
             logger.LogInformation($"Clientes existentes en 'Clientes': {context.Clientes.Count()}");
             logger.LogInformation($"Cédulas únicas existentes: {cedulasExistentes.Count}");
 
+            // Obtener todos los clientes existentes en la tabla nueva para actualizar TotalFacturas
+            var clientesExistentes = context.Clientes
+                .Where(c => !string.IsNullOrEmpty(c.Cedula) && c.Cedula.Trim() != "")
+                .ToList()
+                .ToDictionary(
+                    c => c.Cedula!.Trim().ToUpper(), 
+                    c => c,
+                    StringComparer.OrdinalIgnoreCase
+                );
+
             // Verificar si los clientes de la tabla antigua ya están en la nueva
             // Comparando por cédula (más confiable)
             var clientesYaMigrados = 0;
+            var clientesActualizados = 0;
+            
+            // PRIMERO: Actualizar TotalFacturas de clientes que ya existen
+            logger.LogInformation("Actualizando TotalFacturas de clientes existentes...");
             foreach (var oldCliente in oldClientes)
             {
                 var cedulaOld = string.IsNullOrWhiteSpace(oldCliente.Cedula) 
                     ? null 
                     : oldCliente.Cedula.Trim().ToUpper();
                 
-                if (cedulaOld != null && cedulaOld != "" && cedulasExistentes.Contains(cedulaOld))
+                if (cedulaOld != null && cedulaOld != "" && clientesExistentes.ContainsKey(cedulaOld))
                 {
+                    var clienteExistente = clientesExistentes[cedulaOld];
+                    clienteExistente.TotalFacturas = oldCliente.Facturas;
+                    clientesActualizados++;
                     clientesYaMigrados++;
                 }
+            }
+            
+            // Guardar los cambios de TotalFacturas
+            if (clientesActualizados > 0)
+            {
+                context.SaveChanges();
+                logger.LogInformation($"✅ Actualizados {clientesActualizados} clientes existentes con TotalFacturas de la tabla antigua.");
             }
             
             logger.LogInformation($"Clientes que ya están migrados (por cédula): {clientesYaMigrados} de {oldClientes.Count}");
@@ -165,7 +189,8 @@ public static class MigrateClientesData
                         Telefono = string.IsNullOrWhiteSpace(oldCliente.Telefono) ? null : oldCliente.Telefono.Trim(),
                         Email = null, // No existe en la tabla antigua
                         Activo = true, // Por defecto activo
-                        FechaCreacion = oldCliente.FechaRegistro // Preservar la fecha de registro original
+                        FechaCreacion = oldCliente.FechaRegistro, // Preservar la fecha de registro original
+                        TotalFacturas = oldCliente.Facturas // Migrar el contador de facturas
                     };
 
                     context.Clientes.Add(nuevoCliente);

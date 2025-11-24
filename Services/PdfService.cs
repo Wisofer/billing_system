@@ -18,7 +18,10 @@ public class PdfService : IPdfService
 
     public byte[] GenerarPdfFactura(Factura factura)
     {
-        var fechaVencimiento = factura.FechaCreacion.AddDays(8); // 8 días después de la fecha de creación
+        // Fecha de emisión: siempre día 04 del mes de facturación
+        var fechaEmision = new DateTime(factura.MesFacturacion.Year, factura.MesFacturacion.Month, 4);
+        // Fecha de vencimiento: siempre día 06 del mes de facturación
+        var fechaVencimiento = new DateTime(factura.MesFacturacion.Year, factura.MesFacturacion.Month, 6);
         var mesFacturado = factura.MesFacturacion.ToString("MMM/yyyy").ToUpper();
         
         // Cargar logo si existe
@@ -64,7 +67,8 @@ public class PdfService : IPdfService
                                 empresaColumn.Item().Text("EMSINET").FontSize(16).Bold().FontColor(Colors.Blue.Darken3);
                                 empresaColumn.Item().Text("Sistema de Facturación").FontSize(9).FontColor(Colors.Grey.Darken2);
                                 empresaColumn.Item().Text("Nicaragua").FontSize(8).FontColor(Colors.Grey.Medium);
-                                empresaColumn.Item().Text("E-mail: facturacion@emsinet.com.ni").FontSize(8).FontColor(Colors.Grey.Medium);
+                                empresaColumn.Item().Text("Correo: atencion.al.cliente@emsinetsolut.com").FontSize(8).FontColor(Colors.Grey.Medium);
+                                empresaColumn.Item().Text("Teléfonos: 89308058 / 82771485").FontSize(8).FontColor(Colors.Grey.Medium);
                             });
                         });
 
@@ -74,11 +78,6 @@ public class PdfService : IPdfService
                             row.RelativeItem().Column(facturaColumn =>
                             {
                                 facturaColumn.Item().Text($"Factura {factura.Numero}").FontSize(14).Bold().FontColor(Colors.Blue.Darken3);
-                                facturaColumn.Item().PaddingTop(5).Row(fechaRow =>
-                                {
-                                    fechaRow.RelativeItem().Text($"Fecha: {factura.FechaCreacion:dd/MM/yyyy}").FontSize(9);
-                                    fechaRow.RelativeItem().Text($"Vencimiento: {fechaVencimiento:dd/MM/yyyy}").FontSize(9);
-                                });
                             });
 
                             // Estado
@@ -114,6 +113,7 @@ public class PdfService : IPdfService
                                             datosColumn.Item().Text($"Cédula: {factura.Cliente.Cedula}").FontSize(9);
                                         }
                                         datosColumn.Item().Text($"Código: {factura.Cliente.Codigo}").FontSize(9);
+                                        datosColumn.Item().Text($"Fecha: {fechaEmision:dd/MM/yyyy}").FontSize(9);
                                     });
                                     clienteRow.RelativeItem().Column(contactoColumn =>
                                     {
@@ -125,7 +125,8 @@ public class PdfService : IPdfService
                                         {
                                             contactoColumn.Item().Text($"E-mail: {factura.Cliente.Email}").FontSize(9);
                                         }
-                                        contactoColumn.Item().Text($"Mes facturado: {mesFacturado}").FontSize(9);
+                                        contactoColumn.Item().Text($"Mes facturado: {mesFacturado}").FontSize(10).Bold().FontColor(Colors.Red.Darken2);
+                                        contactoColumn.Item().Text($"Vencimiento: {fechaVencimiento:dd/MM/yyyy}").FontSize(10).Bold().FontColor(Colors.Red.Darken2);
                                     });
                                 });
                             });
@@ -149,17 +150,24 @@ public class PdfService : IPdfService
                                     header.Cell().Element(HeaderCellStyle).AlignRight().Text("Monto C$").FontSize(10).Bold();
                                 });
 
-                                // Servicio
-                                table.Cell().Element(BodyCellStyle).Text(factura.Servicio.Nombre).FontSize(9);
+                                // Servicio con descripción
+                                table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
+                                {
+                                    servicioInfoColumn.Item().Text(factura.Servicio.Nombre).FontSize(9);
+                                    if (!string.IsNullOrWhiteSpace(factura.Servicio.Descripcion))
+                                    {
+                                        servicioInfoColumn.Item().PaddingTop(2).Text(factura.Servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                    }
+                                });
                                 table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
 
                                 // Sub-total
                                 table.Cell().Element(BodyCellStyle).Text("Sub-total C$").FontSize(9);
                                 table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
 
-                                // IVA (opcional, se puede comentar si no aplica)
-                                // table.Cell().Element(BodyCellStyle).Text("I.V.A. C$").FontSize(9);
-                                // table.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+                                // IVA
+                                table.Cell().Element(BodyCellStyle).Text("I.V.A. C$").FontSize(9);
+                                table.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
                                 // Total
                                 table.Cell().Element(TotalCellStyle).Text("Total C$").FontSize(11).Bold();

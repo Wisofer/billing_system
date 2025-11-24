@@ -19,6 +19,7 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Descripción</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Precio</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Fecha Creación</th>
@@ -37,6 +38,9 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">@servicio.Id</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm font-medium text-gray-900 dark:text-white">@servicio.Nombre</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-sm text-gray-600 dark:text-gray-300">@(string.IsNullOrEmpty(servicio.Descripcion) ? "-" : servicio.Descripcion)</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm font-semibold text-gray-900 dark:text-white">C$ @servicio.Precio.ToString("N2")</span>
@@ -78,7 +82,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="@(esAdministrador ? 6 : 5)" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                        <td colspan="@(esAdministrador ? 7 : 6)" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
                             No hay servicios registrados.
                         </td>
                     </tr>

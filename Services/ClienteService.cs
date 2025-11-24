@@ -31,11 +31,16 @@ public class ClienteService : IClienteService
         if (!string.IsNullOrWhiteSpace(busqueda))
         {
             var termino = busqueda.ToLower();
+            
+            // Intentar parsear como número para buscar en TotalFacturas
+            bool esNumero = int.TryParse(busqueda.Trim(), out int numeroFacturas);
+            
             query = query.Where(c => 
                 c.Nombre.ToLower().Contains(termino) ||
                 c.Codigo.ToLower().Contains(termino) ||
                 (c.Cedula != null && c.Cedula.ToLower().Contains(termino)) ||
-                (c.Telefono != null && c.Telefono.Contains(termino)));
+                (c.Telefono != null && c.Telefono.Contains(termino)) ||
+                (esNumero && c.TotalFacturas == numeroFacturas));
         }
 
         var totalItems = query.Count();

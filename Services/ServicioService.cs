@@ -45,6 +45,7 @@ public class ServicioService : IServicioService
             throw new Exception("Servicio no encontrado");
 
         existente.Nombre = servicio.Nombre;
+        existente.Descripcion = servicio.Descripcion;
         existente.Precio = servicio.Precio;
         existente.Activo = servicio.Activo;
 
