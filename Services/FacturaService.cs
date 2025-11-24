@@ -93,6 +93,69 @@ public class FacturaService : IFacturaService
         return $"{numero:D4}-{nombreCliente}-{mesStr}{añoStr}";
     }
 
+    /// <summary>
+    /// Calcula el monto de la factura aplicando lógica proporcional para clientes nuevos.
+    /// El proporcional solo se aplica en la primera factura del cliente si inició después del día 5.
+    /// Considera correctamente todos los meses (28, 29, 30, 31 días).
+    /// </summary>
+    private decimal CalcularMontoProporcional(Cliente cliente, Servicio servicio, DateTime mesFacturacion)
+    {
+        // Verificar si es la primera factura del cliente
+        var esPrimeraFactura = !_context.Facturas.Any(f => f.ClienteId == cliente.Id);
+
+        // Si no es la primera factura, siempre paga mes completo
+        if (!esPrimeraFactura)
+        {
+            return servicio.Precio;
+        }
+
+        // Si es la primera factura, verificar si inició después del día 5
+        var fechaInicioCliente = cliente.FechaCreacion.Date; // Normalizar a fecha sin hora
+        
+        // Si inició el día 5 o antes, paga mes completo
+        if (fechaInicioCliente.Day <= 5)
+        {
+            return servicio.Precio;
+        }
+
+        // Si inició después del día 5, calcular proporcional
+        // El ciclo de facturación es del día 5 de un mes al día 5 del siguiente mes
+        // Calcular días desde la fecha de inicio hasta el día 5 del siguiente mes (incluyendo ambos días)
+        
+        // Obtener el día 5 del siguiente mes (mes de facturación + 1)
+        var siguienteMes = mesFacturacion.AddMonths(1);
+        var fechaVencimiento = new DateTime(siguienteMes.Year, siguienteMes.Month, 5);
+        
+        // Calcular días consumidos: desde fecha de inicio hasta día 5 del siguiente mes (incluyendo ambos días)
+        // Ejemplo: del 23/nov al 5/dic = 13 días (23, 24, 25, 26, 27, 28, 29, 30 nov + 1, 2, 3, 4, 5 dic)
+        var diasConsumidos = (fechaVencimiento.Date - fechaInicioCliente.Date).Days + 1;
+        
+        // Si los días son 0 o negativos, retornar precio completo (no debería pasar)
+        if (diasConsumidos <= 0)
+        {
+            return servicio.Precio;
+        }
+
+        // Obtener días del mes de facturación (considera correctamente 28, 29, 30, 31 días)
+        // DateTime.DaysInMonth maneja automáticamente años bisiestos (febrero con 29 días)
+        var diasDelMes = DateTime.DaysInMonth(mesFacturacion.Year, mesFacturacion.Month);
+        
+        // Calcular costo por día (precio del servicio dividido entre los días del mes de facturación)
+        var costoPorDia = servicio.Precio / diasDelMes;
+        
+        // Calcular monto proporcional
+        var montoProporcional = diasConsumidos * costoPorDia;
+        
+        // Asegurar que el monto proporcional no exceda el precio completo (por seguridad)
+        if (montoProporcional > servicio.Precio)
+        {
+            montoProporcional = servicio.Precio;
+        }
+        
+        // Redondear a 2 decimales
+        return Math.Round(montoProporcional, 2);
+    }
+
     public Factura Crear(Factura factura)
     {
         var cliente = _clienteService.ObtenerPorId(factura.ClienteId);
@@ -104,7 +167,8 @@ public class FacturaService : IFacturaService
             throw new Exception("Servicio no encontrado");
 
         factura.Numero = GenerarNumeroFactura(cliente, factura.MesFacturacion);
-        factura.Monto = servicio.Precio;
+        // Calcular monto aplicando lógica proporcional si es necesario
+        factura.Monto = CalcularMontoProporcional(cliente, servicio, factura.MesFacturacion);
         factura.Estado = SD.EstadoFacturaPendiente;
         factura.FechaCreacion = DateTime.Now;
 
@@ -234,13 +298,12 @@ public class FacturaService : IFacturaService
 
     public void GenerarFacturasAutomaticas()
     {
-        var clientes = _clienteService.ObtenerTodos().Where(c => c.Activo).ToList();
-        var servicios = _servicioService.ObtenerActivos();
+        var clientes = _clienteService.ObtenerTodos().Where(c => c.Activo && c.ServicioId.HasValue).ToList();
         var mesActual = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 
-        if (!clientes.Any() || !servicios.Any())
+        if (!clientes.Any())
         {
-            return; // No hay clientes o servicios activos
+            return; // No hay clientes activos con servicio asignado
         }
 
         var facturasACrear = new List<Factura>();
@@ -248,34 +311,49 @@ public class FacturaService : IFacturaService
 
         foreach (var cliente in clientes)
         {
-            foreach (var servicio in servicios)
+            // Solo generar factura para el servicio asignado al cliente (ServicioId)
+            if (!cliente.ServicioId.HasValue)
             {
-                // Verificar si ya existe factura para este cliente y servicio en este mes
-                var existe = _context.Facturas.Any(f =>
-                    f.ClienteId == cliente.Id &&
-                    f.ServicioId == servicio.Id &&
-                    f.MesFacturacion.Year == mesActual.Year &&
-                    f.MesFacturacion.Month == mesActual.Month);
+                continue; // Saltar clientes sin servicio asignado
+            }
 
-                if (!existe)
+            var servicioId = cliente.ServicioId.Value;
+            var servicio = _servicioService.ObtenerPorId(servicioId);
+            
+            // Verificar que el servicio existe y está activo
+            if (servicio == null || !servicio.Activo)
+            {
+                continue; // Saltar si el servicio no existe o no está activo
+            }
+
+            // Verificar si ya existe factura para este cliente y servicio en este mes
+            var existe = _context.Facturas.Any(f =>
+                f.ClienteId == cliente.Id &&
+                f.ServicioId == servicioId &&
+                f.MesFacturacion.Year == mesActual.Year &&
+                f.MesFacturacion.Month == mesActual.Month);
+
+            if (!existe)
+            {
+                contadorFacturas++;
+                var mesStr = mesActual.ToString("MM");
+                var añoStr = mesActual.ToString("yyyy");
+                var nombreCliente = cliente.Nombre.Replace(" ", "").Substring(0, Math.Min(10, cliente.Nombre.Length));
+                
+                // Calcular monto aplicando lógica proporcional si es necesario
+                var monto = CalcularMontoProporcional(cliente, servicio, mesActual);
+                
+                var factura = new Factura
                 {
-                    contadorFacturas++;
-                    var mesStr = mesActual.ToString("MM");
-                    var añoStr = mesActual.ToString("yyyy");
-                    var nombreCliente = cliente.Nombre.Replace(" ", "").Substring(0, Math.Min(10, cliente.Nombre.Length));
-                    
-                    var factura = new Factura
-                    {
-                        ClienteId = cliente.Id,
-                        ServicioId = servicio.Id,
-                        MesFacturacion = mesActual,
-                        Numero = $"{contadorFacturas:D4}-{nombreCliente}-{mesStr}{añoStr}",
-                        Monto = servicio.Precio,
-                        Estado = SD.EstadoFacturaPendiente,
-                        FechaCreacion = DateTime.Now
-                    };
-                    facturasACrear.Add(factura);
-                }
+                    ClienteId = cliente.Id,
+                    ServicioId = servicioId,
+                    MesFacturacion = mesActual,
+                    Numero = $"{contadorFacturas:D4}-{nombreCliente}-{mesStr}{añoStr}",
+                    Monto = monto,
+                    Estado = SD.EstadoFacturaPendiente,
+                    FechaCreacion = DateTime.Now
+                };
+                facturasACrear.Add(factura);
             }
         }
 

@@ -180,6 +180,22 @@ public class FacturasController : Controller
     }
 
     [Authorize(Policy = "Administrador")]
+    [HttpGet("/facturas/contar-clientes-generar")]
+    public IActionResult ContarClientesGenerar()
+    {
+        try
+        {
+            var total = _clienteService.ObtenerTodos()
+                .Count(c => c.Activo && c.ServicioId.HasValue);
+            return Json(new { total });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { total = 0, error = ex.Message });
+        }
+    }
+
+    [Authorize(Policy = "Administrador")]
     [HttpPost("/facturas/generar-automaticas")]
     public IActionResult GenerarAutomaticas()
     {

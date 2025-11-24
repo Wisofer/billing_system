@@ -44,6 +44,7 @@
 
     <!-- Formulario de registro de pago -->
     <form method="post" action="/pagos/crear" id="formPago" class="space-y-6">
+        @Html.AntiForgeryToken()
 
         @if (clientes.Any())
         {

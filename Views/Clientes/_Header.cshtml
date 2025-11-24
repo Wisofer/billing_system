@@ -9,6 +9,7 @@
     </div>
     <div class="flex items-center space-x-3">
         <form action="/clientes/importar" method="post" enctype="multipart/form-data" class="flex items-center space-x-2">
+            @Html.AntiForgeryToken()
             <label class="cursor-pointer">
                 <input type="file" name="archivoExcel" accept=".xlsx,.xls" required 
                        class="hidden" id="archivoExcel" onchange="mostrarNombreArchivo(this)">

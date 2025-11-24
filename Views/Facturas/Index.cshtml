@@ -11,3 +11,186 @@
 @await Html.PartialAsync("_Filtros")
 @await Html.PartialAsync("_TablaFacturas", Model)
 @await Html.PartialAsync("_Notificaciones")
+
+<!-- Loader para generación automática -->
+<div id="loaderGenerarFacturas" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
+        <div class="flex flex-col items-center space-y-4">
+            <!-- Mensaje -->
+            <div class="text-center w-full">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Generando Facturas</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Estamos generando las facturas de todos sus clientes activos...
+                </p>
+                
+                <!-- Barra de progreso -->
+                <div class="w-full">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300" id="progresoTexto">0 / 0</span>
+                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300" id="progresoPorcentaje">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                        <div id="barraProgreso" class="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out" style="width: 0%">
+                            <div class="h-full bg-blue-400 animate-pulse"></div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center" id="mensajeProgreso">
+                        Iniciando generación...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formGenerarAutomaticas = document.getElementById('formGenerarAutomaticas');
+    const btnGenerarAutomaticas = document.getElementById('btnGenerarAutomaticas');
+    const loaderGenerarFacturas = document.getElementById('loaderGenerarFacturas');
+    const barraProgreso = document.getElementById('barraProgreso');
+    const progresoTexto = document.getElementById('progresoPorcentaje');
+    const progresoContador = document.getElementById('progresoTexto');
+    const mensajeProgreso = document.getElementById('mensajeProgreso');
+    
+    if (formGenerarAutomaticas && btnGenerarAutomaticas) {
+        formGenerarAutomaticas.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Deshabilitar el botón
+            btnGenerarAutomaticas.disabled = true;
+            btnGenerarAutomaticas.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Cambiar el contenido del botón
+            const contenidoOriginal = btnGenerarAutomaticas.innerHTML;
+            btnGenerarAutomaticas.innerHTML = `
+                <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Generando...</span>
+            `;
+            
+            // Mostrar el loader
+            if (loaderGenerarFacturas) {
+                loaderGenerarFacturas.classList.remove('hidden');
+            }
+            
+            // Inicializar la barra de progreso
+            let progreso = 0;
+            let totalClientes = 0;
+            
+            // Primero obtener el número de clientes que se van a procesar
+            fetch('/facturas/contar-clientes-generar', {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+                totalClientes = data.total || 1;
+                actualizarProgreso(0, totalClientes);
+                
+                // Crear FormData con el token anti-forgery
+                const formData = new FormData(formGenerarAutomaticas);
+                
+                // Simular progreso mientras se procesa
+                const intervalo = setInterval(() => {
+                    if (progreso < 90) {
+                        progreso += Math.random() * 5;
+                        if (progreso > 90) progreso = 90;
+                        actualizarProgreso(Math.floor(progreso), totalClientes);
+                    }
+                }, 200);
+                
+                // Enviar la petición
+                fetch('/facturas/generar-automaticas', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    clearInterval(intervalo);
+                    progreso = 100;
+                    actualizarProgreso(totalClientes, totalClientes);
+                    mensajeProgreso.textContent = '¡Facturas generadas exitosamente!';
+                    
+                    setTimeout(() => {
+                        if (response.ok || response.redirected) {
+                            // Ocultar el loader
+                            if (loaderGenerarFacturas) {
+                                loaderGenerarFacturas.classList.add('hidden');
+                            }
+                            // Redirigir a la página de facturas
+                            window.location.href = '/facturas';
+                        } else {
+                            throw new Error('Error al generar facturas');
+                        }
+                    }, 500);
+                })
+                .catch(error => {
+                    clearInterval(intervalo);
+                    console.error('Error:', error);
+                    // Ocultar el loader
+                    if (loaderGenerarFacturas) {
+                        loaderGenerarFacturas.classList.add('hidden');
+                    }
+                    // Restaurar el botón
+                    btnGenerarAutomaticas.disabled = false;
+                    btnGenerarAutomaticas.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnGenerarAutomaticas.innerHTML = contenidoOriginal;
+                    alert('Error al generar las facturas. Por favor, intenta de nuevo.');
+                });
+            })
+            .catch(error => {
+                console.error('Error al obtener total de clientes:', error);
+                // Si falla, usar un valor por defecto
+                totalClientes = 1;
+                actualizarProgreso(0, totalClientes);
+                
+                // Continuar con la generación
+                const formData = new FormData(formGenerarAutomaticas);
+                fetch('/facturas/generar-automaticas', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok || response.redirected) {
+                        progreso = 100;
+                        actualizarProgreso(totalClientes, totalClientes);
+                        setTimeout(() => {
+                            if (loaderGenerarFacturas) {
+                                loaderGenerarFacturas.classList.add('hidden');
+                            }
+                            window.location.href = '/facturas';
+                        }, 500);
+                    } else {
+                        throw new Error('Error al generar facturas');
+                    }
+                })
+                .catch(err => {
+                    if (loaderGenerarFacturas) {
+                        loaderGenerarFacturas.classList.add('hidden');
+                    }
+                    btnGenerarAutomaticas.disabled = false;
+                    btnGenerarAutomaticas.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnGenerarAutomaticas.innerHTML = contenidoOriginal;
+                    alert('Error al generar las facturas. Por favor, intenta de nuevo.');
+                });
+            });
+            
+            function actualizarProgreso(actual, total) {
+                const porcentaje = total > 0 ? Math.min(100, Math.round((actual / total) * 100)) : 0;
+                if (barraProgreso) {
+                    barraProgreso.style.width = porcentaje + '%';
+                }
+                if (progresoTexto) {
+                    progresoTexto.textContent = `${actual} / ${total}`;
+                }
+                if (progresoContador) {
+                    progresoContador.textContent = porcentaje + '%';
+                }
+                if (mensajeProgreso && actual < total) {
+                    mensajeProgreso.textContent = `Procesando cliente ${actual} de ${total}...`;
+                }
+            }
+        });
+    }
+});
+</script>

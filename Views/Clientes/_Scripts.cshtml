@@ -51,12 +51,14 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
         
         const formData = new FormData(this);
+        const servicioId = formData.get('ServicioId');
         const data = {
             Codigo: formData.get('Codigo') || '',
             Nombre: formData.get('Nombre') || '',
             Telefono: formData.get('Telefono') || null,
             Cedula: formData.get('Cedula') || null,
-            Email: formData.get('Email') || null
+            Email: formData.get('Email') || null,
+            ServicioId: servicioId && servicioId !== '' ? parseInt(servicioId) : null
         };
         
         document.querySelectorAll('#formCrearCliente .text-red-500').forEach(el => el.textContent = '');

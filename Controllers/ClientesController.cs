@@ -52,6 +52,7 @@ public class ClientesController : Controller
         ViewBag.EsAdministrador = esAdministrador;
         ViewBag.ClientesActivos = clientesActivos;
         ViewBag.NuevosEsteMes = nuevosEsteMes;
+        ViewBag.Servicios = _servicioService.ObtenerActivos();
 
         return View(resultado.Items);
     }
@@ -308,10 +309,10 @@ public class ClientesController : Controller
                     {
                         try
                         {
-                            var nombre = worksheet.Cells[row, 1]?.Text?.Trim() ?? "";
-                            var email = worksheet.Cells[row, 2]?.Text?.Trim() ?? "";
-                            var telefono = worksheet.Cells[row, 3]?.Text?.Trim() ?? "";
-                            var cedula = worksheet.Cells[row, 4]?.Text?.Trim() ?? "";
+                            var nombre = worksheet.Cells[row, 1].Value?.ToString()?.Trim() ?? "";
+                            var email = worksheet.Cells[row, 2].Value?.ToString()?.Trim() ?? "";
+                            var telefono = worksheet.Cells[row, 3].Value?.ToString()?.Trim() ?? "";
+                            var cedula = worksheet.Cells[row, 4].Value?.ToString()?.Trim() ?? "";
 
                             if (string.IsNullOrWhiteSpace(nombre))
                             {
