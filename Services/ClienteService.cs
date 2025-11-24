@@ -175,18 +175,31 @@ public class ClienteService : IClienteService
 
     public bool Eliminar(int id)
     {
-        var cliente = ObtenerPorId(id);
-        if (cliente == null)
+        try
+        {
+            var cliente = ObtenerPorId(id);
+            if (cliente == null)
+                return false;
+
+            // Verificar si tiene facturas asociadas
+            var tieneFacturas = _context.Facturas.Any(f => f.ClienteId == id);
+            if (tieneFacturas)
+                return false; // No se puede eliminar si tiene facturas
+
+            _context.Clientes.Remove(cliente);
+            _context.SaveChanges();
+            return true;
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+        {
+            // Error de restricción de clave foránea - el cliente tiene facturas o pagos asociados
             return false;
-
-        // Verificar si tiene facturas
-        var tieneFacturas = _context.Facturas.Any(f => f.ClienteId == id);
-        if (tieneFacturas)
-            return false; // No se puede eliminar si tiene facturas
-
-        _context.Clientes.Remove(cliente);
-        _context.SaveChanges();
-        return true;
+        }
+        catch (Exception)
+        {
+            // Otro tipo de error
+            return false;
+        }
     }
 
     public bool ExisteCodigo(string codigo, int? idExcluir = null)
