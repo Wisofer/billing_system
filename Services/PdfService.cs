@@ -2,6 +2,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using billing_system.Models.Entities;
+using billing_system.Utils;
 using System.IO;
 
 namespace billing_system.Services;
@@ -23,6 +24,14 @@ public class PdfService : IPdfService
         // Fecha de vencimiento: siempre día 06 del mes de facturación
         var fechaVencimiento = new DateTime(factura.MesFacturacion.Year, factura.MesFacturacion.Month, 6);
         var mesFacturado = factura.MesFacturacion.ToString("MMM/yyyy").ToUpper();
+        
+        // Calcular multa: 200.00 solo si la factura está pendiente y la fecha actual es después del día 6
+        var fechaActual = DateTime.Now;
+        var multaPorPagoTardio = 0.00m;
+        if (factura.Estado == SD.EstadoFacturaPendiente && fechaActual > fechaVencimiento)
+        {
+            multaPorPagoTardio = 200.00m;
+        }
         
         // Cargar logo si existe
         byte[]? logoBytes = null;
@@ -64,7 +73,7 @@ public class PdfService : IPdfService
                             // Información de la Empresa
                             row.RelativeItem().PaddingLeft(10).Column(empresaColumn =>
                             {
-                                empresaColumn.Item().Text("EMSINET").FontSize(16).Bold().FontColor(Colors.Blue.Darken3);
+                                empresaColumn.Item().Text("Servicio De Internet").FontSize(16).Bold().FontColor(Colors.Blue.Darken3);
                                 empresaColumn.Item().Text("Sistema de Facturación").FontSize(9).FontColor(Colors.Grey.Darken2);
                                 empresaColumn.Item().Text("Nicaragua").FontSize(8).FontColor(Colors.Grey.Medium);
                                 empresaColumn.Item().Text("Correo: atencion.al.cliente@emsinetsolut.com").FontSize(8).FontColor(Colors.Grey.Medium);
@@ -74,10 +83,17 @@ public class PdfService : IPdfService
 
                         column.Item().PaddingTop(10).Row(row =>
                         {
-                            // Número de Factura destacado
+                            // Número de Factura destacado - Formato F-0001
                             row.RelativeItem().Column(facturaColumn =>
                             {
-                                facturaColumn.Item().Text($"Factura {factura.Numero}").FontSize(14).Bold().FontColor(Colors.Blue.Darken3);
+                                // Extraer el número del formato "0001-Nombre-MMYYYY" y mostrar como "F-0001"
+                                var numeroFactura = "F-0001";
+                                var partes = factura.Numero.Split('-');
+                                if (partes.Length > 0 && int.TryParse(partes[0], out var num))
+                                {
+                                    numeroFactura = $"F-{num:D4}";
+                                }
+                                facturaColumn.Item().Text(numeroFactura).FontSize(14).Bold().FontColor(Colors.Blue.Darken3);
                             });
 
                             // Estado
@@ -125,7 +141,7 @@ public class PdfService : IPdfService
                                         {
                                             contactoColumn.Item().Text($"E-mail: {factura.Cliente.Email}").FontSize(9);
                                         }
-                                        contactoColumn.Item().Text($"Mes facturado: {mesFacturado}").FontSize(10).Bold().FontColor(Colors.Red.Darken2);
+                                        contactoColumn.Item().Text($"Mes facturado: {mesFacturado}").FontSize(9);
                                         contactoColumn.Item().Text($"Vencimiento: {fechaVencimiento:dd/MM/yyyy}").FontSize(10).Bold().FontColor(Colors.Red.Darken2);
                                     });
                                 });
@@ -199,16 +215,19 @@ public class PdfService : IPdfService
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Saldo inicial del periodo").FontSize(9);
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
-                                    estadoTable.Cell().Element(BodyCellStyle).Text("Monto pagado").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{montoPagado:N2}").FontSize(9);
-
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Monto consumido").FontSize(9);
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+
+                                    estadoTable.Cell().Element(BodyCellStyle).Text("Multa por pago tardío").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{multaPorPagoTardio:N2}").FontSize(9);
+
+                                    estadoTable.Cell().Element(BodyCellStyle).Text("Monto pagado").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{montoPagado:N2}").FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Saldo final del periodo").FontSize(9);
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
-                                    var montoTotalPagar = factura.Monto - montoPagado;
+                                    var montoTotalPagar = factura.Monto - montoPagado + multaPorPagoTardio;
                                     estadoTable.Cell().Element(TotalCellStyle).Text("Monto total a pagar").FontSize(11).Bold();
                                     estadoTable.Cell().Element(TotalCellStyle).AlignRight().Text($"{montoTotalPagar:N2}").FontSize(11).Bold();
                                 });
@@ -237,17 +256,21 @@ public class PdfService : IPdfService
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Saldo inicial del periodo").FontSize(9);
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
-                                    estadoTable.Cell().Element(BodyCellStyle).Text("Monto pagado").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
-
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Monto consumido").FontSize(9);
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+
+                                    estadoTable.Cell().Element(BodyCellStyle).Text("Multa por pago tardío").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{multaPorPagoTardio:N2}").FontSize(9);
+
+                                    estadoTable.Cell().Element(BodyCellStyle).Text("Monto pagado").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Saldo final del periodo").FontSize(9);
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
+                                    var montoTotalPagar = factura.Monto + multaPorPagoTardio;
                                     estadoTable.Cell().Element(TotalCellStyle).Text("Monto total a pagar").FontSize(11).Bold();
-                                    estadoTable.Cell().Element(TotalCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(11).Bold();
+                                    estadoTable.Cell().Element(TotalCellStyle).AlignRight().Text($"{montoTotalPagar:N2}").FontSize(11).Bold();
                                 });
                             });
                         }
@@ -258,7 +281,7 @@ public class PdfService : IPdfService
                     .PaddingTop(10)
                     .Text(x =>
                     {
-                        x.Span("Sistema de Facturación EMSINET - ").FontSize(7).FontColor(Colors.Grey.Medium);
+                        x.Span("Sistema de Facturación Servicio De Internet - ").FontSize(7).FontColor(Colors.Grey.Medium);
                         x.Span($"Generado el {DateTime.Now:dd/MM/yyyy HH:mm}").FontSize(7).FontColor(Colors.Grey.Medium);
                     });
             });
