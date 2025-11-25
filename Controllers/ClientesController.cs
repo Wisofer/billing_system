@@ -8,7 +8,7 @@ using billing_system.Utils;
 
 namespace billing_system.Controllers;
 
-[Authorize]
+[Authorize(Policy = "Administrador")]
 [Route("[controller]/[action]")]
 public class ClientesController : Controller
 {

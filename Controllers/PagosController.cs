@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace billing_system.Controllers;
 
-[Authorize]
+[Authorize(Policy = "Pagos")]
 [Route("[controller]/[action]")]
 public class PagosController : Controller
 {

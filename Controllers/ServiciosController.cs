@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace billing_system.Controllers;
 
-[Authorize]
+[Authorize(Policy = "Administrador")]
 [Route("[controller]/[action]")]
 public class ServiciosController : Controller
 {

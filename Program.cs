@@ -63,6 +63,9 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Administrador", policy => policy.RequireClaim("Rol", "Administrador"));
     options.AddPolicy("Normal", policy => policy.RequireClaim("Rol", "Normal", "Administrador"));
+    options.AddPolicy("Caja", policy => policy.RequireClaim("Rol", "Caja", "Administrador"));
+    options.AddPolicy("FacturasPagos", policy => policy.RequireClaim("Rol", "Normal", "Administrador"));
+    options.AddPolicy("Pagos", policy => policy.RequireClaim("Rol", "Caja", "Normal", "Administrador"));
 });
 
 // Registrar servicios
