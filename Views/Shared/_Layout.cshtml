@@ -20,6 +20,34 @@
             darkMode: 'class',
         }
     </script>
+    <script>
+        // Script inline para restaurar el estado del sidebar ANTES de que se renderice
+        // Esto evita el "flash" del sidebar al cambiar de página
+        (function() {
+            try {
+                const sidebarState = localStorage.getItem('sidebarState');
+                const isDesktop = window.innerWidth >= 1024;
+                
+                if (isDesktop && sidebarState === 'open') {
+                    // Crear y aplicar estilo inmediatamente
+                    const style = document.createElement('style');
+                    style.id = 'sidebar-initial-state';
+                    style.textContent = '#sidebar{transform:translateX(0)!important;transition:none!important;}#mainContent{margin-left:256px!important;transition:none!important;}';
+                    (document.head || document.getElementsByTagName('head')[0]).appendChild(style);
+                    
+                    // Remover el estilo después de que se cargue el JavaScript principal
+                    setTimeout(function() {
+                        const initialStyle = document.getElementById('sidebar-initial-state');
+                        if (initialStyle) {
+                            initialStyle.remove();
+                        }
+                    }, 100);
+                }
+            } catch (e) {
+                // Silenciar errores si localStorage no está disponible
+            }
+        })();
+    </script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 antialiased">
     <div class="flex h-screen overflow-hidden">
@@ -151,17 +179,35 @@
         (function() {
             'use strict';
             let sidebarOpen = false;
+            const STORAGE_KEY = 'sidebarState';
             
-            function toggleSidebar() {
-                const sidebar = document.getElementById('sidebar');
-                const main = document.getElementById('mainContent');
-                const overlay = document.getElementById('sidebarOverlay');
-                
+            // Función para guardar el estado del sidebar
+            function saveSidebarState(state) {
+                try {
+                    localStorage.setItem(STORAGE_KEY, state ? 'open' : 'closed');
+                } catch (e) {
+                    console.warn('No se pudo guardar el estado del sidebar:', e);
+                }
+            }
+            
+            // Función para obtener el estado guardado del sidebar
+            function getSavedSidebarState() {
+                try {
+                    const state = localStorage.getItem(STORAGE_KEY);
+                    return state === 'open';
+                } catch (e) {
+                    console.warn('No se pudo leer el estado del sidebar:', e);
+                    return null;
+                }
+            }
+            
+            // Función para aplicar el estado del sidebar
+            function applySidebarState(isOpen, sidebar, main, overlay) {
                 if (!sidebar) return;
                 
-                sidebarOpen = !sidebarOpen;
+                sidebarOpen = isOpen;
                 
-                if (sidebarOpen) {
+                if (isOpen) {
                     sidebar.style.transform = 'translateX(0)';
                     sidebar.style.transition = 'transform 0.3s ease-in-out';
                     if (main) {
@@ -182,14 +228,26 @@
                 }
             }
             
+            function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const main = document.getElementById('mainContent');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                if (!sidebar) return;
+                
+                sidebarOpen = !sidebarOpen;
+                applySidebarState(sidebarOpen, sidebar, main, overlay);
+                saveSidebarState(sidebarOpen);
+            }
+            
             function closeSidebar() {
                 const sidebar = document.getElementById('sidebar');
                 const main = document.getElementById('mainContent');
                 const overlay = document.getElementById('sidebarOverlay');
+                
                 sidebarOpen = false;
-                if (sidebar) sidebar.style.transform = 'translateX(-100%)';
-                if (main) main.style.marginLeft = '0';
-                if (overlay) overlay.style.display = 'none';
+                applySidebarState(false, sidebar, main, overlay);
+                saveSidebarState(false);
             }
             
             window.toggleSidebar = toggleSidebar;
@@ -210,20 +268,30 @@
                 const main = document.getElementById('mainContent');
                 const overlay = document.getElementById('sidebarOverlay');
                 
-                if (window.innerWidth >= 1024) {
-                    if (sidebar) {
-                        sidebar.style.transform = 'translateX(0)';
-                        sidebarOpen = true;
-                    }
-                    if (main) main.style.marginLeft = '256px';
-                } else {
-                    if (sidebar) {
-                        sidebar.style.transform = 'translateX(-100%)';
-                        sidebarOpen = false;
-                    }
-                    if (main) main.style.marginLeft = '0';
+                if (!sidebar || !main) {
+                    // Si los elementos no están listos, usar MutationObserver
+                    const observer = new MutationObserver(function(mutations, obs) {
+                        const sb = document.getElementById('sidebar');
+                        const m = document.getElementById('mainContent');
+                        const ov = document.getElementById('sidebarOverlay');
+                        
+                        if (sb && m) {
+                            restoreSidebarState(sb, m, ov);
+                            obs.disconnect();
+                        }
+                    });
+                    
+                    observer.observe(document.documentElement, {
+                        childList: true,
+                        subtree: true
+                    });
+                    
+                    // Timeout de seguridad para desconectar el observer después de 5 segundos
+                    setTimeout(() => observer.disconnect(), 5000);
+                    return;
                 }
-                if (overlay) overlay.style.display = 'none';
+                
+                restoreSidebarState(sidebar, main, overlay);
                 
                 const btn = document.getElementById('hamburgerBtn');
                 if (btn) {
@@ -240,11 +308,76 @@
                 window.aplicarTema(temaGuardado);
             }
             
+            function restoreSidebarState(sidebar, main, overlay) {
+                const isDesktop = window.innerWidth >= 1024;
+                const savedState = getSavedSidebarState();
+                
+                // En desktop: usar el estado guardado si existe, sino abrir por defecto
+                // En móvil: siempre cerrar por defecto
+                let shouldBeOpen = false;
+                
+                if (isDesktop) {
+                    // En desktop, si hay un estado guardado, usarlo; sino, abrir por defecto
+                    shouldBeOpen = savedState !== null ? savedState : true;
+                } else {
+                    // En móvil, siempre cerrar por defecto
+                    shouldBeOpen = false;
+                }
+                
+                // Aplicar sin transición inicialmente para evitar flash
+                if (shouldBeOpen) {
+                    sidebar.style.transition = 'none';
+                    sidebar.style.transform = 'translateX(0)';
+                    if (main) {
+                        main.style.transition = 'none';
+                        main.style.marginLeft = '256px';
+                    }
+                    if (overlay && window.innerWidth < 1024) {
+                        overlay.style.display = 'block';
+                    }
+                    
+                    // Restaurar transiciones después de un pequeño delay
+                    setTimeout(() => {
+                        sidebar.style.transition = 'transform 0.3s ease-in-out';
+                        if (main) main.style.transition = 'margin-left 0.3s ease-in-out';
+                    }, 50);
+                } else {
+                    sidebar.style.transition = 'none';
+                    sidebar.style.transform = 'translateX(-100%)';
+                    if (main) {
+                        main.style.transition = 'none';
+                        main.style.marginLeft = '0';
+                    }
+                    if (overlay) overlay.style.display = 'none';
+                    
+                    // Restaurar transiciones después de un pequeño delay
+                    setTimeout(() => {
+                        sidebar.style.transition = 'transform 0.3s ease-in-out';
+                        if (main) main.style.transition = 'margin-left 0.3s ease-in-out';
+                    }, 50);
+                }
+                
+                sidebarOpen = shouldBeOpen;
+            }
+            
+            // Ejecutar inmediatamente si el DOM ya está listo, sino esperar
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', init);
+                // También intentar ejecutar inmediatamente como respaldo
+                setTimeout(init, 0);
             } else {
                 init();
             }
+            
+            // Ejecutar también cuando la página esté completamente cargada como respaldo
+            window.addEventListener('load', function() {
+                const sidebar = document.getElementById('sidebar');
+                const main = document.getElementById('mainContent');
+                const overlay = document.getElementById('sidebarOverlay');
+                if (sidebar && main) {
+                    restoreSidebarState(sidebar, main, overlay);
+                }
+            });
         })();
     </script>
 
