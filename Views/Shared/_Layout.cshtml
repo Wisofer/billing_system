@@ -8,7 +8,7 @@
 }
 
 <!DOCTYPE html>
-<html lang="es" class="@(temaActual == "oscuro" ? "dark" : "")">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,6 +19,85 @@
         tailwind.config = {
             darkMode: 'class',
         }
+    </script>
+    <script>
+        // Script inline para aplicar el tema ANTES de que se renderice el HTML
+        // Esto evita el "flash" del tema al cambiar de página
+        // PRIORIDAD ABSOLUTA: localStorage > servidor
+        (function() {
+            try {
+                // Obtener tema de localStorage (PRIORIDAD ABSOLUTA)
+                let temaLocalStorage = localStorage.getItem('tema');
+                const temaServidor = '@temaActual';
+                
+                // Si no hay tema en localStorage, usar el del servidor y guardarlo
+                if (!temaLocalStorage) {
+                    temaLocalStorage = temaServidor || 'claro';
+                    localStorage.setItem('tema', temaLocalStorage);
+                }
+                
+                // Normalizar el tema
+                const temaNormalizado = (temaLocalStorage === 'oscuro' || temaLocalStorage === 'dark') ? 'oscuro' : 'claro';
+                
+                // Aplicar el tema inmediatamente al elemento HTML (ANTES de cualquier otro script)
+                const html = document.documentElement;
+                if (temaNormalizado === 'oscuro') {
+                    html.classList.add('dark');
+                } else {
+                    html.classList.remove('dark');
+                }
+                
+                // Guardar el tema normalizado en localStorage
+                localStorage.setItem('tema', temaNormalizado);
+                
+                // Marcar que el tema ya fue aplicado para evitar sobrescrituras
+                window.__temaAplicado = true;
+                window.__temaActual = temaNormalizado;
+                
+                // Protección: Observer para mantener el tema correcto
+                // Si algo intenta cambiar el tema sin autorización, lo corregimos
+                let proteccionActiva = true;
+                const temaObserver = new MutationObserver(function(mutations) {
+                    if (!proteccionActiva) return; // Si la protección está desactivada, no hacer nada
+                    
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            const temaEsperado = temaNormalizado;
+                            const tieneDark = document.documentElement.classList.contains('dark');
+                            const temaActual = tieneDark ? 'oscuro' : 'claro';
+                            
+                            // Si el tema cambió sin nuestra autorización, corregirlo
+                            if (temaActual !== temaEsperado) {
+                                // Desactivar protección temporalmente para evitar loop
+                                proteccionActiva = false;
+                                
+                                if (temaEsperado === 'oscuro') {
+                                    document.documentElement.classList.add('dark');
+                                } else {
+                                    document.documentElement.classList.remove('dark');
+                                }
+                                
+                                // Reactivar protección después de un breve delay
+                                setTimeout(() => { proteccionActiva = true; }, 100);
+                            }
+                        }
+                    });
+                });
+                
+                // Observar cambios en el atributo class del elemento html
+                temaObserver.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: ['class']
+                });
+                
+                // Guardar el observer y la función para desactivar protección
+                window.__temaObserver = temaObserver;
+                window.__desactivarProteccionTema = function() { proteccionActiva = false; };
+                window.__activarProteccionTema = function() { proteccionActiva = true; };
+            } catch (e) {
+                // Silenciar errores si localStorage no está disponible
+            }
+        })();
     </script>
     <script>
         // Script inline para restaurar el estado del sidebar ANTES de que se renderice
@@ -274,12 +353,37 @@
             
             // Función global para aplicar tema (usada desde Configuraciones)
             window.aplicarTema = function(tema) {
+                // Desactivar protección temporalmente para permitir el cambio
+                if (window.__desactivarProteccionTema) {
+                    window.__desactivarProteccionTema();
+                }
+                
                 const html = document.documentElement;
-                if (tema === 'oscuro') {
+                const temaNormalizado = (tema === 'oscuro' || tema === 'dark') ? 'oscuro' : 'claro';
+                
+                if (temaNormalizado === 'oscuro') {
                     html.classList.add('dark');
                 } else {
                     html.classList.remove('dark');
                 }
+                
+                // Actualizar las variables globales
+                window.__temaAplicado = true;
+                window.__temaActual = temaNormalizado;
+                
+                // Guardar en localStorage
+                try {
+                    localStorage.setItem('tema', temaNormalizado);
+                } catch (e) {
+                    // Silenciar errores
+                }
+                
+                // Reactivar protección después de un breve delay
+                setTimeout(() => {
+                    if (window.__activarProteccionTema) {
+                        window.__activarProteccionTema();
+                    }
+                }, 150);
             };
             
             function init() {
@@ -322,9 +426,28 @@
                     };
                 }
                 
-                // Aplicar tema al cargar
-                const temaGuardado = localStorage.getItem('tema') || '@temaActual';
-                window.aplicarTema(temaGuardado);
+                // NO aplicar tema aquí - ya se aplicó desde el head
+                // El tema ya está correctamente aplicado desde el script inline en el head
+                // Solo verificamos que localStorage esté sincronizado (sin cambiar el tema)
+                try {
+                    const temaLocalStorage = localStorage.getItem('tema');
+                    const temaActualEnDOM = document.documentElement.classList.contains('dark') ? 'oscuro' : 'claro';
+                    
+                    // Solo sincronizar localStorage si no coincide, pero NO cambiar el tema del DOM
+                    // El DOM ya tiene el tema correcto desde el head
+                    if (temaLocalStorage && temaLocalStorage !== temaActualEnDOM) {
+                        // El DOM tiene prioridad (ya fue aplicado desde el head)
+                        // Actualizar localStorage para que coincida con el DOM
+                        localStorage.setItem('tema', temaActualEnDOM);
+                        window.__temaActual = temaActualEnDOM;
+                    } else if (!temaLocalStorage) {
+                        // Si no hay tema en localStorage, guardar el tema actual del DOM
+                        localStorage.setItem('tema', temaActualEnDOM);
+                        window.__temaActual = temaActualEnDOM;
+                    }
+                } catch (e) {
+                    // Silenciar errores de localStorage
+                }
             }
             
             function restoreSidebarState(sidebar, main, overlay) {
@@ -395,6 +518,25 @@
                 const overlay = document.getElementById('sidebarOverlay');
                 if (sidebar && main) {
                     restoreSidebarState(sidebar, main, overlay);
+                }
+                
+                // Protección: Asegurar que el tema se mantenga correcto después de la carga
+                // Solo si localStorage tiene un tema diferente al DOM, corregirlo
+                try {
+                    const temaLocalStorage = localStorage.getItem('tema');
+                    if (temaLocalStorage) {
+                        const temaNormalizado = (temaLocalStorage === 'oscuro' || temaLocalStorage === 'dark') ? 'oscuro' : 'claro';
+                        const temaActualDOM = document.documentElement.classList.contains('dark') ? 'oscuro' : 'claro';
+                        
+                        // Si el DOM no coincide con localStorage, corregir el DOM
+                        if (temaNormalizado !== temaActualDOM) {
+                            if (window.aplicarTema) {
+                                window.aplicarTema(temaNormalizado);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // Silenciar errores
                 }
             });
         })();

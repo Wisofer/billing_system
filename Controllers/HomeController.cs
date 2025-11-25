@@ -28,105 +28,143 @@ public class HomeController : Controller
     [HttpGet("/")]
     public IActionResult Index()
     {
-        // Estadísticas generales
+        // Estadísticas generales (consultas optimizadas)
         var pagosPendientes = _facturaService.CalcularTotalPendiente();
         var pagosRealizados = _pagoService.CalcularTotalIngresos();
         var totalClientes = _clienteService.ObtenerTotal();
         var totalFacturas = _facturaService.ObtenerTotal();
-        var totalPagos = _pagoService.ObtenerTodos().Count;
+        var totalPagos = _context.Pagos.Count(); // Optimizado: Count directo en BD
         var totalClientesActivos = _clienteService.ObtenerTotalActivos();
 
-        // Estadísticas por categoría - Internet
-        var facturasInternet = _context.Facturas
+        // Estadísticas por categoría - Internet (optimizado: agregaciones directas en BD)
+        var facturasInternetCount = _context.Facturas
             .Where(f => f.Categoria == SD.CategoriaInternet)
-            .ToList();
+            .Count();
+        
+        var facturasPagadasInternet = _context.Facturas
+            .Where(f => f.Categoria == SD.CategoriaInternet && f.Estado == SD.EstadoFacturaPagada)
+            .Count();
+        
+        var facturasPendientesInternet = _context.Facturas
+            .Where(f => f.Categoria == SD.CategoriaInternet && f.Estado == SD.EstadoFacturaPendiente)
+            .Count();
+        
+        var pendientesInternet = _context.Facturas
+            .Where(f => f.Categoria == SD.CategoriaInternet && f.Estado == SD.EstadoFacturaPendiente)
+            .Sum(f => (decimal?)f.Monto) ?? 0;
         
         var ingresosInternet = _context.Pagos
+            .Include(p => p.Factura)
             .Where(p => p.Factura != null && p.Factura.Categoria == SD.CategoriaInternet)
-            .Sum(p => p.Monto);
-        
-        var pendientesInternet = facturasInternet
-            .Where(f => f.Estado == SD.EstadoFacturaPendiente)
-            .Sum(f => f.Monto);
-        
-        var facturasPagadasInternet = facturasInternet.Count(f => f.Estado == SD.EstadoFacturaPagada);
-        var facturasPendientesInternet = facturasInternet.Count(f => f.Estado == SD.EstadoFacturaPendiente);
+            .Sum(p => (decimal?)p.Monto) ?? 0;
 
-        // Estadísticas por categoría - Streaming
-        var facturasStreaming = _context.Facturas
+        // Estadísticas por categoría - Streaming (optimizado: agregaciones directas en BD)
+        var facturasStreamingCount = _context.Facturas
             .Where(f => f.Categoria == SD.CategoriaStreaming)
-            .ToList();
+            .Count();
+        
+        var facturasPagadasStreaming = _context.Facturas
+            .Where(f => f.Categoria == SD.CategoriaStreaming && f.Estado == SD.EstadoFacturaPagada)
+            .Count();
+        
+        var facturasPendientesStreaming = _context.Facturas
+            .Where(f => f.Categoria == SD.CategoriaStreaming && f.Estado == SD.EstadoFacturaPendiente)
+            .Count();
+        
+        var pendientesStreaming = _context.Facturas
+            .Where(f => f.Categoria == SD.CategoriaStreaming && f.Estado == SD.EstadoFacturaPendiente)
+            .Sum(f => (decimal?)f.Monto) ?? 0;
         
         var ingresosStreaming = _context.Pagos
+            .Include(p => p.Factura)
             .Where(p => p.Factura != null && p.Factura.Categoria == SD.CategoriaStreaming)
-            .Sum(p => p.Monto);
-        
-        var pendientesStreaming = facturasStreaming
-            .Where(f => f.Estado == SD.EstadoFacturaPendiente)
-            .Sum(f => f.Monto);
-        
-        var facturasPagadasStreaming = facturasStreaming.Count(f => f.Estado == SD.EstadoFacturaPagada);
-        var facturasPendientesStreaming = facturasStreaming.Count(f => f.Estado == SD.EstadoFacturaPendiente);
+            .Sum(p => (decimal?)p.Monto) ?? 0;
 
-        // Estadísticas de clientes por tipo de servicio
-        var clientesConServicios = _context.Clientes
-            .Include(c => c.ClienteServicios)
-                .ThenInclude(cs => cs.Servicio)
-            .Where(c => c.Activo && c.ClienteServicios.Any(cs => cs.Activo))
+        // Estadísticas de clientes por tipo de servicio (optimizado: consultas directas en BD)
+        var clientesConInternet = _context.Clientes
+            .Where(c => c.Activo && 
+                       c.ClienteServicios.Any(cs => cs.Activo && 
+                                                  cs.Servicio != null && 
+                                                  cs.Servicio.Categoria == SD.CategoriaInternet))
+            .Count();
+        
+        var clientesConStreaming = _context.Clientes
+            .Where(c => c.Activo && 
+                       c.ClienteServicios.Any(cs => cs.Activo && 
+                                                  cs.Servicio != null && 
+                                                  cs.Servicio.Categoria == SD.CategoriaStreaming))
+            .Count();
+        
+        var clientesConAmbos = _context.Clientes
+            .Where(c => c.Activo && 
+                       c.ClienteServicios.Any(cs => cs.Activo && cs.Servicio != null && cs.Servicio.Categoria == SD.CategoriaInternet) &&
+                       c.ClienteServicios.Any(cs => cs.Activo && cs.Servicio != null && cs.Servicio.Categoria == SD.CategoriaStreaming))
+            .Count();
+
+        // Estadísticas mensuales (optimizado: una sola consulta agrupada en lugar de 24 consultas)
+        var fechaActual = DateTime.Now;
+        var fechaInicio = fechaActual.AddMonths(-5).Date;
+        fechaInicio = new DateTime(fechaInicio.Year, fechaInicio.Month, 1);
+        
+        // Obtener todas las facturas de los últimos 6 meses en una sola consulta
+        var facturasMensuales = _context.Facturas
+            .Where(f => f.MesFacturacion >= fechaInicio)
+            .GroupBy(f => new { 
+                Ano = f.MesFacturacion.Year, 
+                Mes = f.MesFacturacion.Month, 
+                Categoria = f.Categoria 
+            })
+            .Select(g => new {
+                g.Key.Ano,
+                g.Key.Mes,
+                g.Key.Categoria,
+                Count = g.Count()
+            })
             .ToList();
         
-        var clientesConInternet = clientesConServicios.Count(c => 
-            c.ClienteServicios.Any(cs => cs.Activo && cs.Servicio != null && cs.Servicio.Categoria == SD.CategoriaInternet));
+        // Obtener todos los pagos de los últimos 6 meses en una sola consulta
+        var pagosMensuales = _context.Pagos
+            .Include(p => p.Factura)
+            .Where(p => p.Factura != null && p.Factura.MesFacturacion >= fechaInicio)
+            .GroupBy(p => new { 
+                Ano = p.Factura.MesFacturacion.Year, 
+                Mes = p.Factura.MesFacturacion.Month, 
+                Categoria = p.Factura.Categoria 
+            })
+            .Select(g => new {
+                g.Key.Ano,
+                g.Key.Mes,
+                g.Key.Categoria,
+                Total = g.Sum(p => p.Monto)
+            })
+            .ToList();
         
-        var clientesConStreaming = clientesConServicios.Count(c => 
-            c.ClienteServicios.Any(cs => cs.Activo && cs.Servicio != null && cs.Servicio.Categoria == SD.CategoriaStreaming));
-        
-        var clientesConAmbos = clientesConServicios.Count(c => 
-            c.ClienteServicios.Any(cs => cs.Activo && cs.Servicio != null && cs.Servicio.Categoria == SD.CategoriaInternet) &&
-            c.ClienteServicios.Any(cs => cs.Activo && cs.Servicio != null && cs.Servicio.Categoria == SD.CategoriaStreaming));
-
-        // Estadísticas mensuales (últimos 6 meses)
+        // Construir estadísticas mensuales desde los datos agrupados
         var estadisticasMensuales = new List<MesEstadistica>();
-        var fechaActual = DateTime.Now;
-        
         for (int i = 5; i >= 0; i--)
         {
             var mes = fechaActual.AddMonths(-i);
             var mesStr = mes.ToString("MMM yyyy");
             
-            var facturasMesInternet = _context.Facturas
-                .Where(f => f.Categoria == SD.CategoriaInternet &&
-                           f.MesFacturacion.Year == mes.Year &&
-                           f.MesFacturacion.Month == mes.Month)
-                .ToList();
+            var facturasInternetMes = facturasMensuales
+                .FirstOrDefault(f => f.Ano == mes.Year && f.Mes == mes.Month && f.Categoria == SD.CategoriaInternet);
             
-            var facturasMesStreaming = _context.Facturas
-                .Where(f => f.Categoria == SD.CategoriaStreaming &&
-                           f.MesFacturacion.Year == mes.Year &&
-                           f.MesFacturacion.Month == mes.Month)
-                .ToList();
+            var facturasStreamingMes = facturasMensuales
+                .FirstOrDefault(f => f.Ano == mes.Year && f.Mes == mes.Month && f.Categoria == SD.CategoriaStreaming);
             
-            var ingresosMesInternet = _context.Pagos
-                .Where(p => p.Factura != null && 
-                           p.Factura.Categoria == SD.CategoriaInternet &&
-                           p.Factura.MesFacturacion.Year == mes.Year &&
-                           p.Factura.MesFacturacion.Month == mes.Month)
-                .Sum(p => (decimal?)p.Monto) ?? 0;
+            var ingresosInternetMes = pagosMensuales
+                .FirstOrDefault(p => p.Ano == mes.Year && p.Mes == mes.Month && p.Categoria == SD.CategoriaInternet);
             
-            var ingresosMesStreaming = _context.Pagos
-                .Where(p => p.Factura != null && 
-                           p.Factura.Categoria == SD.CategoriaStreaming &&
-                           p.Factura.MesFacturacion.Year == mes.Year &&
-                           p.Factura.MesFacturacion.Month == mes.Month)
-                .Sum(p => (decimal?)p.Monto) ?? 0;
+            var ingresosStreamingMes = pagosMensuales
+                .FirstOrDefault(p => p.Ano == mes.Year && p.Mes == mes.Month && p.Categoria == SD.CategoriaStreaming);
             
             estadisticasMensuales.Add(new MesEstadistica
             {
                 Mes = mesStr,
-                IngresosInternet = ingresosMesInternet,
-                IngresosStreaming = ingresosMesStreaming,
-                FacturasInternet = facturasMesInternet.Count,
-                FacturasStreaming = facturasMesStreaming.Count
+                IngresosInternet = ingresosInternetMes?.Total ?? 0,
+                IngresosStreaming = ingresosStreamingMes?.Total ?? 0,
+                FacturasInternet = facturasInternetMes?.Count ?? 0,
+                FacturasStreaming = facturasStreamingMes?.Count ?? 0
             });
         }
 
@@ -145,14 +183,14 @@ public class HomeController : Controller
             // Internet
             IngresosInternet = ingresosInternet,
             PendientesInternet = pendientesInternet,
-            FacturasInternet = facturasInternet.Count,
+            FacturasInternet = facturasInternetCount,
             FacturasPagadasInternet = facturasPagadasInternet,
             FacturasPendientesInternet = facturasPendientesInternet,
             
             // Streaming
             IngresosStreaming = ingresosStreaming,
             PendientesStreaming = pendientesStreaming,
-            FacturasStreaming = facturasStreaming.Count,
+            FacturasStreaming = facturasStreamingCount,
             FacturasPagadasStreaming = facturasPagadasStreaming,
             FacturasPendientesStreaming = facturasPendientesStreaming,
             

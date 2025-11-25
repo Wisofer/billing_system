@@ -357,11 +357,16 @@
         // Normalizar el tema
         const temaNormalizado = (tema === 'oscuro' || tema === 'dark') ? 'oscuro' : 'claro';
         
-        // Aplicar el tema al documento
-        if (temaNormalizado === 'oscuro') {
-            document.documentElement.classList.add('dark');
+        // Usar la función global si está disponible, sino aplicar directamente
+        if (window.aplicarTema) {
+            window.aplicarTema(temaNormalizado);
         } else {
-            document.documentElement.classList.remove('dark');
+            // Aplicar el tema al documento
+            if (temaNormalizado === 'oscuro') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
         }
         
         // Guardar en localStorage con el valor normalizado
@@ -408,10 +413,18 @@
         // Obtener tema del localStorage o del servidor
         const temaLocalStorage = localStorage.getItem('tema');
         const temaServidor = '@temaActual';
-        const temaGuardado = temaLocalStorage || temaServidor;
+        const temaGuardado = temaLocalStorage || temaServidor || 'claro';
         
-        // Aplicar el tema
-        aplicarTema(temaGuardado);
+        // Normalizar el tema
+        const temaNormalizado = (temaGuardado === 'oscuro' || temaGuardado === 'dark') ? 'oscuro' : 'claro';
+        
+        // Aplicar el tema (ya debería estar aplicado desde el head, pero esto actualiza los botones)
+        aplicarTema(temaNormalizado);
+        
+        // Sincronizar localStorage
+        if (localStorage.getItem('tema') !== temaNormalizado) {
+            localStorage.setItem('tema', temaNormalizado);
+        }
     }
     
     // Ejecutar inmediatamente si el DOM está listo, o esperar a que esté listo
