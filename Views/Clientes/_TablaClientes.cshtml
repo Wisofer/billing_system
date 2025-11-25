@@ -1,4 +1,5 @@
 @model List<billing_system.Models.Entities.Cliente>
+@using billing_system.Utils
 @{
     var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
     var busqueda = ViewBag.Busqueda as string ?? "";
@@ -34,6 +35,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Teléfono</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cédula</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Servicios</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total Facturas</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
@@ -57,6 +59,30 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">@(cliente.Telefono ?? "-")</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">@(cliente.Cedula ?? "-")</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @{
+                                    var serviciosActivos = cliente.ClienteServicios?.Where(cs => cs.Activo).ToList() ?? new List<billing_system.Models.Entities.ClienteServicio>();
+                                    var tieneInternet = serviciosActivos.Any(cs => cs.Servicio?.Categoria == SD.CategoriaInternet);
+                                    var tieneStreaming = serviciosActivos.Any(cs => cs.Servicio?.Categoria == SD.CategoriaStreaming);
+                                    
+                                    if (tieneInternet && tieneStreaming)
+                                    {
+                                        <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900 text-gray-700 dark:text-gray-300 border border-blue-200 dark:border-blue-700">Ambos</span>
+                                    }
+                                    else if (tieneInternet)
+                                    {
+                                        <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Internet</span>
+                                    }
+                                    else if (tieneStreaming)
+                                    {
+                                        <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Streaming</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-sm text-gray-400 dark:text-gray-500">-</span>
+                                    }
+                                }
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm font-semibold text-gray-900 dark:text-white">@cliente.TotalFacturas</span>
                             </td>
@@ -104,7 +130,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                        <td colspan="8" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
                             @if (!string.IsNullOrWhiteSpace(busqueda))
                             {
                                 <p>No se encontraron clientes con el término "@busqueda"</p>

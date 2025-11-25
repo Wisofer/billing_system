@@ -46,6 +46,8 @@ public class ClienteService : IClienteService
         var totalItems = query.Count();
 
         var items = query
+            .Include(c => c.ClienteServicios)
+                .ThenInclude(cs => cs.Servicio)
             .OrderByDescending(c => c.FechaCreacion)
             .Skip((pagina - 1) * tamanoPagina)
             .Take(tamanoPagina)
