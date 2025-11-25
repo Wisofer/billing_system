@@ -8,7 +8,7 @@
 
 @if (totalItems > 0 && totalPages > 1)
 {
-    <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-100">
+    <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-100 dark:border-gray-600">
         <div class="flex items-center justify-between">
             <div class="text-sm text-gray-500 dark:text-gray-400">
                 Mostrando <span class="font-medium text-gray-900 dark:text-white">@((pagina - 1) * tamanoPagina + 1)</span> a 
@@ -20,7 +20,7 @@
                 @if (pagina > 1)
                 {
                     <a href="/clientes?pagina=@(pagina - 1)&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
-                       class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 transition-colors">
+                       class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                         </svg>
@@ -45,7 +45,7 @@
                         if (inicio > 1)
                         {
                             <a href="/clientes?pagina=1&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
-                               class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 transition-colors">1</a>
+                               class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">1</a>
                             if (inicio > 2) { <span class="px-2 text-gray-500 dark:text-gray-400">...</span> }
                         }
                         
@@ -58,15 +58,15 @@
                             else
                             {
                                 <a href="/clientes?pagina=@i&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
-                                   class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 transition-colors">@i</a>
+                                   class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">@i</a>
                             }
                         }
                         
                         if (fin < totalPages)
                         {
-                            if (fin < totalPages - 1) { <span class="px-2 text-gray-500">...</span> }
+                            if (fin < totalPages - 1) { <span class="px-2 text-gray-500 dark:text-gray-400">...</span> }
                             <a href="/clientes?pagina=@totalPages&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
-                               class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 transition-colors">@totalPages</a>
+                               class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">@totalPages</a>
                         }
                     }
                 </div>
@@ -74,7 +74,7 @@
                 @if (pagina < totalPages)
                 {
                     <a href="/clientes?pagina=@(pagina + 1)&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
-                       class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 transition-colors">
+                       class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         Siguiente
                         <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

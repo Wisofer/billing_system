@@ -8,9 +8,9 @@
     <div class="mb-6 flex items-center justify-between">
         <div>
             <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-1">Detalles de Factura</h2>
-            <p class="text-sm text-gray-500">Información completa de la factura</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Información completa de la factura</p>
         </div>
-        <a href="/facturas" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 transition-colors text-sm font-medium text-gray-700">
+        <a href="/facturas" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 dark:bg-gray-700 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
             Volver
         </a>
     </div>
@@ -20,21 +20,21 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Número de Factura</label>
-                <p class="text-lg font-semibold text-gray-900">@Model.Numero</p>
+                <p class="text-lg font-semibold text-gray-900 dark:text-white">@Model.Numero</p>
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Estado</label>
                 @if (Model.Estado == "Pagada")
                 {
-                    <span class="px-3 py-1 inline-flex text-sm font-medium rounded-md bg-green-50 text-green-700">Pagada</span>
+                    <span class="px-3 py-1 inline-flex text-sm font-medium rounded-md bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300">Pagada</span>
                 }
                 else if (Model.Estado == "Pendiente")
                 {
-                    <span class="px-3 py-1 inline-flex text-sm font-medium rounded-md bg-amber-50 text-amber-700">Pendiente</span>
+                    <span class="px-3 py-1 inline-flex text-sm font-medium rounded-md bg-amber-50 dark:bg-amber-900 text-amber-700 dark:text-amber-300">Pendiente</span>
                 }
                 else
                 {
-                    <span class="px-3 py-1 inline-flex text-sm font-medium rounded-md bg-red-50 text-red-700">Cancelada</span>
+                    <span class="px-3 py-1 inline-flex text-sm font-medium rounded-md bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-300">Cancelada</span>
                 }
             </div>
         </div>
@@ -44,24 +44,24 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Código</label>
-                    <p class="text-sm text-gray-900">@Model.Cliente.Codigo</p>
+                    <p class="text-sm text-gray-900 dark:text-white">@Model.Cliente.Codigo</p>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nombre</label>
-                    <p class="text-sm text-gray-900">@Model.Cliente.Nombre</p>
+                    <p class="text-sm text-gray-900 dark:text-white">@Model.Cliente.Nombre</p>
                 </div>
                 @if (!string.IsNullOrEmpty(Model.Cliente.Telefono))
                 {
                     <div>
                         <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Teléfono</label>
-                        <p class="text-sm text-gray-900">@Model.Cliente.Telefono</p>
+                        <p class="text-sm text-gray-900 dark:text-white">@Model.Cliente.Telefono</p>
                     </div>
                 }
                 @if (!string.IsNullOrEmpty(Model.Cliente.Email))
                 {
                     <div>
                         <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Email</label>
-                        <p class="text-sm text-gray-900">@Model.Cliente.Email</p>
+                        <p class="text-sm text-gray-900 dark:text-white">@Model.Cliente.Email</p>
                     </div>
                 }
             </div>
@@ -73,7 +73,7 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Servicio</label>
                     <div class="flex items-center space-x-2">
-                        <p class="text-sm text-gray-900">@Model.Servicio.Nombre</p>
+                        <p class="text-sm text-gray-900 dark:text-white">@Model.Servicio.Nombre</p>
                         @if (Model.Servicio.Categoria == "Internet")
                         {
                             <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Internet</span>
@@ -96,15 +96,15 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Monto</label>
-                    <p class="text-lg font-semibold text-gray-900">C$ @Model.Monto.ToString("N2")</p>
+                    <p class="text-lg font-semibold text-gray-900 dark:text-white">C$ @Model.Monto.ToString("N2")</p>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Mes de Facturación</label>
-                    <p class="text-sm text-gray-900">@Model.MesFacturacion.ToString("MMMM yyyy")</p>
+                    <p class="text-sm text-gray-900 dark:text-white">@Model.MesFacturacion.ToString("MMMM yyyy")</p>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Fecha de Creación</label>
-                    <p class="text-sm text-gray-900">@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</p>
+                    <p class="text-sm text-gray-900 dark:text-white">@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</p>
                 </div>
             </div>
         </div>

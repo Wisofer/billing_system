@@ -26,6 +26,7 @@ public class ConfiguracionesController : Controller
         var nombreUsuario = User.Identity?.Name ?? "";
         var rolUsuario = User.FindFirst("Rol")?.Value ?? "";
         var esAdministrador = User.HasClaim("Rol", "Administrador");
+        var temaActual = HttpContext.Session.GetString("Tema") ?? "claro";
 
         var usuarios = _usuarioService.ObtenerTodos();
 
@@ -33,6 +34,7 @@ public class ConfiguracionesController : Controller
         ViewBag.RolUsuario = rolUsuario;
         ViewBag.NombreUsuario = nombreUsuario;
         ViewBag.Usuarios = usuarios;
+        ViewBag.TemaActual = temaActual;
 
         return View();
     }

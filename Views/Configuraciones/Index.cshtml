@@ -6,6 +6,7 @@
     var rolUsuario = ViewBag.RolUsuario as string ?? "";
     var nombreUsuario = ViewBag.NombreUsuario as string ?? "";
     var usuarios = ViewBag.Usuarios as List<Usuario> ?? new List<Usuario>();
+    var temaActual = ViewBag.TemaActual as string ?? "claro";
 }
 
 <div class="mb-6">
@@ -124,13 +125,13 @@
         <div>
             <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Tema</label>
             <div class="flex items-center space-x-4">
-                <button onclick="cambiarTema('claro')" id="btnTemaClaro" class="px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 transition-colors flex items-center space-x-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                <button onclick="cambiarTema('claro')" id="btnTemaClaro" class="px-4 py-2 border-2 rounded-lg transition-all duration-200 flex items-center space-x-2 font-medium border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                     <span>Claro</span>
                 </button>
-                <button onclick="cambiarTema('oscuro')" id="btnTemaOscuro" class="px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 transition-colors flex items-center space-x-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                <button onclick="cambiarTema('oscuro')" id="btnTemaOscuro" class="px-4 py-2 border-2 rounded-lg transition-all duration-200 flex items-center space-x-2 font-medium border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                     </svg>
@@ -336,53 +337,88 @@
 
     // Gestión de Tema
     function cambiarTema(tema) {
+        // Normalizar el tema antes de enviarlo
+        const temaNormalizado = (tema === 'oscuro' || tema === 'dark') ? 'oscuro' : 'claro';
+        
         fetch('/configuraciones/tema', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ tema })
-        }).then(() => {
-            localStorage.setItem('tema', tema);
-            aplicarTema(tema);
+            body: new URLSearchParams({ tema: temaNormalizado })
+        }).then(response => response.json()).then(data => {
+            if (data.success) {
+                aplicarTema(temaNormalizado);
+            }
+        }).catch(error => {
+            console.error('Error al cambiar tema:', error);
         });
     }
 
     function aplicarTema(tema) {
-        // Usar la función global del layout si existe
-        if (window.aplicarTema) {
-            window.aplicarTema(tema);
+        // Normalizar el tema
+        const temaNormalizado = (tema === 'oscuro' || tema === 'dark') ? 'oscuro' : 'claro';
+        
+        // Aplicar el tema al documento
+        if (temaNormalizado === 'oscuro') {
+            document.documentElement.classList.add('dark');
         } else {
-            // Fallback si no existe la función global
-            if (tema === 'oscuro') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
+            document.documentElement.classList.remove('dark');
         }
         
-        // Actualizar botones
+        // Guardar en localStorage con el valor normalizado
+        localStorage.setItem('tema', temaNormalizado);
+        
+        // Actualizar botones visualmente (usar el tema normalizado)
+        actualizarBotonesTema(temaNormalizado);
+    }
+    
+    function actualizarBotonesTema(tema) {
         const btnClaro = document.getElementById('btnTemaClaro');
         const btnOscuro = document.getElementById('btnTemaOscuro');
         
-        if (tema === 'oscuro') {
-            if (btnOscuro) {
-                btnOscuro.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900', 'dark:border-blue-400');
-            }
-            if (btnClaro) {
-                btnClaro.classList.remove('border-blue-500', 'bg-blue-50');
-            }
+        if (!btnClaro || !btnOscuro) {
+            // Si los botones no están disponibles, intentar de nuevo después de un breve delay
+            setTimeout(() => actualizarBotonesTema(tema), 100);
+            return;
+        }
+        
+        // Clases base comunes
+        const clasesBase = 'px-4 py-2 border-2 rounded-lg transition-all duration-200 flex items-center space-x-2 font-medium';
+        
+        // Clases para botón no seleccionado (borde gris delgado)
+        const clasesNoSeleccionado = 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300';
+        
+        // Clases para botón seleccionado (borde azul grueso y marcado)
+        const clasesSeleccionado = 'border-blue-600 dark:border-blue-400 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 shadow-md ring-2 ring-blue-300 dark:ring-blue-500 ring-opacity-50';
+        
+        // Normalizar el tema (asegurarse de que sea 'claro' o 'oscuro')
+        const temaNormalizado = (tema === 'oscuro' || tema === 'dark') ? 'oscuro' : 'claro';
+        
+        // Actualizar botón Claro
+        if (temaNormalizado === 'claro') {
+            btnClaro.className = clasesBase + ' ' + clasesSeleccionado;
+            btnOscuro.className = clasesBase + ' ' + clasesNoSeleccionado;
         } else {
-            if (btnClaro) {
-                btnClaro.classList.add('border-blue-500', 'bg-blue-50');
-            }
-            if (btnOscuro) {
-                btnOscuro.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900', 'dark:border-blue-400');
-            }
+            btnClaro.className = clasesBase + ' ' + clasesNoSeleccionado;
+            btnOscuro.className = clasesBase + ' ' + clasesSeleccionado;
         }
     }
 
     // Aplicar tema al cargar
-    document.addEventListener('DOMContentLoaded', () => {
-        const temaGuardado = localStorage.getItem('tema') || 'claro';
+    function inicializarTema() {
+        // Obtener tema del localStorage o del servidor
+        const temaLocalStorage = localStorage.getItem('tema');
+        const temaServidor = '@temaActual';
+        const temaGuardado = temaLocalStorage || temaServidor;
+        
+        // Aplicar el tema
         aplicarTema(temaGuardado);
-    });
+    }
+    
+    // Ejecutar inmediatamente si el DOM está listo, o esperar a que esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializarTema);
+    } else {
+        // Usar setTimeout para asegurarse de que los elementos estén disponibles
+        setTimeout(inicializarTema, 50);
+    }
 </script>
