@@ -142,7 +142,20 @@ else
 // Manejar códigos de estado (404, 403, 500, etc.)
 app.UseStatusCodePagesWithReExecute("/error", "?statusCode={0}");
 
-app.UseStaticFiles();
+// Configurar cache para archivos estáticos
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        // Deshabilitar cache para desarrollo, pero permitir cache en producción con versionado
+        if (app.Environment.IsDevelopment())
+        {
+            ctx.Context.Response.Headers.Append("Cache-Control", "no-cache, no-store, must-revalidate");
+            ctx.Context.Response.Headers.Append("Pragma", "no-cache");
+            ctx.Context.Response.Headers.Append("Expires", "0");
+        }
+    }
+});
 
 app.UseRouting();
 
