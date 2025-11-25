@@ -82,6 +82,10 @@ builder.Services.AddScoped<IPdfService>(sp =>
 });
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
+// Registrar servicio en segundo plano para generación automática de facturas
+// Este servicio se ejecutará el día 1 de cada mes a las 2:00 AM
+builder.Services.AddHostedService<FacturaAutomaticaBackgroundService>();
+
 var app = builder.Build();
 
 // Aplicar migraciones e inicializar datos

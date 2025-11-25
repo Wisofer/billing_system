@@ -359,6 +359,114 @@ public class ClientesController : Controller
     }
 
     [Authorize(Policy = "Administrador")]
+    [HttpGet("/clientes/exportar-excel")]
+    public IActionResult ExportarExcel()
+    {
+        try
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            // Obtener todos los clientes con sus servicios
+            var clientes = _clienteService.ObtenerTodos()
+                .OrderBy(c => c.Nombre)
+                .ToList();
+
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Clientes");
+
+                // Encabezados
+                worksheet.Cells[1, 1].Value = "Código";
+                worksheet.Cells[1, 2].Value = "Nombre";
+                worksheet.Cells[1, 3].Value = "Email";
+                worksheet.Cells[1, 4].Value = "Teléfono";
+                worksheet.Cells[1, 5].Value = "Cédula";
+                worksheet.Cells[1, 6].Value = "Servicios";
+                worksheet.Cells[1, 7].Value = "Total Facturas";
+                worksheet.Cells[1, 8].Value = "Estado";
+                worksheet.Cells[1, 9].Value = "Fecha Creación";
+
+                // Formatear encabezados
+                using (var range = worksheet.Cells[1, 1, 1, 9])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(59, 130, 246)); // Azul
+                    range.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                    range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                }
+
+                // Datos
+                int row = 2;
+                foreach (var cliente in clientes)
+                {
+                    worksheet.Cells[row, 1].Value = cliente.Codigo;
+                    worksheet.Cells[row, 2].Value = cliente.Nombre;
+                    worksheet.Cells[row, 3].Value = cliente.Email ?? "";
+                    worksheet.Cells[row, 4].Value = cliente.Telefono ?? "";
+                    worksheet.Cells[row, 5].Value = cliente.Cedula ?? "";
+                    
+                    // Determinar servicios
+                    var serviciosActivos = cliente.ClienteServicios?.Where(cs => cs.Activo).ToList() ?? new List<ClienteServicio>();
+                    var tieneInternet = serviciosActivos.Any(cs => cs.Servicio?.Categoria == SD.CategoriaInternet);
+                    var tieneStreaming = serviciosActivos.Any(cs => cs.Servicio?.Categoria == SD.CategoriaStreaming);
+                    
+                    string servicios = "";
+                    if (tieneInternet && tieneStreaming)
+                        servicios = "Ambos";
+                    else if (tieneInternet)
+                        servicios = "Internet";
+                    else if (tieneStreaming)
+                        servicios = "Streaming";
+                    else
+                        servicios = "-";
+                    
+                    worksheet.Cells[row, 6].Value = servicios;
+                    worksheet.Cells[row, 7].Value = cliente.TotalFacturas;
+                    worksheet.Cells[row, 8].Value = cliente.Activo ? "Activo" : "Inactivo";
+                    worksheet.Cells[row, 9].Value = cliente.FechaCreacion.ToString("dd/MM/yyyy HH:mm");
+                    
+                    row++;
+                }
+
+                // Ajustar ancho de columnas
+                worksheet.Column(1).Width = 15; // Código
+                worksheet.Column(2).Width = 30; // Nombre
+                worksheet.Column(3).Width = 30; // Email
+                worksheet.Column(4).Width = 15; // Teléfono
+                worksheet.Column(5).Width = 15; // Cédula
+                worksheet.Column(6).Width = 15; // Servicios
+                worksheet.Column(7).Width = 15; // Total Facturas
+                worksheet.Column(8).Width = 12; // Estado
+                worksheet.Column(9).Width = 18; // Fecha Creación
+
+                // Aplicar bordes a todas las celdas con datos
+                if (row > 2)
+                {
+                    using (var range = worksheet.Cells[1, 1, row - 1, 9])
+                    {
+                        range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    }
+                }
+
+                // Generar nombre del archivo con fecha
+                var nombreArchivo = $"Clientes_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+                return File(package.GetAsByteArray(), contentType, nombreArchivo);
+            }
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error al exportar clientes a Excel: {ex.Message}";
+            return Redirect("/clientes");
+        }
+    }
+
+    [Authorize(Policy = "Administrador")]
     [HttpPost("/clientes/importar")]
     [ValidateAntiForgeryToken]
     public IActionResult Importar(IFormFile archivoExcel)

@@ -456,4 +456,53 @@ public class FacturasController : Controller
             return Redirect("/facturas");
         }
     }
+
+    [HttpGet("/facturas/obtener-ids-facturas")]
+    [Produces("application/json")]
+    public IActionResult ObtenerIdsFacturas(string? estado, int? mes, int? año, string? busquedaCliente)
+    {
+        try
+        {
+            // Aplicar los mismos filtros que en Index
+            var query = _facturaService.ObtenerTodas().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(estado) && estado != "Todos")
+            {
+                query = query.Where(f => f.Estado == estado);
+            }
+
+            // Aplicar filtro de mes y año
+            var tieneParametroMes = Request.Query.ContainsKey("mes");
+            var mesVacio = tieneParametroMes && string.IsNullOrEmpty(Request.Query["mes"].ToString());
+            
+            if (!mesVacio)
+            {
+                var mesFiltro = mes ?? DateTime.Now.Month;
+                var añoFiltro = año ?? DateTime.Now.Year;
+                var fechaFiltro = new DateTime(añoFiltro, mesFiltro, 1);
+                query = query.Where(f => f.MesFacturacion.Year == fechaFiltro.Year && f.MesFacturacion.Month == fechaFiltro.Month);
+            }
+
+            if (!string.IsNullOrWhiteSpace(busquedaCliente))
+            {
+                var termino = busquedaCliente.ToLower();
+                // Materializar la consulta para poder acceder a las propiedades de navegación
+                var facturas = query.ToList();
+                facturas = facturas.Where(f => 
+                    (f.Cliente?.Nombre?.ToLower().Contains(termino) ?? false) ||
+                    (f.Cliente?.Codigo?.ToLower().Contains(termino) ?? false)).ToList();
+                var facturasIds = facturas.OrderBy(f => f.Numero).Select(f => f.Id).Distinct().ToList();
+                return Json(new { ids = facturasIds, total = facturasIds.Count });
+            }
+
+            var facturasIdsFinal = query.OrderBy(f => f.Numero).Select(f => f.Id).Distinct().ToList();
+
+            return Json(new { ids = facturasIdsFinal, total = facturasIdsFinal.Count });
+        }
+        catch (Exception ex)
+        {
+            // Log del error (podrías usar un logger aquí)
+            return StatusCode(500, Json(new { error = ex.Message, ids = new List<int>(), total = 0 }));
+        }
+    }
 }

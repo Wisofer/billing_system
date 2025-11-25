@@ -12,6 +12,200 @@
 @await Html.PartialAsync("_TablaFacturas", Model)
 @await Html.PartialAsync("_Notificaciones")
 
+<!-- Loader para descarga masiva de PDFs -->
+<div id="loaderDescargarPdfs" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
+        <div class="flex flex-col items-center space-y-4">
+            <div class="text-center w-full">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Descargando Facturas</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Descargando todas las facturas en PDF...
+                </p>
+                
+                <div class="w-full">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300" id="progresoDescargaTexto">0 / 0</span>
+                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300" id="progresoDescargaPorcentaje">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                        <div id="barraProgresoDescarga" class="bg-purple-600 h-3 rounded-full transition-all duration-300 ease-out" style="width: 0%">
+                            <div class="h-full bg-purple-400 animate-pulse"></div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center" id="mensajeDescarga">
+                        Iniciando descarga...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnDescargarTodasPdf = document.getElementById('btnDescargarTodasPdf');
+    if (btnDescargarTodasPdf) {
+        btnDescargarTodasPdf.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Deshabilitar el botón
+            btnDescargarTodasPdf.disabled = true;
+            btnDescargarTodasPdf.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Mostrar loader
+            const loaderDescargarPdfs = document.getElementById('loaderDescargarPdfs');
+            const barraProgresoDescarga = document.getElementById('barraProgresoDescarga');
+            const progresoDescargaTexto = document.getElementById('progresoDescargaTexto');
+            const progresoDescargaPorcentaje = document.getElementById('progresoDescargaPorcentaje');
+            const mensajeDescarga = document.getElementById('mensajeDescarga');
+            
+            if (loaderDescargarPdfs) {
+                loaderDescargarPdfs.classList.remove('hidden');
+            }
+            
+            // Obtener parámetros de la URL actual
+            const urlParams = new URLSearchParams(window.location.search);
+            const params = new URLSearchParams();
+            
+            // Copiar solo los parámetros relevantes
+            if (urlParams.has('estado') && urlParams.get('estado') !== 'Todos') {
+                params.append('estado', urlParams.get('estado'));
+            }
+            if (urlParams.has('mes')) {
+                params.append('mes', urlParams.get('mes'));
+            }
+            if (urlParams.has('año')) {
+                params.append('año', urlParams.get('año'));
+            }
+            if (urlParams.has('busquedaCliente')) {
+                params.append('busquedaCliente', urlParams.get('busquedaCliente'));
+            }
+            
+            // Obtener IDs de facturas
+            fetch('/facturas/obtener-ids-facturas?' + params.toString(), {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        // Si la respuesta no es OK, intentar leer como texto para ver el error
+                        return response.text().then(text => {
+                            throw new Error(`Error del servidor: ${response.status} - ${text.substring(0, 100)}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    // Eliminar duplicados por si acaso
+                    const facturasIds = [...new Set(data.ids || [])];
+                    const total = facturasIds.length;
+                    
+                    console.log('Facturas a descargar (sin duplicados):', facturasIds);
+                    console.log('Total:', total);
+                    
+                    if (total === 0) {
+                        alert('No hay facturas para descargar con los filtros aplicados.');
+                        if (loaderDescargarPdfs) {
+                            loaderDescargarPdfs.classList.add('hidden');
+                        }
+                        btnDescargarTodasPdf.disabled = false;
+                        btnDescargarTodasPdf.classList.remove('opacity-50', 'cursor-not-allowed');
+                        return;
+                    }
+                    
+                    // Descargar cada PDF individualmente con delay
+                    let descargadas = 0;
+                    const delayEntreDescargas = 1000; // 1 segundo entre cada descarga para evitar bloqueos
+                    
+                    function descargarSiguiente(index) {
+                        if (index >= facturasIds.length) {
+                            // Todas descargadas
+                            if (mensajeDescarga) {
+                                mensajeDescarga.textContent = `¡Todas las ${total} facturas descargadas exitosamente!`;
+                            }
+                            setTimeout(() => {
+                                if (loaderDescargarPdfs) {
+                                    loaderDescargarPdfs.classList.add('hidden');
+                                }
+                                btnDescargarTodasPdf.disabled = false;
+                                btnDescargarTodasPdf.classList.remove('opacity-50', 'cursor-not-allowed');
+                            }, 2000);
+                            return;
+                        }
+                        
+                        const facturaId = facturasIds[index];
+                        const url = `/facturas/descargar-pdf/${facturaId}`;
+                        
+                        console.log(`Descargando factura ${index + 1}/${total} - ID: ${facturaId}`);
+                        
+                        // Actualizar progreso antes de descargar
+                        descargadas++;
+                        const porcentaje = Math.round((descargadas / total) * 100);
+                        if (barraProgresoDescarga) {
+                            barraProgresoDescarga.style.width = porcentaje + '%';
+                        }
+                        if (progresoDescargaTexto) {
+                            progresoDescargaTexto.textContent = `${descargadas} / ${total}`;
+                        }
+                        if (progresoDescargaPorcentaje) {
+                            progresoDescargaPorcentaje.textContent = porcentaje + '%';
+                        }
+                        if (mensajeDescarga) {
+                            mensajeDescarga.textContent = `Descargando factura ${descargadas} de ${total}...`;
+                        }
+                        
+                        // Usar solo un método: iframe para descarga automática
+                        const iframe = document.createElement('iframe');
+                        iframe.style.display = 'none';
+                        iframe.style.width = '0';
+                        iframe.style.height = '0';
+                        iframe.style.position = 'absolute';
+                        iframe.style.left = '-9999px';
+                        iframe.style.top = '-9999px';
+                        iframe.src = url;
+                        document.body.appendChild(iframe);
+                        
+                        // Limpiar el iframe después de un tiempo
+                        setTimeout(() => {
+                            try {
+                                if (iframe.parentNode) {
+                                    document.body.removeChild(iframe);
+                                }
+                            } catch (e) {
+                                // Ignorar errores
+                            }
+                        }, 2000);
+                        
+                        // Descargar la siguiente después del delay
+                        setTimeout(() => {
+                            descargarSiguiente(index + 1);
+                        }, delayEntreDescargas);
+                    }
+                    
+                    // Iniciar descargas
+                    console.log(`Iniciando descarga de ${total} facturas (Internet y Streaming)...`);
+                    descargarSiguiente(0);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al descargar facturas: ' + error.message);
+                    if (loaderDescargarPdfs) {
+                        loaderDescargarPdfs.classList.add('hidden');
+                    }
+                    btnDescargarTodasPdf.disabled = false;
+                    btnDescargarTodasPdf.classList.remove('opacity-50', 'cursor-not-allowed');
+                });
+        });
+    }
+});
+</script>
+
 <!-- Loader para generación automática -->
 <div id="loaderGenerarFacturas" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">

@@ -436,8 +436,6 @@ public class FacturaService : IFacturaService
         }
 
         var facturasACrear = new List<Factura>();
-        var facturaServiciosACrear = new List<FacturaServicio>();
-        int contadorFacturas = 0;
 
         foreach (var cliente in clientes)
         {
@@ -518,13 +516,8 @@ public class FacturaService : IFacturaService
                 }
 
                 // Crear la factura consolidada
-                contadorFacturas++;
-                var mesStr = mesActual.ToString("MM");
-                var añoStr = mesActual.ToString("yyyy");
-                var nombreSinEspacios = cliente.Nombre.Replace(" ", "");
-                var longitudNombre = Math.Min(10, nombreSinEspacios.Length);
-                var nombreCliente = longitudNombre > 0 ? nombreSinEspacios.Substring(0, longitudNombre) : "Cliente";
-                var sufijo = categoria == SD.CategoriaStreaming ? "-STR" : "";
+                // Usar GenerarNumeroFactura para evitar duplicados y obtener el número correcto
+                var numeroFactura = GenerarNumeroFactura(cliente, mesActual, categoria);
                 
                 var factura = new Factura
                 {
@@ -532,7 +525,7 @@ public class FacturaService : IFacturaService
                     ServicioId = primerServicio.Id, // Servicio principal para compatibilidad
                     Categoria = categoria,
                     MesFacturacion = mesActual,
-                    Numero = $"{contadorFacturas:D4}-{nombreCliente}-{mesStr}{añoStr}{sufijo}",
+                    Numero = numeroFactura,
                     Monto = montoTotal,
                     Estado = SD.EstadoFacturaPendiente,
                     FechaCreacion = DateTime.Now,

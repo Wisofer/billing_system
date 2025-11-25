@@ -2,122 +2,405 @@
 @{
     ViewData["Title"] = "Dashboard";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var rolUsuario = Context.Session.GetString("RolUsuario") ?? "";
     var nombreUsuario = Context.Session.GetString("NombreUsuario") ?? "";
-    var esAdministrador = rolUsuario == "Administrador";
 }
 
 <!-- Encabezado -->
 <div class="mb-8">
-    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-1">Bienvenido, @nombreUsuario</h2>
-    <p class="text-gray-500 dark:text-gray-400 text-sm">Resumen de tu sistema de facturación</p>
+    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Bienvenido, @nombreUsuario</h2>
+    <p class="text-gray-500 dark:text-gray-400">Resumen completo de tu sistema de facturación</p>
 </div>
 
-<!-- Tarjetas de métricas -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <!-- Pagos Pendientes -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:border-blue-300 dark:hover:border-blue-600 transition-colors">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Pagos Pendientes</h3>
-            <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-        </div>
-        <p class="text-2xl font-semibold text-gray-900 dark:text-white mb-1">C$ @Model.PagosPendientes.ToString("N2")</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Facturas pendientes</p>
-    </div>
-
-    <!-- Pagos Realizados -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:border-green-300 dark:hover:border-green-600 transition-colors">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Pagos Realizados</h3>
-            <div class="w-10 h-10 bg-green-50 dark:bg-green-900 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-        </div>
-        <p class="text-2xl font-semibold text-gray-900 dark:text-white mb-1">C$ @Model.PagosRealizados.ToString("N2")</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Total recibido</p>
-    </div>
-
-    <!-- Ingreso Total -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:border-purple-300 dark:hover:border-purple-600 transition-colors">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Ingreso Total</h3>
-            <div class="w-10 h-10 bg-purple-50 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<!-- Tarjetas principales de métricas -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Ingresos Totales -->
+    <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 border-2 border-green-200 dark:border-green-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">Ingresos Totales</h3>
+            <div class="w-12 h-12 bg-green-500 dark:bg-green-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
             </div>
         </div>
-        <p class="text-2xl font-semibold text-gray-900 dark:text-white mb-1">C$ @Model.IngresoTotal.ToString("N2")</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Ingresos totales</p>
+        <p class="text-3xl font-bold text-green-700 dark:text-green-200 mb-2">C$ @Model.PagosRealizados.ToString("N2")</p>
+        <p class="text-xs text-green-600 dark:text-green-400 font-medium">Total recibido</p>
     </div>
 
-    <!-- Ingreso Faltante -->
-    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:border-amber-300 dark:hover:border-amber-600 transition-colors">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">Ingreso Faltante</h3>
-            <div class="w-10 h-10 bg-amber-50 dark:bg-amber-900 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    <!-- Pendientes -->
+    <div class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900 dark:to-amber-800 border-2 border-amber-200 dark:border-amber-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide">Pendientes</h3>
+            <div class="w-12 h-12 bg-amber-500 dark:bg-amber-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
             </div>
         </div>
-        <p class="text-2xl font-semibold text-gray-900 dark:text-white mb-1">C$ @Model.IngresoFaltante.ToString("N2")</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Pendiente por recibir</p>
+        <p class="text-3xl font-bold text-amber-700 dark:text-amber-200 mb-2">C$ @Model.PagosPendientes.ToString("N2")</p>
+        <p class="text-xs text-amber-600 dark:text-amber-400 font-medium">Por recibir</p>
+    </div>
+
+    <!-- Total Clientes -->
+    <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border-2 border-blue-200 dark:border-blue-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">Clientes</h3>
+            <div class="w-12 h-12 bg-blue-500 dark:bg-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-blue-700 dark:text-blue-200 mb-2">@Model.TotalClientes</p>
+        <p class="text-xs text-blue-600 dark:text-blue-400 font-medium">@Model.TotalClientesActivos activos</p>
+    </div>
+
+    <!-- Total Facturas -->
+    <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">Facturas</h3>
+            <div class="w-12 h-12 bg-purple-500 dark:bg-purple-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-purple-700 dark:text-purple-200 mb-2">@Model.TotalFacturas</p>
+        <p class="text-xs text-purple-600 dark:text-purple-400 font-medium">@Model.FacturasPagadasInternet + @Model.FacturasPagadasStreaming pagadas</p>
     </div>
 </div>
 
-<!-- Información del Sistema -->
-<div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-    <div class="border-b border-gray-100 dark:border-gray-700 px-6 py-4">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-            <svg class="w-5 h-5 mr-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Información del Sistema
-        </h2>
-    </div>
-    <div class="p-6 space-y-4">
-        <div class="flex items-center py-2">
-            <span class="text-sm text-gray-500 dark:text-gray-400 w-32">Usuario:</span>
-            <span class="text-sm font-medium text-gray-900 dark:text-white">@nombreUsuario</span>
-        </div>
-        <div class="flex items-center py-2">
-            <span class="text-sm text-gray-500 dark:text-gray-400 w-32">Rol actual:</span>
-            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium @(esAdministrador ? "bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300" : "bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300")">
-                @rolUsuario
+<!-- Estadísticas por Categoría -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Internet -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-lg">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                Internet
+            </h3>
+            <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-sm font-semibold">
+                @Model.FacturasInternet facturas
             </span>
         </div>
-        <div class="border-t border-gray-100 dark:border-gray-700 pt-4 mt-4">
-            @if (esAdministrador)
-            {
-                <div class="flex items-start bg-blue-50 dark:bg-blue-900 border border-blue-100 dark:border-blue-800 rounded-lg p-4">
-                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                    <div>
-                        <p class="text-sm font-medium text-blue-900 dark:text-blue-100">Privilegios de Administrador</p>
-                        <p class="text-xs text-blue-700 dark:text-blue-300 mt-1">Acceso completo al sistema (CRUD en todas las áreas)</p>
-                    </div>
+        
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
+                <p class="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Ingresos</p>
+                <p class="text-2xl font-bold text-blue-700 dark:text-blue-200">C$ @Model.IngresosInternet.ToString("N2")</p>
+            </div>
+            <div class="bg-amber-50 dark:bg-amber-900/30 rounded-lg p-4">
+                <p class="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">Pendientes</p>
+                <p class="text-2xl font-bold text-amber-700 dark:text-amber-200">C$ @Model.PendientesInternet.ToString("N2")</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <span class="text-gray-600 dark:text-gray-400">Pagadas: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPagadasInternet</span></span>
                 </div>
-            }
-            else
-            {
-                <div class="flex items-start bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
-                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">Usuario Normal</p>
-                        <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">Acceso de lectura y gestión de facturas</p>
-                    </div>
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
+                    <span class="text-gray-600 dark:text-gray-400">Pendientes: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPendientesInternet</span></span>
                 </div>
-            }
+            </div>
+        </div>
+    </div>
+
+    <!-- Streaming -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-lg">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                <div class="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                Streaming
+            </h3>
+            <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-sm font-semibold">
+                @Model.FacturasStreaming facturas
+            </span>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="bg-purple-50 dark:bg-purple-900/30 rounded-lg p-4">
+                <p class="text-xs text-purple-600 dark:text-purple-400 font-medium mb-1">Ingresos</p>
+                <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">C$ @Model.IngresosStreaming.ToString("N2")</p>
+            </div>
+            <div class="bg-amber-50 dark:bg-amber-900/30 rounded-lg p-4">
+                <p class="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">Pendientes</p>
+                <p class="text-2xl font-bold text-amber-700 dark:text-amber-200">C$ @Model.PendientesStreaming.ToString("N2")</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <span class="text-gray-600 dark:text-gray-400">Pagadas: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPagadasStreaming</span></span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
+                    <span class="text-gray-600 dark:text-gray-400">Pendientes: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPendientesStreaming</span></span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Estadísticas de Clientes -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Clientes con Internet</h3>
+            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">@Model.ClientesConInternet</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Clientes activos</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Clientes con Streaming</h3>
+            <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">@Model.ClientesConStreaming</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Clientes activos</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Clientes con Ambos</h3>
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-gray-700 dark:text-gray-300">@Model.ClientesConAmbos</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Internet + Streaming</p>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+    <!-- Gráfico de Ingresos Mensuales -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-md">
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Ingresos Mensuales</h3>
+        <div class="h-48">
+            <canvas id="graficoIngresos"></canvas>
+        </div>
+    </div>
+
+    <!-- Gráfico de Facturas por Categoría -->
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-md">
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Distribución de Facturas</h3>
+        <div class="h-48">
+            <canvas id="graficoFacturas"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfico de Comparación Internet vs Streaming -->
+<div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-md mb-8">
+    <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Comparación Internet vs Streaming</h3>
+    <div class="h-48">
+        <canvas id="graficoComparacion"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const textColor = isDarkMode ? '#e5e7eb' : '#374151';
+    const gridColor = isDarkMode ? '#374151' : '#e5e7eb';
+    
+    // Datos para los gráficos
+    const meses = @Html.Raw(Json.Serialize(Model.EstadisticasMensuales.Select(m => m.Mes)));
+    const ingresosInternet = @Html.Raw(Json.Serialize(Model.EstadisticasMensuales.Select(m => m.IngresosInternet)));
+    const ingresosStreaming = @Html.Raw(Json.Serialize(Model.EstadisticasMensuales.Select(m => m.IngresosStreaming)));
+    
+    // Gráfico de Ingresos Mensuales
+    const ctxIngresos = document.getElementById('graficoIngresos');
+    if (ctxIngresos) {
+        new Chart(ctxIngresos, {
+            type: 'line',
+            data: {
+                labels: meses,
+                datasets: [
+                    {
+                        label: 'Internet',
+                        data: ingresosInternet,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Streaming',
+                        data: ingresosStreaming,
+                        borderColor: '#a855f7',
+                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { 
+                            color: textColor,
+                            font: { size: 11 },
+                            padding: 8,
+                            boxWidth: 12
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { 
+                            color: textColor,
+                            font: { size: 10 },
+                            maxTicksLimit: 6
+                        },
+                        grid: { 
+                            color: gridColor,
+                            lineWidth: 0.5
+                        }
+                    },
+                    x: {
+                        ticks: { 
+                            color: textColor,
+                            font: { size: 9 }
+                        },
+                        grid: { 
+                            color: gridColor,
+                            lineWidth: 0.5
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Gráfico de Facturas por Categoría
+    const ctxFacturas = document.getElementById('graficoFacturas');
+    if (ctxFacturas) {
+        new Chart(ctxFacturas, {
+            type: 'doughnut',
+            data: {
+                labels: ['Internet', 'Streaming'],
+                datasets: [{
+                    data: [@Model.FacturasInternet, @Model.FacturasStreaming],
+                    backgroundColor: ['#3b82f6', '#a855f7'],
+                    borderWidth: 2,
+                    borderColor: isDarkMode ? '#1f2937' : '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { 
+                            color: textColor, 
+                            padding: 8,
+                            font: { size: 11 }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Gráfico de Comparación
+    const ctxComparacion = document.getElementById('graficoComparacion');
+    if (ctxComparacion) {
+        new Chart(ctxComparacion, {
+            type: 'bar',
+            data: {
+                labels: ['Ingresos', 'Pendientes', 'Facturas Pagadas', 'Facturas Pendientes'],
+                datasets: [
+                    {
+                        label: 'Internet',
+                        data: [
+                            @Model.IngresosInternet,
+                            @Model.PendientesInternet,
+                            @Model.FacturasPagadasInternet,
+                            @Model.FacturasPendientesInternet
+                        ],
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Streaming',
+                        data: [
+                            @Model.IngresosStreaming,
+                            @Model.PendientesStreaming,
+                            @Model.FacturasPagadasStreaming,
+                            @Model.FacturasPendientesStreaming
+                        ],
+                        backgroundColor: 'rgba(168, 85, 247, 0.8)',
+                        borderColor: '#a855f7',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { 
+                            color: textColor,
+                            font: { size: 11 },
+                            padding: 8,
+                            boxWidth: 12
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { 
+                            color: textColor,
+                            font: { size: 10 },
+                            maxTicksLimit: 6
+                        },
+                        grid: { 
+                            color: gridColor,
+                            lineWidth: 0.5
+                        }
+                    },
+                    x: {
+                        ticks: { 
+                            color: textColor,
+                            font: { size: 9 },
+                            maxRotation: 45,
+                            minRotation: 45
+                        },
+                        grid: { 
+                            color: gridColor,
+                            lineWidth: 0.5
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
