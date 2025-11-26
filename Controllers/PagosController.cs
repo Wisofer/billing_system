@@ -72,6 +72,8 @@ public class PagosController : Controller
     public IActionResult Crear(string? clienteBusqueda)
     {
         ViewBag.ClienteBusqueda = clienteBusqueda;
+        // Cargar todos los clientes para el buscador
+        ViewBag.TodosLosClientes = _clienteService.ObtenerTodos();
         ViewBag.Clientes = string.IsNullOrWhiteSpace(clienteBusqueda)
             ? new List<Cliente>()
             : _clienteService.Buscar(clienteBusqueda);

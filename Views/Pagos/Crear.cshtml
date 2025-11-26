@@ -1,14 +1,17 @@
 @model billing_system.Models.Entities.Pago
 @using billing_system.Utils
+@using System.Text.Json
 @{
     ViewData["Title"] = "Registrar Pago";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var clienteBusqueda = ViewBag.ClienteBusqueda as string ?? "";
     var clientes = ViewBag.Clientes as List<billing_system.Models.Entities.Cliente> ?? new List<billing_system.Models.Entities.Cliente>();
+    var todosLosClientes = ViewBag.TodosLosClientes as List<billing_system.Models.Entities.Cliente> ?? new List<billing_system.Models.Entities.Cliente>();
     var facturas = ViewBag.Facturas as List<billing_system.Models.Entities.Factura> ?? new List<billing_system.Models.Entities.Factura>();
     var tipoCambio = ViewBag.TipoCambio as decimal? ?? SD.TipoCambioDolar;
     var bancos = ViewBag.Bancos as string[] ?? new[] { SD.BancoBanpro, SD.BancoLafise, SD.BancoBAC, SD.BancoFicohsa, SD.BancoBDF };
     var tiposCuenta = ViewBag.TiposCuenta as string[] ?? new[] { SD.TipoCuentaDolar, SD.TipoCuentaCordoba, SD.TipoCuentaBilletera };
+    var clientesJson = JsonSerializer.Serialize(todosLosClientes.Select(c => new { id = c.Id, codigo = c.Codigo, nombre = c.Nombre }));
 }
 
 <!-- Notificaciones -->
@@ -26,41 +29,39 @@
 </div>
 
 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-    <!-- Formulario de búsqueda de cliente (separado) -->
-    <form method="post" action="/pagos/buscar-cliente" class="mb-6">
-        <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Buscar Cliente</h3>
-            <div class="flex space-x-2">
-                <input type="text" name="clienteBusqueda" id="clienteBusqueda" 
-                       value="@clienteBusqueda"
-                       placeholder="Buscar por nombre o código..." 
-                       class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                    Buscar
-                </button>
-            </div>
-        </div>
-    </form>
-
     <!-- Formulario de registro de pago -->
     <form method="post" action="/pagos/crear" id="formPago" class="space-y-6">
         @Html.AntiForgeryToken()
 
-        @if (clientes.Any())
-        {
-            <!-- Selección de Cliente -->
-            <div>
-                <label for="clienteId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cliente *</label>
-                <select name="clienteId" id="clienteId" required 
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        onchange="cargarFacturas(this.value)">
-                    <option value="">Seleccionar cliente...</option>
-                    @foreach (var cliente in clientes)
-                    {
-                        <option value="@cliente.Id">@cliente.Codigo - @cliente.Nombre</option>
-                    }
-                </select>
+        <!-- Selección de Cliente con Buscador -->
+        <div class="relative">
+            <label for="clienteSearch" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cliente *</label>
+            <div class="relative">
+                <input type="text" 
+                       id="clienteSearch" 
+                       autocomplete="off"
+                       placeholder="Buscar cliente por código o nombre..."
+                       class="w-full px-4 py-2 pl-10 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <button type="button" id="clearClienteBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hidden">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
+            <input type="hidden" name="clienteId" id="clienteId" required />
+            <div id="clienteDropdown" class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden">
+                <div id="clienteDropdownContent" class="py-1">
+                    <!-- Los resultados se cargarán aquí dinámicamente -->
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Escribe para buscar cliente por código o nombre</p>
+        </div>
+
+        @if (true) // Siempre mostrar el formulario, el buscador manejará la selección
+        {
 
             <!-- Selección de Factura -->
             <div>
@@ -203,28 +204,216 @@
                 </button>
             </div>
         }
-        else if (!string.IsNullOrEmpty(clienteBusqueda))
-        {
-            <div class="text-center py-8">
-                <p class="text-gray-500 dark:text-gray-400">No se encontraron clientes con el criterio de búsqueda: <strong class="text-gray-700 dark:text-gray-300">@clienteBusqueda</strong></p>
-            </div>
-        }
-        else
-        {
-            <div class="text-center py-8">
-                <p class="text-gray-500 dark:text-gray-400">Busca un cliente para comenzar a registrar un pago</p>
-            </div>
-        }
     </form>
 </div>
 
 <script>
+(function() {
+    'use strict';
+    
+    const clienteSearch = document.getElementById('clienteSearch');
+    const clienteIdHidden = document.getElementById('clienteId');
+    const clienteDropdown = document.getElementById('clienteDropdown');
+    const clienteDropdownContent = document.getElementById('clienteDropdownContent');
+    const clearClienteBtn = document.getElementById('clearClienteBtn');
+    
+    if (!clienteSearch || !clienteIdHidden || !clienteDropdown) {
+        console.error('Elementos del buscador de clientes no encontrados');
+        return;
+    }
+    
+    // Todos los clientes disponibles
+    const todosLosClientes = @Html.Raw(clientesJson);
+    let clienteSeleccionado = null;
+    let selectedIndex = -1;
+    
+    // Función para filtrar clientes
+    function filtrarClientes(termino) {
+        if (!termino || termino.trim() === '') {
+            return todosLosClientes;
+        }
+        
+        const terminoLower = termino.toLowerCase().trim();
+        return todosLosClientes.filter(cliente => {
+            const codigo = (cliente.codigo || '').toLowerCase();
+            const nombre = (cliente.nombre || '').toLowerCase();
+            return codigo.includes(terminoLower) || nombre.includes(terminoLower);
+        });
+    }
+    
+    // Función para mostrar resultados en el dropdown
+    function mostrarResultados(clientesFiltrados) {
+        clienteDropdownContent.innerHTML = '';
+        
+        if (clientesFiltrados.length === 0) {
+            const noResults = document.createElement('div');
+            noResults.className = 'px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center';
+            noResults.textContent = 'No se encontraron clientes';
+            clienteDropdownContent.appendChild(noResults);
+            clienteDropdown.classList.remove('hidden');
+            return;
+        }
+        
+        clientesFiltrados.forEach((cliente, index) => {
+            const item = document.createElement('div');
+            item.className = 'px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors cliente-item';
+            item.dataset.clienteId = cliente.id;
+            item.dataset.index = index;
+            
+            const codigo = document.createElement('span');
+            codigo.className = 'font-medium text-gray-900 dark:text-white';
+            codigo.textContent = cliente.codigo + ' - ';
+            
+            const nombre = document.createElement('span');
+            nombre.className = 'text-gray-700 dark:text-gray-300';
+            nombre.textContent = cliente.nombre;
+            
+            item.appendChild(codigo);
+            item.appendChild(nombre);
+            
+            item.addEventListener('click', function() {
+                seleccionarCliente(cliente);
+            });
+            
+            item.addEventListener('mouseenter', function() {
+                clienteDropdownContent.querySelectorAll('.cliente-item').forEach(el => {
+                    el.classList.remove('bg-blue-50', 'dark:bg-blue-900');
+                });
+                this.classList.add('bg-blue-50', 'dark:bg-blue-900');
+                selectedIndex = parseInt(this.dataset.index);
+            });
+            
+            clienteDropdownContent.appendChild(item);
+        });
+        
+        clienteDropdown.classList.remove('hidden');
+        selectedIndex = -1;
+    }
+    
+    // Función para seleccionar un cliente
+    function seleccionarCliente(cliente) {
+        clienteSeleccionado = cliente;
+        clienteIdHidden.value = cliente.id;
+        clienteSearch.value = cliente.codigo + ' - ' + cliente.nombre;
+        clienteDropdown.classList.add('hidden');
+        clearClienteBtn.classList.remove('hidden');
+        
+        // Cargar facturas del cliente
+        cargarFacturas(cliente.id);
+    }
+    
+    // Función para limpiar selección
+    function limpiarSeleccion() {
+        clienteSeleccionado = null;
+        clienteIdHidden.value = '';
+        clienteSearch.value = '';
+        clienteDropdown.classList.add('hidden');
+        clearClienteBtn.classList.add('hidden');
+        document.getElementById('FacturaId').innerHTML = '<option value="">Seleccionar factura...</option>';
+        document.getElementById('Monto').value = '';
+        document.getElementById('Monto').readOnly = true;
+    }
+    
+    // Event listeners para el buscador
+    clienteSearch.addEventListener('input', function() {
+        const termino = this.value;
+        
+        if (clienteSeleccionado && termino !== (clienteSeleccionado.codigo + ' - ' + clienteSeleccionado.nombre)) {
+            clienteIdHidden.value = '';
+            clienteSeleccionado = null;
+            clearClienteBtn.classList.add('hidden');
+        }
+        
+        if (termino.trim() === '') {
+            clienteDropdown.classList.add('hidden');
+            return;
+        }
+        
+        const clientesFiltrados = filtrarClientes(termino);
+        mostrarResultados(clientesFiltrados);
+    });
+    
+    clienteSearch.addEventListener('focus', function() {
+        if (this.value.trim() !== '' && !clienteSeleccionado) {
+            const clientesFiltrados = filtrarClientes(this.value);
+            mostrarResultados(clientesFiltrados);
+        }
+    });
+    
+    clienteSearch.addEventListener('keydown', function(e) {
+        const items = clienteDropdownContent.querySelectorAll('.cliente-item');
+        
+        if (items.length === 0) return;
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedIndex = (selectedIndex + 1) % items.length;
+            items[selectedIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            items[selectedIndex].classList.add('bg-blue-50', 'dark:bg-blue-900');
+            items.forEach((item, idx) => {
+                if (idx !== selectedIndex) {
+                    item.classList.remove('bg-blue-50', 'dark:bg-blue-900');
+                }
+            });
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedIndex = selectedIndex <= 0 ? items.length - 1 : selectedIndex - 1;
+            items[selectedIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            items[selectedIndex].classList.add('bg-blue-50', 'dark:bg-blue-900');
+            items.forEach((item, idx) => {
+                if (idx !== selectedIndex) {
+                    item.classList.remove('bg-blue-50', 'dark:bg-blue-900');
+                }
+            });
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (selectedIndex >= 0 && items[selectedIndex]) {
+                const clienteId = items[selectedIndex].dataset.clienteId;
+                const cliente = todosLosClientes.find(c => c.id == clienteId);
+                if (cliente) {
+                    seleccionarCliente(cliente);
+                }
+            }
+        } else if (e.key === 'Escape') {
+            clienteDropdown.classList.add('hidden');
+        }
+    });
+    
+    clearClienteBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        limpiarSeleccion();
+        clienteSearch.focus();
+    });
+    
+    // Cerrar dropdown al hacer click fuera
+    document.addEventListener('click', function(e) {
+        if (!clienteSearch.contains(e.target) && !clienteDropdown.contains(e.target)) {
+            clienteDropdown.classList.add('hidden');
+        }
+    });
+})();
+</script>
+
+<script>
     // Validar antes de enviar el formulario
-    document.querySelector('form').addEventListener('submit', function(e) {
+    document.querySelector('#formPago').addEventListener('submit', function(e) {
+        const clienteId = document.getElementById('clienteId').value;
         const montoInput = document.getElementById('Monto');
         const monto = parseFloat(montoInput.value) || 0;
         const facturaSelect = document.getElementById('FacturaId');
         const facturaId = facturaSelect.value;
+        
+        if (!clienteId) {
+            e.preventDefault();
+            const clienteSearch = document.getElementById('clienteSearch');
+            clienteSearch.focus();
+            clienteSearch.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+            setTimeout(() => {
+                clienteSearch.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            }, 3000);
+            alert('Debe seleccionar un cliente');
+            return false;
+        }
         
         if (!facturaId) {
             e.preventDefault();
