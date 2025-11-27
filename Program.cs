@@ -81,6 +81,7 @@ builder.Services.AddScoped<IPdfService>(sp =>
     return new PdfService(environment, context);
 });
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
 
 // Registrar servicio en segundo plano para generación automática de facturas
 // Este servicio se ejecutará el día 1 de cada mes a las 2:00 AM
@@ -125,6 +126,9 @@ using (var scope = app.Services.CreateScope())
 
         // Crear usuario admin si no existe
         InicializarUsuarioAdmin.CrearAdminSiNoExiste(dbContext, logger);
+
+        // Crear plantilla por defecto de WhatsApp si no existe
+        InicializarPlantillaWhatsApp.CrearPlantillaDefaultSiNoExiste(dbContext, logger);
     }
     catch (Exception ex)
     {

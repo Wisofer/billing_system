@@ -17,13 +17,15 @@ public class FacturasController : Controller
     private readonly IClienteService _clienteService;
     private readonly IServicioService _servicioService;
     private readonly IPdfService _pdfService;
+    private readonly IWhatsAppService _whatsAppService;
 
-    public FacturasController(IFacturaService facturaService, IClienteService clienteService, IServicioService servicioService, IPdfService pdfService)
+    public FacturasController(IFacturaService facturaService, IClienteService clienteService, IServicioService servicioService, IPdfService pdfService, IWhatsAppService whatsAppService)
     {
         _facturaService = facturaService;
         _clienteService = clienteService;
         _servicioService = servicioService;
         _pdfService = pdfService;
+        _whatsAppService = whatsAppService;
     }
 
     [HttpGet("/facturas")]
@@ -504,5 +506,57 @@ public class FacturasController : Controller
             // Log del error (podrías usar un logger aquí)
             return StatusCode(500, Json(new { error = ex.Message, ids = new List<int>(), total = 0 }));
         }
+    }
+
+    [HttpGet("/facturas/whatsapp/{id}")]
+    public IActionResult EnviarWhatsApp(int id)
+    {
+        var factura = _facturaService.ObtenerPorId(id);
+        
+        if (factura == null)
+        {
+            TempData["Error"] = "Factura no encontrada";
+            return RedirectToAction("Index");
+        }
+
+        // Verificar que el cliente tenga teléfono
+        if (string.IsNullOrWhiteSpace(factura.Cliente?.Telefono))
+        {
+            TempData["Error"] = "El cliente no tiene número de teléfono registrado";
+            return RedirectToAction("Index");
+        }
+
+        // Generar URL base para el PDF
+        var urlBase = $"{Request.Scheme}://{Request.Host}";
+        var enlacePDFCompleto = $"{urlBase}/facturas/descargar-pdf/{factura.Id}";
+        
+        // Obtener la plantilla por defecto
+        var plantilla = _whatsAppService.ObtenerPlantillaDefault();
+        
+        string mensaje;
+        if (plantilla == null)
+        {
+            // Si no hay plantilla, usar una por defecto
+            mensaje = $"Hola {factura.Cliente?.Nombre ?? "Cliente"},\n\n" +
+                     $"Le enviamos su factura:\n" +
+                     $"📄 Factura: {factura.Numero}\n" +
+                     $"💰 Monto: C$ {factura.Monto:N2}\n" +
+                     $"📅 Mes: {factura.MesFacturacion:MMMM yyyy}\n" +
+                     $"🔗 Descargar PDF: {enlacePDFCompleto}\n\n" +
+                     $"Gracias por su preferencia.";
+        }
+        else
+        {
+            // Generar mensaje con la plantilla
+            mensaje = _whatsAppService.GenerarMensaje(factura, plantilla.Mensaje, urlBase);
+        }
+
+        // Formatear número de teléfono
+        var numeroTelefono = _whatsAppService.FormatearNumeroWhatsApp(factura.Cliente?.Telefono);
+        
+        // Generar enlace de WhatsApp y redirigir directamente
+        var enlaceWhatsApp = _whatsAppService.GenerarEnlaceWhatsApp(numeroTelefono, mensaje);
+        
+        return Redirect(enlaceWhatsApp);
     }
 }

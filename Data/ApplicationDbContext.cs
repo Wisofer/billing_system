@@ -17,6 +17,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Pago> Pagos { get; set; }
     public DbSet<Usuario> Usuarios { get; set; }
     public DbSet<ClienteServicio> ClienteServicios { get; set; }
+    public DbSet<PlantillaMensajeWhatsApp> PlantillasMensajeWhatsApp { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -139,6 +140,16 @@ public class ApplicationDbContext : DbContext
             
             // Índice compuesto para mejorar búsquedas
             entity.HasIndex(e => new { e.ClienteId, e.ServicioId });
+        });
+
+        // Configuración de PlantillaMensajeWhatsApp
+        modelBuilder.Entity<PlantillaMensajeWhatsApp>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Mensaje).IsRequired().HasColumnType("text");
+            entity.Property(e => e.Activa).HasDefaultValue(true);
+            entity.Property(e => e.EsDefault).HasDefaultValue(false);
         });
     }
 }
