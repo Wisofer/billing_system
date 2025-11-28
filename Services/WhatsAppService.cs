@@ -1,6 +1,7 @@
 using billing_system.Models.Entities;
 using billing_system.Services.IServices;
 using billing_system.Data;
+using billing_system.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 
@@ -9,10 +10,12 @@ namespace billing_system.Services;
 public class WhatsAppService : IWhatsAppService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IConfiguration _configuration;
 
-    public WhatsAppService(ApplicationDbContext context)
+    public WhatsAppService(ApplicationDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
     public PlantillaMensajeWhatsApp? ObtenerPlantillaDefault()
@@ -44,10 +47,13 @@ public class WhatsAppService : IWhatsAppService
 
         var mensaje = plantillaMensaje;
         
-        // Obtener la URL base para el enlace del PDF
+        // Generar token seguro para el PDF
+        var token = PdfTokenHelper.GenerarToken(factura.Id, _configuration);
+        
+        // Obtener la URL base para el enlace del PDF (ruta pública con token)
         var enlacePdf = string.IsNullOrEmpty(urlBase) 
-            ? $"/facturas/descargar-pdf/{factura.Id}"
-            : $"{urlBase}/facturas/descargar-pdf/{factura.Id}";
+            ? $"/facturas/descargar-pdf-publico/{factura.Id}?token={token}"
+            : $"{urlBase}/facturas/descargar-pdf-publico/{factura.Id}?token={token}";
         
         // Reemplazar variables
         mensaje = mensaje.Replace("{NombreCliente}", factura.Cliente?.Nombre ?? "");

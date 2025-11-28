@@ -18,14 +18,16 @@ public class FacturasController : Controller
     private readonly IServicioService _servicioService;
     private readonly IPdfService _pdfService;
     private readonly IWhatsAppService _whatsAppService;
+    private readonly IConfiguration _configuration;
 
-    public FacturasController(IFacturaService facturaService, IClienteService clienteService, IServicioService servicioService, IPdfService pdfService, IWhatsAppService whatsAppService)
+    public FacturasController(IFacturaService facturaService, IClienteService clienteService, IServicioService servicioService, IPdfService pdfService, IWhatsAppService whatsAppService, IConfiguration configuration)
     {
         _facturaService = facturaService;
         _clienteService = clienteService;
         _servicioService = servicioService;
         _pdfService = pdfService;
         _whatsAppService = whatsAppService;
+        _configuration = configuration;
     }
 
     [HttpGet("/facturas")]
@@ -459,6 +461,42 @@ public class FacturasController : Controller
         }
     }
 
+    /// <summary>
+    /// Ruta pública para descargar PDFs sin autenticación (usada para compartir por WhatsApp)
+    /// Requiere un token válido para seguridad
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("/facturas/descargar-pdf-publico/{id}")]
+    public IActionResult DescargarPdfPublico(int id, [FromQuery] string? token)
+    {
+        // Validar token
+        if (string.IsNullOrWhiteSpace(token) || !PdfTokenHelper.ValidarToken(id, token, _configuration))
+        {
+            return Unauthorized("Token inválido o faltante. No tiene permiso para acceder a este recurso.");
+        }
+
+        var factura = _facturaService.ObtenerPorId(id);
+        if (factura == null)
+        {
+            return NotFound("Factura no encontrada.");
+        }
+
+        try
+        {
+            var pdfBytes = _pdfService.GenerarPdfFactura(factura);
+            var nombreArchivo = $"Factura-{factura.Numero}-{DateTime.Now:yyyyMMdd}.pdf";
+            
+            // Configurar headers para descarga directa
+            Response.Headers.Append("Content-Disposition", $"inline; filename=\"{nombreArchivo}\"");
+            
+            return File(pdfBytes, "application/pdf", nombreArchivo);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Error al generar PDF: {ex.Message}");
+        }
+    }
+
     [HttpGet("/facturas/obtener-ids-facturas")]
     [Produces("application/json")]
     public IActionResult ObtenerIdsFacturas(string? estado, int? mes, int? año, string? busquedaCliente)
@@ -528,7 +566,6 @@ public class FacturasController : Controller
 
         // Generar URL base para el PDF
         var urlBase = $"{Request.Scheme}://{Request.Host}";
-        var enlacePDFCompleto = $"{urlBase}/facturas/descargar-pdf/{factura.Id}";
         
         // Obtener la plantilla por defecto
         var plantilla = _whatsAppService.ObtenerPlantillaDefault();
@@ -536,6 +573,10 @@ public class FacturasController : Controller
         string mensaje;
         if (plantilla == null)
         {
+            // Generar token seguro para el PDF
+            var token = PdfTokenHelper.GenerarToken(factura.Id, _configuration);
+            var enlacePDFCompleto = $"{urlBase}/facturas/descargar-pdf-publico/{factura.Id}?token={token}";
+            
             // Si no hay plantilla, usar una por defecto
             mensaje = $"Hola {factura.Cliente?.Nombre ?? "Cliente"},\n\n" +
                      $"Le enviamos su factura:\n" +
@@ -547,7 +588,7 @@ public class FacturasController : Controller
         }
         else
         {
-            // Generar mensaje con la plantilla
+            // Generar mensaje con la plantilla (ya incluye el token en el enlace)
             mensaje = _whatsAppService.GenerarMensaje(factura, plantilla.Mensaje, urlBase);
         }
 
