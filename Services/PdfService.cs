@@ -250,8 +250,8 @@ public class PdfService : IPdfService
             return GenerarPdfFacturaStreaming(factura);
         }
         
-        // Fecha de emisión: siempre día 04 del mes de facturación
-        var fechaEmision = new DateTime(factura.MesFacturacion.Year, factura.MesFacturacion.Month, 4);
+        // Fecha de emisión: usar la fecha de creación de la factura
+        var fechaEmision = factura.FechaCreacion;
         // Fecha de vencimiento: siempre día 06 del mes de facturación
         var fechaVencimiento = new DateTime(factura.MesFacturacion.Year, factura.MesFacturacion.Month, 6);
         var mesFacturado = factura.MesFacturacion.ToString("MMM/yyyy").ToUpper();
