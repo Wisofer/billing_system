@@ -15,9 +15,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<Factura> Facturas { get; set; }
     public DbSet<FacturaServicio> FacturaServicios { get; set; }
     public DbSet<Pago> Pagos { get; set; }
+    public DbSet<PagoFactura> PagoFacturas { get; set; }
     public DbSet<Usuario> Usuarios { get; set; }
     public DbSet<ClienteServicio> ClienteServicios { get; set; }
     public DbSet<PlantillaMensajeWhatsApp> PlantillasMensajeWhatsApp { get; set; }
+    public DbSet<Configuracion> Configuraciones { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -105,10 +107,48 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.TipoCambio).HasColumnType("decimal(18,2)");
             entity.Property(e => e.Observaciones).HasMaxLength(500);
             
+            // Campos para pago físico con múltiples monedas
+            entity.Property(e => e.MontoCordobasFisico).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.MontoDolaresFisico).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.MontoRecibidoFisico).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.VueltoFisico).HasColumnType("decimal(18,2)");
+            
+            // Campos para pago electrónico con múltiples monedas
+            entity.Property(e => e.MontoCordobasElectronico).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.MontoDolaresElectronico).HasColumnType("decimal(18,2)");
+            
+            // Relación con Factura (opcional, para compatibilidad con pagos de una sola factura)
             entity.HasOne(e => e.Factura)
                 .WithMany(f => f.Pagos)
                 .HasForeignKey(e => e.FacturaId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false); // Permitir null para pagos con múltiples facturas
+            
+            // Relación con PagoFactura (para pagos con múltiples facturas)
+            entity.HasMany(e => e.PagoFacturas)
+                .WithOne(pf => pf.Pago)
+                .HasForeignKey(pf => pf.PagoId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuración de PagoFactura
+        modelBuilder.Entity<PagoFactura>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.MontoAplicado).HasColumnType("decimal(18,2)");
+            
+            entity.HasOne(e => e.Pago)
+                .WithMany(p => p.PagoFacturas)
+                .HasForeignKey(e => e.PagoId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.Factura)
+                .WithMany()
+                .HasForeignKey(e => e.FacturaId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            // Índice compuesto para evitar duplicados
+            entity.HasIndex(e => new { e.PagoId, e.FacturaId }).IsUnique();
         });
 
         // Configuración de Usuario
@@ -150,6 +190,17 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Mensaje).IsRequired().HasColumnType("text");
             entity.Property(e => e.Activa).HasDefaultValue(true);
             entity.Property(e => e.EsDefault).HasDefaultValue(false);
+        });
+
+        // Configuración de Configuracion
+        modelBuilder.Entity<Configuracion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Clave).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Valor).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.UsuarioActualizacion).HasMaxLength(200);
+            entity.HasIndex(e => e.Clave).IsUnique(); // Clave única para evitar duplicados
         });
     }
 }

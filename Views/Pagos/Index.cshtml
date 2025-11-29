@@ -198,15 +198,157 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm font-medium text-gray-900 dark:text-white">PAG-@pago.Id.ToString("D6")</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm text-gray-900 dark:text-white">@pago.Factura?.Numero</span>
+                            <td class="px-6 py-4">
+                                @if (pago.PagoFacturas != null && pago.PagoFacturas.Any())
+                                {
+                                    var totalFacturas = pago.PagoFacturas.Count;
+                                    var maxMostrar = 2; // mostrar como máximo 2 facturas en detalle
+                                    <div class="space-y-1">
+                                        @foreach (var pagoFactura in pago.PagoFacturas.Take(maxMostrar))
+                                        {
+                                            <div class="text-sm text-gray-900 dark:text-white">
+                                                @pagoFactura.Factura?.Numero
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">(C$ @pagoFactura.MontoAplicado.ToString("N2"))</span>
+                                            </div>
+                                        }
+                                        @if (totalFacturas > maxMostrar)
+                                        {
+                                            <div class="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                                + @(totalFacturas - maxMostrar) factura(s) más
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else if (pago.Factura != null)
+                                {
+                                    <span class="text-sm text-gray-900 dark:text-white">@pago.Factura.Numero</span>
+                                }
+                                else
+                                {
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">-</span>
+                                }
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900 dark:text-white">@pago.Factura?.Cliente?.Nombre</div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400">@pago.Factura?.Cliente?.Codigo</div>
+                                @if (pago.PagoFacturas != null && pago.PagoFacturas.Any())
+                                {
+                                    var primerFactura = pago.PagoFacturas.First().Factura;
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">@primerFactura?.Cliente?.Nombre</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">@primerFactura?.Cliente?.Codigo</div>
+                                    @if (pago.PagoFacturas.Count > 1)
+                                    {
+                                        <div class="text-xs text-blue-600 dark:text-blue-400 mt-1">+ @(pago.PagoFacturas.Count - 1) factura(s) más</div>
+                                    }
+                                }
+                                else if (pago.Factura != null)
+                                {
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">@pago.Factura.Cliente?.Nombre</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">@pago.Factura.Cliente?.Codigo</div>
+                                }
+                                else
+                                {
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">-</span>
+                                }
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-medium text-gray-900 dark:text-white">@pago.Moneda @pago.Monto.ToString("N2")</span>
+                                @if (pago.TipoPago == SD.TipoPagoMixto)
+                                {
+                                    <div class="text-sm space-y-1">
+                                        @{
+                                            var tieneFisico = (pago.MontoCordobasFisico.HasValue && pago.MontoCordobasFisico.Value > 0) ||
+                                                             (pago.MontoDolaresFisico.HasValue && pago.MontoDolaresFisico.Value > 0);
+                                            var tieneElectronico = (pago.MontoCordobasElectronico.HasValue && pago.MontoCordobasElectronico.Value > 0) ||
+                                                                   (pago.MontoDolaresElectronico.HasValue && pago.MontoDolaresElectronico.Value > 0);
+                                        }
+                                        @if (tieneFisico)
+                                        {
+                                            <div class="text-gray-900 dark:text-white">
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">Físico: </span>
+                                                @if (pago.MontoCordobasFisico.HasValue && pago.MontoCordobasFisico.Value > 0)
+                                                {
+                                                    <span>C$ @pago.MontoCordobasFisico.Value.ToString("N2")</span>
+                                                }
+                                                @if (pago.MontoDolaresFisico.HasValue && pago.MontoDolaresFisico.Value > 0)
+                                                {
+                                                    @if (pago.MontoCordobasFisico.HasValue && pago.MontoCordobasFisico.Value > 0)
+                                                    {
+                                                        <span> + </span>
+                                                    }
+                                                    <span>$ @pago.MontoDolaresFisico.Value.ToString("N2")</span>
+                                                }
+                                            </div>
+                                        }
+                                        @if (tieneElectronico)
+                                        {
+                                            <div class="text-gray-900 dark:text-white">
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">Electrónico: </span>
+                                                @if (pago.MontoCordobasElectronico.HasValue && pago.MontoCordobasElectronico.Value > 0)
+                                                {
+                                                    <span>C$ @pago.MontoCordobasElectronico.Value.ToString("N2")</span>
+                                                }
+                                                @if (pago.MontoDolaresElectronico.HasValue && pago.MontoDolaresElectronico.Value > 0)
+                                                {
+                                                    @if (pago.MontoCordobasElectronico.HasValue && pago.MontoCordobasElectronico.Value > 0)
+                                                    {
+                                                        <span> + </span>
+                                                    }
+                                                    <span>$ @pago.MontoDolaresElectronico.Value.ToString("N2")</span>
+                                                }
+                                            </div>
+                                        }
+                                        <div class="text-xs font-semibold text-purple-600 dark:text-purple-400 mt-1">
+                                            Total: C$ @pago.Monto.ToString("N2")
+                                        </div>
+                                    </div>
+                                }
+                                else if (pago.Moneda == SD.MonedaAmbos)
+                                {
+                                    <div class="text-sm">
+                                        <div class="text-gray-900 dark:text-white">
+                                            @if (pago.TipoPago == SD.TipoPagoFisico)
+                                            {
+                                                @if (pago.MontoCordobasFisico.HasValue && pago.MontoCordobasFisico.Value > 0)
+                                                {
+                                                    <span>C$ @pago.MontoCordobasFisico.Value.ToString("N2")</span>
+                                                }
+                                                @if (pago.MontoDolaresFisico.HasValue && pago.MontoDolaresFisico.Value > 0)
+                                                {
+                                                    @if (pago.MontoCordobasFisico.HasValue && pago.MontoCordobasFisico.Value > 0)
+                                                    {
+                                                        <span> + </span>
+                                                    }
+                                                    <span>$ @pago.MontoDolaresFisico.Value.ToString("N2")</span>
+                                                }
+                                            }
+                                            else if (pago.TipoPago == SD.TipoPagoElectronico)
+                                            {
+                                                @if (pago.MontoCordobasElectronico.HasValue && pago.MontoCordobasElectronico.Value > 0)
+                                                {
+                                                    <span>C$ @pago.MontoCordobasElectronico.Value.ToString("N2")</span>
+                                                }
+                                                @if (pago.MontoDolaresElectronico.HasValue && pago.MontoDolaresElectronico.Value > 0)
+                                                {
+                                                    @if (pago.MontoCordobasElectronico.HasValue && pago.MontoCordobasElectronico.Value > 0)
+                                                    {
+                                                        <span> + </span>
+                                                    }
+                                                    <span>$ @pago.MontoDolaresElectronico.Value.ToString("N2")</span>
+                                                }
+                                            }
+                                            @if ((pago.TipoPago == SD.TipoPagoFisico && (!pago.MontoCordobasFisico.HasValue && !pago.MontoDolaresFisico.HasValue)) ||
+                                                (pago.TipoPago == SD.TipoPagoElectronico && (!pago.MontoCordobasElectronico.HasValue && !pago.MontoDolaresElectronico.HasValue)))
+                                            {
+                                                <span>@pago.Moneda @pago.Monto.ToString("N2")</span>
+                                            }
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            Total: C$ @pago.Monto.ToString("N2")
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">@pago.Moneda @pago.Monto.ToString("N2")</span>
+                                }
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if (pago.TipoPago == SD.TipoPagoFisico)
@@ -215,10 +357,16 @@
                                         Físico
                                     </span>
                                 }
-                                else
+                                else if (pago.TipoPago == SD.TipoPagoElectronico)
                                 {
                                     <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300">
                                         Electrónico
+                                    </span>
+                                }
+                                else if (pago.TipoPago == SD.TipoPagoMixto)
+                                {
+                                    <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
+                                        Mixto
                                     </span>
                                 }
                             </td>
@@ -230,12 +378,33 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
-                                    <a href="/facturas/ver/@pago.FacturaId" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900 p-2 rounded-lg transition-colors" title="Ver factura">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    </a>
+                                    @if (pago.PagoFacturas != null && pago.PagoFacturas.Any())
+                                    {
+                                        <a href="/facturas/ver/@pago.PagoFacturas.First().FacturaId" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900 p-2 rounded-lg transition-colors" title="Ver primera factura">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </a>
+                                    }
+                                    else if (pago.FacturaId.HasValue)
+                                    {
+                                        <a href="/facturas/ver/@pago.FacturaId.Value" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900 p-2 rounded-lg transition-colors" title="Ver factura">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-gray-400 dark:text-gray-500 p-2" title="Sin factura asociada">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </span>
+                                    }
                                     @if (esAdministrador)
                                     {
                                         <form method="post" action="/pagos/eliminar/@pago.Id" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar este pago?');">

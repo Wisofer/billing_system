@@ -312,3 +312,4 @@
 /home/william/Documentos/billing_system/obj/Debug/net9.0/billing_system.pdb
 /home/william/Documentos/billing_system/obj/Debug/net9.0/billing_system.genruntimeconfig.cache
 /home/william/Documentos/billing_system/obj/Debug/net9.0/ref/billing_system.dll
+/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/ngoiiiitkb-pngkfmfssx.gz

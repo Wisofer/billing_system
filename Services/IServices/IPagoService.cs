@@ -9,7 +9,8 @@ public interface IPagoService
     List<Pago> ObtenerPorFactura(int facturaId);
     decimal CalcularVuelto(decimal montoRecibido, decimal costo);
     decimal ConvertirMoneda(decimal monto, string monedaOrigen, string monedaDestino);
-    Pago Crear(Pago pago);
+    decimal CalcularMontoTotal(Pago pago);
+    Pago Crear(Pago pago, List<int>? facturaIds = null, List<decimal>? montosAplicados = null);
     Pago Actualizar(Pago pago);
     bool Eliminar(int id);
     (int eliminados, int noEncontrados) EliminarMultiples(List<int> ids);

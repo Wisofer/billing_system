@@ -242,7 +242,7 @@
     // Event listeners para el buscador
     clienteSearch.addEventListener('input', function() {
         const termino = this.value;
-        
+                    
         // Si hay un cliente seleccionado y el usuario está editando, limpiar selección
         if (clienteSeleccionado && termino !== (clienteSeleccionado.codigo + ' - ' + clienteSeleccionado.nombre)) {
             clienteIdHidden.value = '';
@@ -327,10 +327,10 @@
             total += precio;
         });
         montoDisplay.value = 'C$ ' + total.toLocaleString('es-NI', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    }
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        });
+                    }
     
     function cargarServiciosEnCheckboxes(serviciosArray, seleccionarTodos = true) {
         serviciosContainer.innerHTML = '';
@@ -377,7 +377,7 @@
                 
                 // Mostrar nombre con cantidad si es Streaming y cantidad > 1
                 let nombreTexto;
-                
+        
                 if (servicio.categoria === 'Streaming' && cantidad > 1) {
                     nombreTexto = document.createTextNode(servicio.nombre + ' (' + cantidad + ' suscripciones) - C$ ' + precioTotal.toLocaleString('es-NI', {
                         minimumFractionDigits: 2,
@@ -385,8 +385,8 @@
                     }));
                 } else {
                     nombreTexto = document.createTextNode(servicio.nombre + ' - C$ ' + precioTotal.toLocaleString('es-NI', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
                     }));
                 }
                 

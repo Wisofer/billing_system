@@ -82,6 +82,7 @@ builder.Services.AddScoped<IPdfService>(sp =>
 });
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
+builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
 
 // Registrar servicio en segundo plano para generación automática de facturas
 // Este servicio se ejecutará el día 1 de cada mes a las 2:00 AM
@@ -129,6 +130,14 @@ using (var scope = app.Services.CreateScope())
 
         // Crear plantilla por defecto de WhatsApp si no existe
         InicializarPlantillaWhatsApp.CrearPlantillaDefaultSiNoExiste(dbContext, logger);
+
+        // Inicializar tipo de cambio por defecto si no existe
+        var configuracionService = scope.ServiceProvider.GetRequiredService<IConfiguracionService>();
+        configuracionService.CrearSiNoExiste(
+            "TipoCambioDolar",
+            SD.TipoCambioDolar.ToString("F2"),
+            "Tipo de cambio dólar a córdoba (C$ por $1)"
+        );
     }
     catch (Exception ex)
     {

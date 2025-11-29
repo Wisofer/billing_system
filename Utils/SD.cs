@@ -14,6 +14,7 @@ public static class SD
     // Tipos de Pago
     public const string TipoPagoFisico = "Fisico";
     public const string TipoPagoElectronico = "Electronico";
+    public const string TipoPagoMixto = "Mixto";
 
     // Monedas
     public const string MonedaCordoba = "C$";

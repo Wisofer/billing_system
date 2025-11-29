@@ -16,6 +16,8 @@
         activa = p.Activa, 
         esDefault = p.EsDefault 
     }));
+    var tipoCambio = ViewBag.TipoCambio as decimal? ?? 36.80m;
+    var configuracionTipoCambio = ViewBag.ConfiguracionTipoCambio as Configuracion;
 }
 
 <div class="mb-6">
@@ -210,6 +212,59 @@
                 }
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- Configuración de Tipo de Cambio -->
+<div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+            <svg class="w-5 h-5 mr-2 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Tipo de Cambio Dólar
+        </h3>
+        <button onclick="abrirModalEditarTipoCambio()" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium flex items-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Editar Tipo de Cambio
+        </button>
+    </div>
+    
+    <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <label class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 block">Valor Actual</label>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                    C$ @tipoCambio.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) = $1
+                </p>
+            </div>
+            @if (configuracionTipoCambio != null && configuracionTipoCambio.FechaActualizacion.HasValue)
+            {
+                <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <label class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 block">Última Actualización</label>
+                    <p class="text-base font-semibold text-gray-900 dark:text-white">
+                        @configuracionTipoCambio.FechaActualizacion.Value.ToString("dd/MM/yyyy HH:mm")
+                    </p>
+                    @if (!string.IsNullOrEmpty(configuracionTipoCambio.UsuarioActualizacion))
+                    {
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Por: @configuracionTipoCambio.UsuarioActualizacion
+                        </p>
+                    }
+                </div>
+            }
+        </div>
+        
+        @if (configuracionTipoCambio != null && !string.IsNullOrEmpty(configuracionTipoCambio.Descripcion))
+        {
+            <div class="p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p class="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>Descripción:</strong> @configuracionTipoCambio.Descripcion
+                </p>
+            </div>
+        }
     </div>
 </div>
 
@@ -413,6 +468,50 @@
             <div class="mt-6 flex justify-end space-x-3">
                 <button type="button" onclick="cerrarModalEditarPlantilla()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancelar</button>
                 <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Editar Tipo de Cambio -->
+<div id="modalEditarTipoCambio" class="hidden fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Editar Tipo de Cambio</h3>
+            <button onclick="cerrarModalEditarTipoCambio()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <form id="formEditarTipoCambio" onsubmit="actualizarTipoCambio(event)">
+            <div class="space-y-4">
+                <div class="p-4 bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                        <strong>⚠️ Importante:</strong> Este valor se utilizará para todos los cálculos de conversión entre dólares y córdobas en los pagos.
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Cambio (C$ por $1) *</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400">C$</span>
+                        <input type="number" name="valor" id="editarValorTipoCambio" step="0.01" min="0.01" max="100" required 
+                               value="@tipoCambio.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
+                               class="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                               placeholder="36.80">
+                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">= $1</span>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ingresa el valor del tipo de cambio (ejemplo: 36.80)</p>
+                </div>
+                <div class="p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <p class="text-xs text-blue-800 dark:text-blue-200">
+                        <strong>Valor actual:</strong> C$ @tipoCambio.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) = $1
+                    </p>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="cerrarModalEditarTipoCambio()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">Guardar Cambios</button>
             </div>
         </form>
     </div>
@@ -698,6 +797,63 @@
             location.reload();
         } else {
             alert(result.message);
+        }
+    }
+
+    // ========== Gestión de Tipo de Cambio ==========
+    
+    function abrirModalEditarTipoCambio() {
+        document.getElementById('modalEditarTipoCambio').classList.remove('hidden');
+    }
+
+    function cerrarModalEditarTipoCambio() {
+        document.getElementById('modalEditarTipoCambio').classList.add('hidden');
+        document.getElementById('formEditarTipoCambio').reset();
+    }
+
+    async function actualizarTipoCambio(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const valorInput = formData.get('valor');
+        
+        // Normalizar el valor: asegurar que use punto como separador decimal
+        let valor = valorInput.toString().trim().replace(',', '.');
+        const valorDecimal = parseFloat(valor);
+        
+        if (isNaN(valorDecimal) || valorDecimal <= 0 || valorDecimal > 100) {
+            alert('El tipo de cambio debe ser un valor válido entre 0.01 y 100.');
+            return;
+        }
+
+        // Enviar como string para evitar problemas de cultura en el servidor
+        const data = {
+            valor: valor
+        };
+
+        try {
+            const response = await fetch('/configuraciones/tipo-cambio/actualizar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(data)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error del servidor:', errorText);
+                alert('Error al actualizar el tipo de cambio. Por favor, verifica que la base de datos esté actualizada.');
+                return;
+            }
+
+            const result = await response.json();
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error al actualizar el tipo de cambio: ' + error.message);
         }
     }
 

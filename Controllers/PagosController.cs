@@ -5,6 +5,7 @@ using billing_system.Services.IServices;
 using billing_system.Utils;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 
 namespace billing_system.Controllers;
 
@@ -15,12 +16,14 @@ public class PagosController : Controller
     private readonly IPagoService _pagoService;
     private readonly IFacturaService _facturaService;
     private readonly IClienteService _clienteService;
+    private readonly IConfiguracionService _configuracionService;
 
-    public PagosController(IPagoService pagoService, IFacturaService facturaService, IClienteService clienteService)
+    public PagosController(IPagoService pagoService, IFacturaService facturaService, IClienteService clienteService, IConfiguracionService configuracionService)
     {
         _pagoService = pagoService;
         _facturaService = facturaService;
         _clienteService = clienteService;
+        _configuracionService = configuracionService;
     }
 
     [HttpGet("/pagos")]
@@ -79,7 +82,8 @@ public class PagosController : Controller
             : _clienteService.Buscar(clienteBusqueda);
 
         ViewBag.Facturas = new List<Factura>();
-        ViewBag.TipoCambio = SD.TipoCambioDolar;
+        var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+        ViewBag.TipoCambio = tipoCambio;
         ViewBag.Bancos = new[] { SD.BancoBanpro, SD.BancoLafise, SD.BancoBAC, SD.BancoFicohsa, SD.BancoBDF };
         ViewBag.TiposCuenta = new[] { SD.TipoCuentaDolar, SD.TipoCuentaCordoba, SD.TipoCuentaBilletera };
 
@@ -134,20 +138,63 @@ public class PagosController : Controller
         // Log para debugging (remover en producción)
         var logger = HttpContext.RequestServices.GetService<ILogger<PagosController>>();
         
-        // Obtener el valor crudo del formulario para debugging
+        // Normalizar montos provenientes del formulario (manejo de coma como separador decimal)
+        decimal? ParseDecimalFromForm(string key)
+        {
+            var raw = Request.Form[key].ToString();
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return null;
+            }
+
+            // Reemplazar coma por punto. No eliminamos puntos porque no usamos separador de miles en los inputs.
+            var normalized = raw.Trim().Replace(",", ".");
+
+            if (decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+            {
+                return result;
+            }
+
+            logger?.LogWarning($"No se pudo parsear el valor decimal del campo '{key}' con valor crudo '{raw}'");
+            return null;
+        }
+
+        // Aplicar normalización a los campos relevantes de pago
+        var montoForm = ParseDecimalFromForm("Monto");
+        if (montoForm.HasValue)
+        {
+            pago.Monto = montoForm.Value;
+        }
+
+        pago.MontoCordobasFisico = ParseDecimalFromForm("MontoCordobasFisico") ?? pago.MontoCordobasFisico;
+        pago.MontoDolaresFisico = ParseDecimalFromForm("MontoDolaresFisico") ?? pago.MontoDolaresFisico;
+        pago.MontoRecibidoFisico = ParseDecimalFromForm("MontoRecibidoFisico") ?? pago.MontoRecibidoFisico;
+        pago.MontoCordobasElectronico = ParseDecimalFromForm("MontoCordobasElectronico") ?? pago.MontoCordobasElectronico;
+        pago.MontoDolaresElectronico = ParseDecimalFromForm("MontoDolaresElectronico") ?? pago.MontoDolaresElectronico;
+
+        // Log para debugging (remover en producción)
         var montoRaw = Request.Form["Monto"].ToString();
         logger?.LogInformation($"=== DEBUG PAGO ===");
         logger?.LogInformation($"Monto crudo del formulario: '{montoRaw}'");
-        logger?.LogInformation($"Monto parseado: {pago.Monto}");
+        logger?.LogInformation($"Monto después de normalización: {pago.Monto}");
+        logger?.LogInformation($"MontoCordobasFisico: {pago.MontoCordobasFisico}, MontoDolaresFisico: {pago.MontoDolaresFisico}");
+        logger?.LogInformation($"MontoCordobasElectronico: {pago.MontoCordobasElectronico}, MontoDolaresElectronico: {pago.MontoDolaresElectronico}");
         logger?.LogInformation($"FacturaId: {pago.FacturaId}, TipoPago: {pago.TipoPago}");
+
+        // Obtener facturas seleccionadas (puede ser una o múltiples)
+        var facturaIds = Request.Form["FacturaIds"].ToString().Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(id => int.TryParse(id, out var parsedId) ? parsedId : 0)
+            .Where(id => id > 0)
+            .ToList();
 
         // Remover errores de validación de propiedades de navegación (relaciones)
         ModelState.Remove("Factura");
+        ModelState.Remove("PagoFacturas");
         
         // Validación manual de campos requeridos
-        if (pago.FacturaId == 0)
+        if (facturaIds.Count == 0 && (!pago.FacturaId.HasValue || pago.FacturaId.Value == 0))
         {
-            ModelState.AddModelError("FacturaId", "Debe seleccionar una factura");
+            ModelState.AddModelError("FacturaId", "Debe seleccionar al menos una factura");
         }
 
         if (string.IsNullOrWhiteSpace(pago.TipoPago))
@@ -161,29 +208,75 @@ public class PagosController : Controller
         }
 
         // VALIDACIÓN CRÍTICA: Verificar que el monto no sea excesivamente alto
-        var factura = _facturaService.ObtenerPorId(pago.FacturaId);
-        if (factura != null)
+        if (facturaIds.Count > 0)
         {
-            // Obtener el saldo pendiente real
-            var totalPagado = _pagoService.ObtenerPorFactura(factura.Id).Sum(p => p.Monto);
-            var saldoPendiente = factura.Monto - totalPagado;
-            var saldoPendienteAjustado = saldoPendiente < 0 ? 0 : saldoPendiente;
-            
-            logger?.LogInformation($"Factura: {factura.Numero}, Monto Factura: {factura.Monto}, Total Pagado: {totalPagado}, Saldo Pendiente: {saldoPendienteAjustado}, Monto Pago: {pago.Monto}");
-            
-            // Validar que el monto del pago no exceda el saldo pendiente por más del 10%
-            // Esto previene errores de entrada (como multiplicar por 100)
-            if (pago.Monto > saldoPendienteAjustado * 1.1m)
+            // Validar múltiples facturas
+            var facturas = facturaIds.Select(id => _facturaService.ObtenerPorId(id))
+                .Where(f => f != null)
+                .ToList();
+
+            if (facturas.Count != facturaIds.Count)
             {
-                ModelState.AddModelError("Monto", $"El monto del pago (C$ {pago.Monto:N2}) excede significativamente el saldo pendiente (C$ {saldoPendienteAjustado:N2}). Por favor, verifica el monto.");
-                logger?.LogWarning($"Monto de pago sospechoso: {pago.Monto} vs saldo pendiente: {saldoPendienteAjustado}");
+                ModelState.AddModelError("FacturaId", "Una o más facturas no fueron encontradas");
             }
-            
-            // Validar que el monto no sea más de 10 veces el monto de la factura (prevenir errores de multiplicación)
-            if (pago.Monto > factura.Monto * 10m)
+            else if (facturas.Count > 0)
             {
-                ModelState.AddModelError("Monto", $"El monto del pago (C$ {pago.Monto:N2}) es demasiado alto comparado con el monto de la factura (C$ {factura.Monto:N2}). Por favor, verifica el monto.");
-                logger?.LogWarning($"Monto de pago excesivo: {pago.Monto} vs monto factura: {factura.Monto}");
+                // Verificar que todas pertenezcan al mismo cliente
+                var primerClienteId = facturas.First()!.ClienteId;
+                if (facturas.Any(f => f!.ClienteId != primerClienteId))
+                {
+                    ModelState.AddModelError("FacturaId", "Todas las facturas deben pertenecer al mismo cliente");
+                }
+                else
+                {
+                    // Calcular saldo total pendiente
+                    var saldosPendientes = facturas.Select(f =>
+                    {
+                        var totalPagado = _pagoService.ObtenerPorFactura(f!.Id).Sum(p => p.Monto);
+                        return f.Monto - totalPagado;
+                    }).ToList();
+
+                    var saldoTotalPendiente = saldosPendientes.Sum();
+                    var saldoTotalAjustado = saldoTotalPendiente < 0 ? 0 : saldoTotalPendiente;
+                    
+                    logger?.LogInformation($"Facturas seleccionadas: {facturas.Count}, Saldo Total Pendiente: {saldoTotalAjustado}, Monto Pago: {pago.Monto}");
+                    
+                    // Validación suave: solo registrar advertencia si el monto parece extremadamente alto,
+                    // pero sin bloquear el registro del pago para evitar falsos positivos con pagos mixtos o ajustes manuales.
+                    if (pago.Monto > saldoTotalAjustado * 10m) // más de 10 veces el saldo pendiente
+                    {
+                        logger?.LogWarning($"[VALIDACIÓN SUAVE] Monto de pago alto: {pago.Monto} vs saldo pendiente total: {saldoTotalAjustado}");
+                        // No agregamos ModelState error para no impedir el registro del pago.
+                    }
+                }
+            }
+        }
+        else if (pago.FacturaId.HasValue && pago.FacturaId.Value > 0)
+        {
+            // Validar una sola factura (comportamiento original)
+            var factura = _facturaService.ObtenerPorId(pago.FacturaId.Value);
+            if (factura != null)
+            {
+                // Obtener el saldo pendiente real
+                var totalPagado = _pagoService.ObtenerPorFactura(factura.Id).Sum(p => p.Monto);
+                var saldoPendiente = factura.Monto - totalPagado;
+                var saldoPendienteAjustado = saldoPendiente < 0 ? 0 : saldoPendiente;
+                
+                logger?.LogInformation($"Factura: {factura.Numero}, Monto Factura: {factura.Monto}, Total Pagado: {totalPagado}, Saldo Pendiente: {saldoPendienteAjustado}, Monto Pago: {pago.Monto}");
+                
+                // Validar que el monto del pago no exceda el saldo pendiente por más del 10%
+                if (pago.Monto > saldoPendienteAjustado * 1.1m)
+                {
+                    ModelState.AddModelError("Monto", $"El monto del pago (C$ {pago.Monto:N2}) excede significativamente el saldo pendiente (C$ {saldoPendienteAjustado:N2}). Por favor, verifica el monto.");
+                    logger?.LogWarning($"Monto de pago sospechoso: {pago.Monto} vs saldo pendiente: {saldoPendienteAjustado}");
+                }
+                
+                // Validar que el monto no sea más de 10 veces el monto de la factura
+                if (pago.Monto > factura.Monto * 10m)
+                {
+                    ModelState.AddModelError("Monto", $"El monto del pago (C$ {pago.Monto:N2}) es demasiado alto comparado con el monto de la factura (C$ {factura.Monto:N2}). Por favor, verifica el monto.");
+                    logger?.LogWarning($"Monto de pago excesivo: {pago.Monto} vs monto factura: {factura.Monto}");
+                }
             }
         }
 
@@ -192,44 +285,137 @@ public class PagosController : Controller
             ModelState.AddModelError("Moneda", "Debe seleccionar una moneda");
         }
 
-        if (pago.TipoPago == SD.TipoPagoElectronico)
+        // Validaciones para pagos electrónicos y mixtos
+        if (pago.TipoPago == SD.TipoPagoElectronico || pago.TipoPago == SD.TipoPagoMixto)
         {
-            if (string.IsNullOrWhiteSpace(pago.Banco))
+            // Validar que haya al menos un monto electrónico
+            var tieneMontoElectronico = (pago.MontoCordobasElectronico.HasValue && pago.MontoCordobasElectronico.Value > 0) ||
+                                       (pago.MontoDolaresElectronico.HasValue && pago.MontoDolaresElectronico.Value > 0);
+            
+            if (pago.TipoPago == SD.TipoPagoElectronico && !tieneMontoElectronico && pago.Monto <= 0)
             {
-                ModelState.AddModelError("Banco", "El banco es requerido para pagos electrónicos");
+                ModelState.AddModelError("Monto", "Debe especificar un monto para el pago electrónico");
             }
-            if (string.IsNullOrWhiteSpace(pago.TipoCuenta))
+            
+            if (tieneMontoElectronico)
             {
-                ModelState.AddModelError("TipoCuenta", "El tipo de cuenta es requerido para pagos electrónicos");
+                if (string.IsNullOrWhiteSpace(pago.Banco))
+                {
+                    ModelState.AddModelError("Banco", "El banco es requerido para pagos electrónicos");
+                }
+                if (string.IsNullOrWhiteSpace(pago.TipoCuenta))
+                {
+                    ModelState.AddModelError("TipoCuenta", "El tipo de cuenta es requerido para pagos electrónicos");
+                }
+            }
+        }
+        
+        // Validaciones para pagos físicos y mixtos
+        if (pago.TipoPago == SD.TipoPagoFisico || pago.TipoPago == SD.TipoPagoMixto)
+        {
+            // Validar que haya al menos un monto físico
+            var tieneMontoFisico = (pago.MontoCordobasFisico.HasValue && pago.MontoCordobasFisico.Value > 0) ||
+                                  (pago.MontoDolaresFisico.HasValue && pago.MontoDolaresFisico.Value > 0);
+            
+            if (pago.TipoPago == SD.TipoPagoFisico && !tieneMontoFisico && pago.Monto <= 0)
+            {
+                ModelState.AddModelError("Monto", "Debe especificar un monto para el pago físico");
+            }
+        }
+        
+        // Validación para pago mixto: debe tener montos en ambos métodos
+        if (pago.TipoPago == SD.TipoPagoMixto)
+        {
+            var tieneMontoFisico = (pago.MontoCordobasFisico.HasValue && pago.MontoCordobasFisico.Value > 0) ||
+                                  (pago.MontoDolaresFisico.HasValue && pago.MontoDolaresFisico.Value > 0);
+            var tieneMontoElectronico = (pago.MontoCordobasElectronico.HasValue && pago.MontoCordobasElectronico.Value > 0) ||
+                                       (pago.MontoDolaresElectronico.HasValue && pago.MontoDolaresElectronico.Value > 0);
+            
+            if (!tieneMontoFisico)
+            {
+                ModelState.AddModelError("MontoCordobasFisico", "Debe especificar al menos un monto para el pago físico");
+            }
+            if (!tieneMontoElectronico)
+            {
+                ModelState.AddModelError("MontoCordobasElectronico", "Debe especificar al menos un monto para el pago electrónico");
             }
         }
 
+        // Calcular monto total antes de validar
+        var montoTotalCalculado = _pagoService.CalcularMontoTotal(pago);
+        pago.Monto = montoTotalCalculado;
+        
+        // Establecer Moneda según el tipo de pago
+        if (pago.TipoPago == SD.TipoPagoMixto)
+        {
+            pago.Moneda = SD.MonedaAmbos;
+        }
+        else if (pago.TipoPago == SD.TipoPagoFisico)
+        {
+            // Si usa nuevos campos, determinar moneda
+            if (pago.MontoCordobasFisico.HasValue && pago.MontoCordobasFisico.Value > 0 &&
+                pago.MontoDolaresFisico.HasValue && pago.MontoDolaresFisico.Value > 0)
+            {
+                pago.Moneda = SD.MonedaAmbos;
+            }
+            else if (pago.MontoDolaresFisico.HasValue && pago.MontoDolaresFisico.Value > 0)
+            {
+                pago.Moneda = SD.MonedaDolar;
+            }
+            else
+            {
+                pago.Moneda = SD.MonedaCordoba;
+            }
+        }
+        else if (pago.TipoPago == SD.TipoPagoElectronico)
+        {
+            // Si usa nuevos campos, determinar moneda
+            if (pago.MontoCordobasElectronico.HasValue && pago.MontoCordobasElectronico.Value > 0 &&
+                pago.MontoDolaresElectronico.HasValue && pago.MontoDolaresElectronico.Value > 0)
+            {
+                pago.Moneda = SD.MonedaAmbos;
+            }
+            else if (pago.MontoDolaresElectronico.HasValue && pago.MontoDolaresElectronico.Value > 0)
+            {
+                pago.Moneda = SD.MonedaDolar;
+            }
+            else
+            {
+                pago.Moneda = SD.MonedaCordoba;
+            }
+        }
+        
+        if (montoTotalCalculado <= 0)
+        {
+            ModelState.AddModelError("Monto", "El monto total del pago debe ser mayor a cero");
+        }
+        
         // Validar solo los campos que realmente importan
         var isValid = ModelState.IsValid && 
-                     pago.FacturaId > 0 && 
-                     pago.Monto > 0 && 
+                     (facturaIds.Count > 0 || (pago.FacturaId.HasValue && pago.FacturaId.Value > 0)) && 
+                     montoTotalCalculado > 0 && 
                      !string.IsNullOrWhiteSpace(pago.TipoPago) &&
-                     !string.IsNullOrWhiteSpace(pago.Moneda) &&
-                     (pago.TipoPago != SD.TipoPagoElectronico || (!string.IsNullOrWhiteSpace(pago.Banco) && !string.IsNullOrWhiteSpace(pago.TipoCuenta)));
+                     !string.IsNullOrWhiteSpace(pago.Moneda);
 
         if (!isValid)
         {
             var errors = ModelState.Values
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
-                .Where(e => !e.Contains("Factura")) // Filtrar errores de la relación Factura
+                .Where(e => !e.Contains("Factura") && !e.Contains("PagoFacturas")) // Filtrar errores de relaciones
                 .ToList();
             
             logger?.LogWarning($"Errores de validación: {string.Join(", ", errors)}");
             
-            ViewBag.TipoCambio = SD.TipoCambioDolar;
+            var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+            ViewBag.TipoCambio = tipoCambio;
             ViewBag.Bancos = new[] { SD.BancoBanpro, SD.BancoLafise, SD.BancoBAC, SD.BancoFicohsa, SD.BancoBDF };
             ViewBag.TiposCuenta = new[] { SD.TipoCuentaDolar, SD.TipoCuentaCordoba, SD.TipoCuentaBilletera };
             ViewBag.ClienteBusqueda = "";
             ViewBag.Clientes = new List<Cliente>();
             ViewBag.Facturas = new List<Factura>();
             
-            // Mostrar errores de validación (sin el error de Factura)
+            // Mostrar errores de validación
             if (errors.Any())
             {
                 TempData["Error"] = $"Errores de validación: {string.Join(", ", errors)}";
@@ -239,15 +425,28 @@ public class PagosController : Controller
 
         try
         {
-            _pagoService.Crear(pago);
-            TempData["Success"] = "Pago registrado exitosamente.";
+            // Si hay múltiples facturas, usar el nuevo método
+            if (facturaIds.Count > 0)
+            {
+                _pagoService.Crear(pago, facturaIds);
+            }
+            else
+            {
+                // Pago de una sola factura (comportamiento original)
+                _pagoService.Crear(pago);
+            }
+            
+            TempData["Success"] = facturaIds.Count > 1 
+                ? $"Pago registrado exitosamente para {facturaIds.Count} facturas." 
+                : "Pago registrado exitosamente.";
             return Redirect("/pagos");
         }
         catch (Exception ex)
         {
             logger?.LogError(ex, "Error al crear pago");
             TempData["Error"] = $"Error al registrar pago: {ex.Message}";
-            ViewBag.TipoCambio = SD.TipoCambioDolar;
+            var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+            ViewBag.TipoCambio = tipoCambio;
             ViewBag.Bancos = new[] { SD.BancoBanpro, SD.BancoLafise, SD.BancoBAC, SD.BancoFicohsa, SD.BancoBDF };
             ViewBag.TiposCuenta = new[] { SD.TipoCuentaDolar, SD.TipoCuentaCordoba, SD.TipoCuentaBilletera };
             ViewBag.ClienteBusqueda = "";

@@ -221,6 +221,25 @@ public class PdfService : IPdfService
                                 table.Cell().Element(BodyCellStyle).Text("I.V.A. C$").FontSize(9);
                                 table.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
+                                // Método de pago (si hay pagos) - después de IVA
+                                if (factura.Pagos != null && factura.Pagos.Any())
+                                {
+                                    var primerPago = factura.Pagos.OrderBy(p => p.FechaPago).First();
+                                    string metodoPagoTexto = "";
+                                    if (primerPago.TipoPago == SD.TipoPagoFisico)
+                                        metodoPagoTexto = "Físico";
+                                    else if (primerPago.TipoPago == SD.TipoPagoElectronico)
+                                        metodoPagoTexto = "Electrónico";
+                                    else if (primerPago.TipoPago == SD.TipoPagoMixto)
+                                        metodoPagoTexto = "Mixto";
+                                    
+                                    if (!string.IsNullOrEmpty(metodoPagoTexto))
+                                    {
+                                        table.Cell().Element(BodyCellStyle).Text("Método de pago").FontSize(9);
+                                        table.Cell().Element(BodyCellStyle).AlignRight().Text(metodoPagoTexto).FontSize(9).Bold();
+                                    }
+                                }
+
                                 // Total
                                 table.Cell().Element(TotalCellStyle).Text("Total C$").FontSize(11).Bold();
                                 table.Cell().Element(TotalCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(11).Bold();
@@ -484,16 +503,59 @@ public class PdfService : IPdfService
                                 table.Cell().Element(BodyCellStyle).Text("I.V.A. C$").FontSize(9);
                                 table.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
+                                // Método de pago (si hay pagos) - después de IVA
+                                if (factura.Pagos != null && factura.Pagos.Any())
+                                {
+                                    var primerPago = factura.Pagos.OrderBy(p => p.FechaPago).First();
+                                    string metodoPagoTexto = "";
+                                    if (primerPago.TipoPago == SD.TipoPagoFisico)
+                                        metodoPagoTexto = "Físico";
+                                    else if (primerPago.TipoPago == SD.TipoPagoElectronico)
+                                        metodoPagoTexto = "Electrónico";
+                                    else if (primerPago.TipoPago == SD.TipoPagoMixto)
+                                        metodoPagoTexto = "Mixto";
+                                    
+                                    if (!string.IsNullOrEmpty(metodoPagoTexto))
+                                    {
+                                        table.Cell().Element(BodyCellStyle).Text("Método de pago").FontSize(9);
+                                        table.Cell().Element(BodyCellStyle).AlignRight().Text(metodoPagoTexto).FontSize(9).Bold();
+                                    }
+                                }
+
                                 // Total
                                 table.Cell().Element(TotalCellStyle).Text("Total C$").FontSize(11).Bold();
                                 table.Cell().Element(TotalCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(11).Bold();
                             });
                         });
 
-                        // Estado de la Cuenta (si hay pagos)
+                        // Estado de la Cuenta cuando hay pagos
                         if (factura.Pagos != null && factura.Pagos.Any())
                         {
-                            var montoPagado = factura.Pagos.Sum(p => p.Monto);
+                            // Calcular el monto total pagado sumando los montos aplicados de cada pago
+                            var montoPagado = 0m;
+                            if (_context != null)
+                            {
+                                foreach (var pago in factura.Pagos)
+                                {
+                                    if (pago.FacturaId == factura.Id)
+                                    {
+                                        montoPagado += pago.Monto;
+                                    }
+                                    else
+                                    {
+                                        var pagoFactura = _context.PagoFacturas
+                                            .FirstOrDefault(pf => pf.PagoId == pago.Id && pf.FacturaId == factura.Id);
+                                        if (pagoFactura != null)
+                                        {
+                                            montoPagado += pagoFactura.MontoAplicado;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                montoPagado = factura.Pagos.Sum(p => p.Monto);
+                            }
                             column.Item().Column(estadoColumn =>
                             {
                                 estadoColumn.Item().Text("Estado de la cuenta").FontSize(11).Bold().FontColor(Colors.Grey.Darken3);
@@ -524,9 +586,11 @@ public class PdfService : IPdfService
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{montoPagado:N2}").FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Saldo final del periodo").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+                                    var saldoFinal = factura.Monto - montoPagado + multaPorPagoTardio;
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{saldoFinal:N2}").FontSize(9);
 
-                                    var montoTotalPagar = factura.Monto - montoPagado + multaPorPagoTardio;
+                                    // Monto total a pagar: siempre mostrar el monto de la factura (monto consumido)
+                                    var montoTotalPagar = factura.Monto;
                                     estadoTable.Cell().Element(TotalCellStyle).Text("Monto total a pagar").FontSize(11).Bold();
                                     estadoTable.Cell().Element(TotalCellStyle).AlignRight().Text($"{montoTotalPagar:N2}").FontSize(11).Bold();
                                 });

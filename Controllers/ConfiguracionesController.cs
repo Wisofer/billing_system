@@ -6,6 +6,8 @@ using billing_system.Utils;
 using billing_system.Data;
 using System.Security.Cryptography;
 using System.Text;
+using System.Globalization;
+using System;
 
 namespace billing_system.Controllers;
 
@@ -15,11 +17,13 @@ public class ConfiguracionesController : Controller
 {
     private readonly IUsuarioService _usuarioService;
     private readonly ApplicationDbContext _context;
+    private readonly IConfiguracionService _configuracionService;
 
-    public ConfiguracionesController(IUsuarioService usuarioService, ApplicationDbContext context)
+    public ConfiguracionesController(IUsuarioService usuarioService, ApplicationDbContext context, IConfiguracionService configuracionService)
     {
         _usuarioService = usuarioService;
         _context = context;
+        _configuracionService = configuracionService;
     }
 
     [HttpGet("/configuraciones")]
@@ -34,12 +38,18 @@ public class ConfiguracionesController : Controller
         var usuarios = _usuarioService.ObtenerTodos();
         var plantillas = _context.PlantillasMensajeWhatsApp.OrderByDescending(p => p.EsDefault).ThenBy(p => p.Nombre).ToList();
 
+        // Obtener tipo de cambio actual
+        var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+        var configuracionTipoCambio = _configuracionService.ObtenerPorClave("TipoCambioDolar");
+
         ViewBag.EsAdministrador = esAdministrador;
         ViewBag.RolUsuario = rolUsuario;
         ViewBag.NombreUsuario = nombreUsuario;
         ViewBag.Usuarios = usuarios;
         ViewBag.TemaActual = temaActual;
         ViewBag.Plantillas = plantillas;
+        ViewBag.TipoCambio = tipoCambio;
+        ViewBag.ConfiguracionTipoCambio = configuracionTipoCambio;
 
         return View();
     }
@@ -250,6 +260,44 @@ public class ConfiguracionesController : Controller
         _context.SaveChanges();
 
         return Json(new { success = true, message = "Plantilla marcada como predeterminada." });
+    }
+
+    // ========== CRUD de Tipo de Cambio ==========
+    
+    [HttpPost("/configuraciones/tipo-cambio/actualizar")]
+    public IActionResult ActualizarTipoCambio([FromForm] string valor)
+    {
+        try
+        {
+            // Parsear el valor manualmente usando InvariantCulture para evitar problemas de cultura
+            if (string.IsNullOrWhiteSpace(valor))
+            {
+                return Json(new { success = false, message = "El valor del tipo de cambio es requerido." });
+            }
+
+            // Normalizar: reemplazar coma por punto
+            valor = valor.Replace(',', '.');
+            
+            if (!decimal.TryParse(valor, NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var valorDecimal))
+            {
+                return Json(new { success = false, message = "El valor del tipo de cambio no es válido." });
+            }
+
+            if (valorDecimal <= 0 || valorDecimal > 100)
+            {
+                return Json(new { success = false, message = "El tipo de cambio debe ser un valor válido entre 0.01 y 100." });
+            }
+
+            var nombreUsuario = User.Identity?.Name ?? "Sistema";
+            _configuracionService.ActualizarValor("TipoCambioDolar", valorDecimal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), nombreUsuario);
+
+            return Json(new { success = true, message = $"Tipo de cambio actualizado a C$ {valorDecimal:F2} = $1" });
+        }
+        catch (Exception ex)
+        {
+            // Log del error para debugging
+            return Json(new { success = false, message = $"Error al actualizar el tipo de cambio: {ex.Message}" });
+        }
     }
 
     private string HashPassword(string password)

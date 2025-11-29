@@ -381,6 +381,304 @@
           "Value": "sha256-pNx1ajWAyQInO2YLT4XE/K/7xq/ZL5q1iIDxqHulyWU="
         }
       ]
+    },
+    {
+      "Route": "js/pagos-crear.js",
+      "AssetFile": "js/pagos-crear.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.000114705208"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "8717"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"0jRyV7I1x1LQSu1BrjpiykV+91/QoKMEeeCwCby+iVY=\""
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 29 Nov 2025 07:32:26 GMT"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4="
+        }
+      ]
+    },
+    {
+      "Route": "js/pagos-crear.js",
+      "AssetFile": "js/pagos-crear.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "50133"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 29 Nov 2025 07:32:26 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4="
+        }
+      ]
+    },
+    {
+      "Route": "js/pagos-crear.js.gz",
+      "AssetFile": "js/pagos-crear.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "8717"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"0jRyV7I1x1LQSu1BrjpiykV+91/QoKMEeeCwCby+iVY=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 29 Nov 2025 07:32:26 GMT"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-0jRyV7I1x1LQSu1BrjpiykV+91/QoKMEeeCwCby+iVY="
+        }
+      ]
+    },
+    {
+      "Route": "js/pagos-crear.pngkfmfssx.js",
+      "AssetFile": "js/pagos-crear.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.000114705208"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "8717"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"0jRyV7I1x1LQSu1BrjpiykV+91/QoKMEeeCwCby+iVY=\""
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 29 Nov 2025 07:32:26 GMT"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "pngkfmfssx"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4="
+        },
+        {
+          "Name": "label",
+          "Value": "js/pagos-crear.js"
+        }
+      ]
+    },
+    {
+      "Route": "js/pagos-crear.pngkfmfssx.js",
+      "AssetFile": "js/pagos-crear.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "50133"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 29 Nov 2025 07:32:26 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "pngkfmfssx"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4="
+        },
+        {
+          "Name": "label",
+          "Value": "js/pagos-crear.js"
+        }
+      ]
+    },
+    {
+      "Route": "js/pagos-crear.pngkfmfssx.js.gz",
+      "AssetFile": "js/pagos-crear.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "8717"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"0jRyV7I1x1LQSu1BrjpiykV+91/QoKMEeeCwCby+iVY=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 29 Nov 2025 07:32:26 GMT"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "pngkfmfssx"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-0jRyV7I1x1LQSu1BrjpiykV+91/QoKMEeeCwCby+iVY="
+        },
+        {
+          "Name": "label",
+          "Value": "js/pagos-crear.js.gz"
+        }
+      ]
     }
   ]
 }

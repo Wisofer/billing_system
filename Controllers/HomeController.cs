@@ -53,9 +53,13 @@ public class HomeController : Controller
             .Where(f => f.Categoria == SD.CategoriaInternet && f.Estado == SD.EstadoFacturaPendiente)
             .Sum(f => (decimal?)f.Monto) ?? 0;
         
+        // Ingresos Internet: incluir pagos directos y pagos con múltiples facturas
         var ingresosInternet = _context.Pagos
             .Include(p => p.Factura)
-            .Where(p => p.Factura != null && p.Factura.Categoria == SD.CategoriaInternet)
+            .Include(p => p.PagoFacturas)
+            .ThenInclude(pf => pf.Factura)
+            .Where(p => (p.Factura != null && p.Factura.Categoria == SD.CategoriaInternet) ||
+                       (p.PagoFacturas.Any(pf => pf.Factura != null && pf.Factura.Categoria == SD.CategoriaInternet)))
             .Sum(p => (decimal?)p.Monto) ?? 0;
 
         // Estadísticas por categoría - Streaming (optimizado: agregaciones directas en BD)
@@ -75,9 +79,13 @@ public class HomeController : Controller
             .Where(f => f.Categoria == SD.CategoriaStreaming && f.Estado == SD.EstadoFacturaPendiente)
             .Sum(f => (decimal?)f.Monto) ?? 0;
         
+        // Ingresos Streaming: incluir pagos directos y pagos con múltiples facturas
         var ingresosStreaming = _context.Pagos
             .Include(p => p.Factura)
-            .Where(p => p.Factura != null && p.Factura.Categoria == SD.CategoriaStreaming)
+            .Include(p => p.PagoFacturas)
+            .ThenInclude(pf => pf.Factura)
+            .Where(p => (p.Factura != null && p.Factura.Categoria == SD.CategoriaStreaming) ||
+                       (p.PagoFacturas.Any(pf => pf.Factura != null && pf.Factura.Categoria == SD.CategoriaStreaming)))
             .Sum(p => (decimal?)p.Monto) ?? 0;
 
         // Estadísticas de clientes por tipo de servicio (optimizado: consultas directas en BD)
@@ -122,20 +130,55 @@ public class HomeController : Controller
             })
             .ToList();
         
-        // Obtener todos los pagos de los últimos 6 meses en una sola consulta
-        var pagosMensuales = _context.Pagos
+        // Obtener todos los pagos de los últimos 6 meses
+        // Cargar primero en memoria y luego procesar (porque EF Core no puede traducir SelectMany complejo)
+        var pagosConFacturas = _context.Pagos
             .Include(p => p.Factura)
-            .Where(p => p.Factura != null && p.Factura.MesFacturacion >= fechaInicio)
-            .GroupBy(p => new { 
-                Ano = p.Factura.MesFacturacion.Year, 
-                Mes = p.Factura.MesFacturacion.Month, 
-                Categoria = p.Factura.Categoria 
-            })
+            .Include(p => p.PagoFacturas)
+            .ThenInclude(pf => pf.Factura)
+            .Where(p => (p.Factura != null && p.Factura.MesFacturacion >= fechaInicio) ||
+                       (p.PagoFacturas.Any(pf => pf.Factura != null && pf.Factura.MesFacturacion >= fechaInicio)))
+            .ToList(); // Cargar en memoria para procesar
+
+        // Procesar en memoria para construir las estadísticas mensuales
+        var pagosMensuales = new List<dynamic>();
+        
+        foreach (var pago in pagosConFacturas)
+        {
+            // Si tiene Factura directa y está en el rango, agregarla
+            if (pago.Factura != null && pago.Factura.MesFacturacion >= fechaInicio)
+            {
+                pagosMensuales.Add(new {
+                    Ano = pago.Factura.MesFacturacion.Year,
+                    Mes = pago.Factura.MesFacturacion.Month,
+                    Categoria = pago.Factura.Categoria,
+                    Monto = pago.Monto
+                });
+            }
+            
+            // Si tiene PagoFacturas, agregar cada una que esté en el rango
+            foreach (var pagoFactura in pago.PagoFacturas)
+            {
+                if (pagoFactura.Factura != null && pagoFactura.Factura.MesFacturacion >= fechaInicio)
+                {
+                    pagosMensuales.Add(new {
+                        Ano = pagoFactura.Factura.MesFacturacion.Year,
+                        Mes = pagoFactura.Factura.MesFacturacion.Month,
+                        Categoria = pagoFactura.Factura.Categoria,
+                        Monto = pagoFactura.MontoAplicado
+                    });
+                }
+            }
+        }
+        
+        // Agrupar y sumar
+        var pagosMensualesAgrupados = pagosMensuales
+            .GroupBy(p => new { ((dynamic)p).Ano, ((dynamic)p).Mes, ((dynamic)p).Categoria })
             .Select(g => new {
-                g.Key.Ano,
-                g.Key.Mes,
-                g.Key.Categoria,
-                Total = g.Sum(p => p.Monto)
+                Ano = g.Key.Ano,
+                Mes = g.Key.Mes,
+                Categoria = g.Key.Categoria,
+                Total = g.Sum(p => (decimal)((dynamic)p).Monto)
             })
             .ToList();
         
@@ -152,10 +195,10 @@ public class HomeController : Controller
             var facturasStreamingMes = facturasMensuales
                 .FirstOrDefault(f => f.Ano == mes.Year && f.Mes == mes.Month && f.Categoria == SD.CategoriaStreaming);
             
-            var ingresosInternetMes = pagosMensuales
+            var ingresosInternetMes = pagosMensualesAgrupados
                 .FirstOrDefault(p => p.Ano == mes.Year && p.Mes == mes.Month && p.Categoria == SD.CategoriaInternet);
             
-            var ingresosStreamingMes = pagosMensuales
+            var ingresosStreamingMes = pagosMensualesAgrupados
                 .FirstOrDefault(p => p.Ano == mes.Year && p.Mes == mes.Month && p.Categoria == SD.CategoriaStreaming);
             
             estadisticasMensuales.Add(new MesEstadistica

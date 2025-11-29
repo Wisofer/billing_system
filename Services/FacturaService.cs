@@ -30,13 +30,40 @@ public class FacturaService : IFacturaService
 
     public Factura? ObtenerPorId(int id)
     {
-        return _context.Facturas
+        var factura = _context.Facturas
             .Include(f => f.Cliente)
                 .ThenInclude(c => c.ClienteServicios)
             .Include(f => f.Servicio)
             .Include(f => f.FacturaServicios)
                 .ThenInclude(fs => fs.Servicio)
             .FirstOrDefault(f => f.Id == id);
+        
+        if (factura != null)
+        {
+            // Cargar pagos relacionados: directos (FacturaId) e indirectos (a través de PagoFacturas)
+            var pagosDirectos = _context.Pagos
+                .Where(p => p.FacturaId == factura.Id)
+                .ToList();
+            
+            var pagosIndirectos = _context.PagoFacturas
+                .Where(pf => pf.FacturaId == factura.Id)
+                .Include(pf => pf.Pago)
+                .Select(pf => pf.Pago)
+                .ToList();
+            
+            // Combinar ambos tipos de pagos y eliminar duplicados
+            var todosLosPagos = pagosDirectos
+                .Union(pagosIndirectos)
+                .GroupBy(p => p.Id)
+                .Select(g => g.First())
+                .OrderBy(p => p.FechaPago)
+                .ToList();
+            
+            // Asignar los pagos a la factura
+            factura.Pagos = todosLosPagos;
+        }
+        
+        return factura;
     }
 
     public List<Factura> ObtenerPorCliente(int clienteId)
@@ -357,8 +384,9 @@ public class FacturaService : IFacturaService
         if (factura == null)
             return false;
 
-        // Verificar si tiene pagos
-        var tienePagos = _context.Pagos.Any(p => p.FacturaId == id);
+        // Verificar si tiene pagos (directos o a través de PagoFactura)
+        var tienePagos = _context.Pagos.Any(p => p.FacturaId == id) ||
+                        _context.PagoFacturas.Any(pf => pf.FacturaId == id);
         if (tienePagos)
             return false; // No se puede eliminar si tiene pagos
 
@@ -395,8 +423,9 @@ public class FacturaService : IFacturaService
                 continue;
             }
 
-            // Verificar si tiene pagos
-            var tienePagos = _context.Pagos.Any(p => p.FacturaId == id);
+            // Verificar si tiene pagos (directos o a través de PagoFactura)
+            var tienePagos = _context.Pagos.Any(p => p.FacturaId == id) ||
+                            _context.PagoFacturas.Any(pf => pf.FacturaId == id);
             if (tienePagos)
             {
                 conPagos++;

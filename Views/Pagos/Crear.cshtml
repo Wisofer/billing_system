@@ -4,647 +4,473 @@
 @{
     ViewData["Title"] = "Registrar Pago";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var clienteBusqueda = ViewBag.ClienteBusqueda as string ?? "";
-    var clientes = ViewBag.Clientes as List<billing_system.Models.Entities.Cliente> ?? new List<billing_system.Models.Entities.Cliente>();
     var todosLosClientes = ViewBag.TodosLosClientes as List<billing_system.Models.Entities.Cliente> ?? new List<billing_system.Models.Entities.Cliente>();
-    var facturas = ViewBag.Facturas as List<billing_system.Models.Entities.Factura> ?? new List<billing_system.Models.Entities.Factura>();
     var tipoCambio = ViewBag.TipoCambio as decimal? ?? SD.TipoCambioDolar;
     var bancos = ViewBag.Bancos as string[] ?? new[] { SD.BancoBanpro, SD.BancoLafise, SD.BancoBAC, SD.BancoFicohsa, SD.BancoBDF };
     var tiposCuenta = ViewBag.TiposCuenta as string[] ?? new[] { SD.TipoCuentaDolar, SD.TipoCuentaCordoba, SD.TipoCuentaBilletera };
     var clientesJson = JsonSerializer.Serialize(todosLosClientes.Select(c => new { id = c.Id, codigo = c.Codigo, nombre = c.Nombre }));
 }
 
-<!-- Notificaciones -->
 @if (TempData["Error"] != null)
 {
-    <div class="mb-4 p-4 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300">
+    <div class="mb-3 p-3 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 rounded text-red-700 dark:text-red-300 text-sm">
         @TempData["Error"]
     </div>
 }
 
-<!-- Encabezado -->
-<div class="mb-6">
-    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-1">Registrar Nuevo Pago</h2>
-    <p class="text-sm text-gray-500 dark:text-gray-400">Registra un pago para una factura pendiente</p>
-</div>
+<div class="max-w-2xl mx-auto">
+    <div class="mb-4">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Registrar Pago</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Sistema de pago rápido y sencillo</p>
+    </div>
 
-<div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-    <!-- Formulario de registro de pago -->
-    <form method="post" action="/pagos/crear" id="formPago" class="space-y-6">
+    <form method="post" action="/pagos/crear" id="formPago">
         @Html.AntiForgeryToken()
-
-        <!-- Selección de Cliente con Buscador -->
-        <div class="relative">
-            <label for="clienteSearch" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cliente *</label>
-            <div class="relative">
-                <input type="text" 
-                       id="clienteSearch" 
-                       autocomplete="off"
-                       placeholder="Buscar cliente por código o nombre..."
-                       class="w-full px-4 py-2 pl-10 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <button type="button" id="clearClienteBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hidden">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+        
+        <!-- Paso 1: Cliente -->
+        <div id="paso1" class="paso-activo bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-3 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">1. Cliente</h3>
+                <span id="clienteSeleccionadoBadge" class="hidden text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">✓ Seleccionado</span>
             </div>
-            <input type="hidden" name="clienteId" id="clienteId" required />
-            <div id="clienteDropdown" class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden">
-                <div id="clienteDropdownContent" class="py-1">
-                    <!-- Los resultados se cargarán aquí dinámicamente -->
+            <div class="relative">
+                <input type="text" id="clienteSearch" autocomplete="off" placeholder="Buscar cliente..." 
+                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                <input type="hidden" name="clienteId" id="clienteId" required />
+                <div id="clienteDropdown" class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow-lg max-h-48 overflow-y-auto hidden">
+                    <div id="clienteDropdownContent"></div>
                 </div>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Escribe para buscar cliente por código o nombre</p>
         </div>
 
-        @if (true) // Siempre mostrar el formulario, el buscador manejará la selección
-        {
-
-            <!-- Selección de Factura -->
-            <div>
-                <label for="FacturaId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Factura con Saldo Pendiente *</label>
-                <select name="FacturaId" id="FacturaId" required 
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        onchange="actualizarMonto(this.value)">
-                    <option value="">Seleccionar factura...</option>
-                    @foreach (var factura in facturas)
-                    {
-                        <option value="@factura.Id" data-monto="@factura.Monto">@factura.Numero - C$ @factura.Monto.ToString("N2")</option>
-                    }
-                </select>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Se cargarán automáticamente las facturas con saldo pendiente al seleccionar un cliente</p>
+        <!-- Paso 2: Facturas (oculto hasta seleccionar cliente) -->
+        <div id="paso2" class="paso-oculto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-3 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">2. Facturas <span id="facturasSeleccionadasCount" class="text-xs font-normal text-gray-500">(0)</span></h3>
+                <button type="button" id="btnSeleccionarTodas" class="hidden text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-800">Seleccionar todas</button>
             </div>
+            <div id="facturasContainer" class="min-h-[120px] border border-gray-200 dark:border-gray-700 rounded bg-gray-50 dark:bg-gray-900 p-3">
+                <p class="text-xs text-gray-500 dark:text-gray-400 text-center py-6" id="sinFacturasMensaje">Selecciona un cliente primero</p>
+                <div id="facturasList" class="hidden space-y-2"></div>
+            </div>
+            <input type="hidden" name="FacturaId" id="FacturaId" />
+            <input type="hidden" name="FacturaIds" id="FacturaIds" />
+        </div>
 
-            <!-- Monto y Moneda -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="Monto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto *</label>
-                    <div class="relative">
-                        <input type="number" asp-for="Monto" name="Monto" step="0.01" min="0.01" max="100000" required 
-                               id="Monto"
-                               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               oninput="validarMonto(this)"
-                               placeholder="0.00"
-                               readonly />
-                        <button type="button" onclick="habilitarEdicionMonto()" 
-                                class="absolute right-2 top-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" 
-                                title="Hacer editable"
-                                id="btnEditarMonto">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                        </button>
+        <!-- Paso 3: Monto y Moneda (oculto hasta seleccionar facturas) -->
+        <div id="paso3" class="paso-oculto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-3 shadow-sm">
+            <div class="mb-3">
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">3. Monto y Moneda</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Monto Total</label>
+                        <input type="number" asp-for="Monto" name="Monto" step="0.01" min="0.01" required id="Monto"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold" readonly />
                     </div>
-                    <span asp-validation-for="Monto" class="text-red-500 text-xs"></span>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="montoInfo">
-                        <span class="font-medium">⚠️ Importante:</span> El monto se llena automáticamente al seleccionar una factura. 
-                        <span class="text-amber-600 dark:text-amber-400">Usa punto (.) para decimales, NO coma.</span>
-                    </p>
+                    <div>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Moneda</label>
+                        <select asp-for="Moneda" name="Moneda" id="Moneda" required 
+                                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="C$">C$ (Córdobas)</option>
+                            <option value="$">$ (Dólares)</option>
+                        </select>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">TC: C$ @tipoCambio = $1</p>
+                    </div>
                 </div>
+            </div>
+        </div>
 
-                <div>
-                    <label for="Moneda" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Moneda *</label>
-                    <select asp-for="Moneda" name="Moneda" id="Moneda" required 
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            onchange="actualizarTipoCambio()">
-                        <option value="C$">C$ (Córdobas)</option>
-                        <option value="$">$ (Dólares)</option>
-                        <option value="Ambos">Ambos</option>
-                    </select>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tipo de cambio: C$ @tipoCambio = $1</p>
+        <!-- Paso 4: Tipo de Pago (oculto hasta tener monto) -->
+        <div id="paso4" class="paso-oculto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-3 shadow-sm">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">4. Método de Pago</h3>
+            <div class="grid grid-cols-3 gap-2">
+                <label class="flex flex-col items-center p-3 border-2 border-gray-200 dark:border-gray-700 rounded cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-all tipo-pago-option">
+                    <input type="radio" name="TipoPago" value="Fisico" class="sr-only" />
+                    <span class="text-xl mb-1">💵</span>
+                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Físico</span>
+                </label>
+                <label class="flex flex-col items-center p-3 border-2 border-gray-200 dark:border-gray-700 rounded cursor-pointer hover:border-green-400 dark:hover:border-green-600 transition-all tipo-pago-option">
+                    <input type="radio" name="TipoPago" value="Electronico" class="sr-only" />
+                    <span class="text-xl mb-1">💳</span>
+                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Electrónico</span>
+                </label>
+                <label class="flex flex-col items-center p-3 border-2 border-gray-200 dark:border-gray-700 rounded cursor-pointer hover:border-purple-400 dark:hover:border-purple-600 transition-all tipo-pago-option">
+                    <input type="radio" name="TipoPago" value="Mixto" class="sr-only" />
+                    <span class="text-xl mb-1">🔄</span>
+                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Mixto</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Paso 5: Detalles del Pago (oculto hasta seleccionar tipo) -->
+        <div id="paso5" class="paso-oculto">
+            <!-- Pago Físico -->
+            <div id="camposFisico" style="display: none;" class="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-3">
+                <h4 class="text-xs font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span class="mr-1">💵</span> Pago Físico
+                </h4>
+                <!-- Fila 1: Monto (izquierda) y Recibido (derecha) -->
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div id="contenedorMontoFisico">
+                        <div id="grupoMontoCordobasFisico">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1" id="labelMontoFisico1">Monto (C$)</label>
+                            <input type="number" name="MontoCordobasFisico" id="MontoCordobasFisico" step="0.01" min="0" 
+                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        </div>
+                        <div id="grupoMontoDolaresFisico" style="display:none;">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1" id="labelMontoFisico2">Monto ($)</label>
+                            <input type="number" name="MontoDolaresFisico" id="MontoDolaresFisico" step="0.01" min="0" 
+                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1" id="labelRecibidoFisico">Recibido (<span id="monedaRecibidoLabel">C$</span>)</label>
+                        <input type="number" name="MontoRecibidoFisico" id="MontoRecibidoFisico" step="0.01" min="0" 
+                               class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                    </div>
+                </div>
+                <!-- Fila 2: Vuelto a lo ancho -->
+                <div class="mb-2">
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Vuelto (C$)</label>
+                    <input type="number" name="VueltoFisico" id="VueltoFisico" step="0.01" readonly 
+                           class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300" />
+                </div>
+                <div class="text-xs text-right">
+                    <span class="text-gray-600 dark:text-gray-400">Total: </span>
+                    <span id="totalFisicoValor" class="font-semibold text-blue-600 dark:text-blue-400">C$ 0.00</span>
                 </div>
             </div>
 
-            <!-- Tipo de Pago -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo de Pago *</label>
-                <div class="flex space-x-4">
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="radio" name="TipoPago" value="Fisico" required 
-                               class="text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                               onchange="mostrarCamposPago()" />
-                        <span class="text-sm text-gray-700 dark:text-gray-300">Pago Físico</span>
-                    </label>
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="radio" name="TipoPago" value="Electronico" required 
-                               class="text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                               onchange="mostrarCamposPago()" />
-                        <span class="text-sm text-gray-700 dark:text-gray-300">Pago Electrónico</span>
-                    </label>
+            <!-- Pago Electrónico -->
+            <div id="camposElectronico" style="display: none;" class="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-3">
+                <h4 class="text-xs font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                    <span class="mr-1">💳</span> Pago Electrónico
+                </h4>
+                <!-- Fila 1: Monto (izquierda) y Banco (derecha) -->
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div id="grupoMontoCordobasElectronico">
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1" id="labelMontoElectronico1">Monto (C$)</label>
+                        <input type="number" name="MontoCordobasElectronico" id="MontoCordobasElectronico" step="0.01" min="0" 
+                               class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                    </div>
+                    <div id="grupoMontoDolaresElectronico" style="display:none;">
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1" id="labelMontoElectronico2">Monto ($)</label>
+                        <input type="number" name="MontoDolaresElectronico" id="MontoDolaresElectronico" step="0.01" min="0" 
+                               class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Banco *</label>
+                        <select asp-for="Banco" name="Banco" id="Banco" 
+                                class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="">Seleccionar...</option>
+                            @foreach (var banco in bancos)
+                            {
+                                <option value="@banco">@banco</option>
+                            }
+                        </select>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Campos para Pago Físico -->
-            <div id="camposFisico" style="display: none;" class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <div>
-                    <label for="MontoRecibido" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monto Recibido</label>
-                    <input type="number" asp-for="MontoRecibido" name="MontoRecibido" step="0.01" min="0" 
-                           id="MontoRecibido"
-                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           onchange="calcularVuelto()" />
-                    <span asp-validation-for="MontoRecibido" class="text-red-500 text-xs"></span>
-                </div>
-
-                <div>
-                    <label for="Vuelto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vuelto</label>
-                    <input type="number" asp-for="Vuelto" name="Vuelto" step="0.01" readonly 
-                           id="Vuelto"
-                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed" />
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Se calcula automáticamente</p>
-                </div>
-            </div>
-
-            <!-- Campos para Pago Electrónico -->
-            <div id="camposElectronico" style="display: none;" class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                <div>
-                    <label for="Banco" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Banco *</label>
-                    <select asp-for="Banco" name="Banco" id="Banco" 
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Seleccionar banco...</option>
-                        @foreach (var banco in bancos)
-                        {
-                            <option value="@banco">@banco</option>
-                        }
-                    </select>
-                    <span asp-validation-for="Banco" class="text-red-500 text-xs"></span>
-                </div>
-
-                <div>
-                    <label for="TipoCuenta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo de Cuenta *</label>
+                <!-- Fila 2: Tipo de cuenta al ancho -->
+                <div class="mb-2">
+                    <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Tipo de Cuenta *</label>
                     <select asp-for="TipoCuenta" name="TipoCuenta" id="TipoCuenta" 
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Seleccionar tipo...</option>
+                            class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="">Seleccionar...</option>
                         @foreach (var tipo in tiposCuenta)
                         {
                             <option value="@tipo">@tipo</option>
                         }
                     </select>
-                    <span asp-validation-for="TipoCuenta" class="text-red-500 text-xs"></span>
+                </div>
+                <div class="text-xs text-right">
+                    <span class="text-gray-600 dark:text-gray-400">Total: </span>
+                    <span id="totalElectronicoValor" class="font-semibold text-green-600 dark:text-green-400">C$ 0.00</span>
                 </div>
             </div>
 
-            <!-- Observaciones -->
-            <div>
-                <label for="Observaciones" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Observaciones</label>
-                <textarea asp-for="Observaciones" name="Observaciones" id="Observaciones" rows="3" 
-                          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Notas adicionales sobre el pago..."></textarea>
+            <!-- Resumen Total (solo para mixto) -->
+            <div id="resumenTotal" style="display: none;" class="bg-purple-50 dark:bg-purple-900 border border-purple-200 dark:border-purple-800 rounded-lg p-3 mb-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-gray-900 dark:text-white">Total del Pago:</span>
+                    <span id="totalGeneralValor" class="text-sm font-bold text-purple-700 dark:text-purple-300">C$ 0.00</span>
+                </div>
             </div>
+        </div>
 
-            <!-- Botones -->
-            <div class="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <a href="/pagos" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                    Cancelar
-                </a>
-                <button type="submit" formaction="/pagos/crear" formmethod="post" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
-                    Registrar Pago
-                </button>
-            </div>
-        }
+        <!-- Observaciones -->
+        <div id="paso6" class="paso-oculto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-3 shadow-sm">
+            <label for="Observaciones" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Observaciones (Opcional)</label>
+            <textarea asp-for="Observaciones" name="Observaciones" id="Observaciones" rows="2" 
+                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="Notas adicionales..."></textarea>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex items-center justify-end space-x-2">
+            <a href="/pagos" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+                Cancelar
+            </a>
+            <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium shadow-sm">
+                Registrar Pago
+            </button>
+        </div>
     </form>
 </div>
 
-<script>
-(function() {
-    'use strict';
-    
-    const clienteSearch = document.getElementById('clienteSearch');
-    const clienteIdHidden = document.getElementById('clienteId');
-    const clienteDropdown = document.getElementById('clienteDropdown');
-    const clienteDropdownContent = document.getElementById('clienteDropdownContent');
-    const clearClienteBtn = document.getElementById('clearClienteBtn');
-    
-    if (!clienteSearch || !clienteIdHidden || !clienteDropdown) {
-        console.error('Elementos del buscador de clientes no encontrados');
-        return;
+<style>
+    .paso-oculto {
+        display: none;
     }
-    
-    // Todos los clientes disponibles
-    const todosLosClientes = @Html.Raw(clientesJson);
-    let clienteSeleccionado = null;
-    let selectedIndex = -1;
-    
-    // Función para filtrar clientes
-    function filtrarClientes(termino) {
-        if (!termino || termino.trim() === '') {
-            return todosLosClientes;
-        }
-        
-        const terminoLower = termino.toLowerCase().trim();
-        return todosLosClientes.filter(cliente => {
-            const codigo = (cliente.codigo || '').toLowerCase();
-            const nombre = (cliente.nombre || '').toLowerCase();
-            return codigo.includes(terminoLower) || nombre.includes(terminoLower);
-        });
+    .paso-activo {
+        display: block;
     }
-    
-    // Función para mostrar resultados en el dropdown
-    function mostrarResultados(clientesFiltrados) {
-        clienteDropdownContent.innerHTML = '';
-        
-        if (clientesFiltrados.length === 0) {
-            const noResults = document.createElement('div');
-            noResults.className = 'px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center';
-            noResults.textContent = 'No se encontraron clientes';
-            clienteDropdownContent.appendChild(noResults);
-            clienteDropdown.classList.remove('hidden');
-            return;
-        }
-        
-        clientesFiltrados.forEach((cliente, index) => {
-            const item = document.createElement('div');
-            item.className = 'px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors cliente-item';
-            item.dataset.clienteId = cliente.id;
-            item.dataset.index = index;
-            
-            const codigo = document.createElement('span');
-            codigo.className = 'font-medium text-gray-900 dark:text-white';
-            codigo.textContent = cliente.codigo + ' - ';
-            
-            const nombre = document.createElement('span');
-            nombre.className = 'text-gray-700 dark:text-gray-300';
-            nombre.textContent = cliente.nombre;
-            
-            item.appendChild(codigo);
-            item.appendChild(nombre);
-            
-            item.addEventListener('click', function() {
-                seleccionarCliente(cliente);
-            });
-            
-            item.addEventListener('mouseenter', function() {
-                clienteDropdownContent.querySelectorAll('.cliente-item').forEach(el => {
-                    el.classList.remove('bg-blue-50', 'dark:bg-blue-900');
-                });
-                this.classList.add('bg-blue-50', 'dark:bg-blue-900');
-                selectedIndex = parseInt(this.dataset.index);
-            });
-            
-            clienteDropdownContent.appendChild(item);
-        });
-        
-        clienteDropdown.classList.remove('hidden');
-        selectedIndex = -1;
+    .tipo-pago-option input:checked + span,
+    .tipo-pago-option:has(input:checked) {
+        border-color: rgb(59 130 246);
+        background-color: rgb(239 246 255);
     }
-    
-    // Función para seleccionar un cliente
-    function seleccionarCliente(cliente) {
-        clienteSeleccionado = cliente;
-        clienteIdHidden.value = cliente.id;
-        clienteSearch.value = cliente.codigo + ' - ' + cliente.nombre;
-        clienteDropdown.classList.add('hidden');
-        clearClienteBtn.classList.remove('hidden');
-        
-        // Cargar facturas del cliente
-        cargarFacturas(cliente.id);
+    .dark .tipo-pago-option:has(input:checked) {
+        background-color: rgb(30 58 138);
     }
-    
-    // Función para limpiar selección
-    function limpiarSeleccion() {
-        clienteSeleccionado = null;
-        clienteIdHidden.value = '';
-        clienteSearch.value = '';
-        clienteDropdown.classList.add('hidden');
-        clearClienteBtn.classList.add('hidden');
-        document.getElementById('FacturaId').innerHTML = '<option value="">Seleccionar factura...</option>';
-        document.getElementById('Monto').value = '';
-        document.getElementById('Monto').readOnly = true;
-    }
-    
-    // Event listeners para el buscador
-    clienteSearch.addEventListener('input', function() {
-        const termino = this.value;
-        
-        if (clienteSeleccionado && termino !== (clienteSeleccionado.codigo + ' - ' + clienteSeleccionado.nombre)) {
-            clienteIdHidden.value = '';
-            clienteSeleccionado = null;
-            clearClienteBtn.classList.add('hidden');
-        }
-        
-        if (termino.trim() === '') {
-            clienteDropdown.classList.add('hidden');
-            return;
-        }
-        
-        const clientesFiltrados = filtrarClientes(termino);
-        mostrarResultados(clientesFiltrados);
-    });
-    
-    clienteSearch.addEventListener('focus', function() {
-        if (this.value.trim() !== '' && !clienteSeleccionado) {
-            const clientesFiltrados = filtrarClientes(this.value);
-            mostrarResultados(clientesFiltrados);
-        }
-    });
-    
-    clienteSearch.addEventListener('keydown', function(e) {
-        const items = clienteDropdownContent.querySelectorAll('.cliente-item');
-        
-        if (items.length === 0) return;
-        
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            selectedIndex = (selectedIndex + 1) % items.length;
-            items[selectedIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-            items[selectedIndex].classList.add('bg-blue-50', 'dark:bg-blue-900');
-            items.forEach((item, idx) => {
-                if (idx !== selectedIndex) {
-                    item.classList.remove('bg-blue-50', 'dark:bg-blue-900');
-                }
-            });
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            selectedIndex = selectedIndex <= 0 ? items.length - 1 : selectedIndex - 1;
-            items[selectedIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-            items[selectedIndex].classList.add('bg-blue-50', 'dark:bg-blue-900');
-            items.forEach((item, idx) => {
-                if (idx !== selectedIndex) {
-                    item.classList.remove('bg-blue-50', 'dark:bg-blue-900');
-                }
-            });
-        } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (selectedIndex >= 0 && items[selectedIndex]) {
-                const clienteId = items[selectedIndex].dataset.clienteId;
-                const cliente = todosLosClientes.find(c => c.id == clienteId);
-                if (cliente) {
-                    seleccionarCliente(cliente);
-                }
-            }
-        } else if (e.key === 'Escape') {
-            clienteDropdown.classList.add('hidden');
-        }
-    });
-    
-    clearClienteBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        limpiarSeleccion();
-        clienteSearch.focus();
-    });
-    
-    // Cerrar dropdown al hacer click fuera
-    document.addEventListener('click', function(e) {
-        if (!clienteSearch.contains(e.target) && !clienteDropdown.contains(e.target)) {
-            clienteDropdown.classList.add('hidden');
-        }
-    });
-})();
-</script>
+</style>
 
+<script src="~/js/pagos-crear.js"></script>
 <script>
-    // Validar antes de enviar el formulario
-    document.querySelector('#formPago').addEventListener('submit', function(e) {
-        const clienteId = document.getElementById('clienteId').value;
-        const montoInput = document.getElementById('Monto');
-        const monto = parseFloat(montoInput.value) || 0;
-        const facturaSelect = document.getElementById('FacturaId');
-        const facturaId = facturaSelect.value;
+    const clientesJson = @Html.Raw(clientesJson);
+    PagoSystem.tipoCambio = @tipoCambio;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        ClienteManager.init(clientesJson);
         
-        if (!clienteId) {
-            e.preventDefault();
-            const clienteSearch = document.getElementById('clienteSearch');
-            clienteSearch.focus();
-            clienteSearch.classList.add('border-red-500', 'ring-2', 'ring-red-500');
-            setTimeout(() => {
-                clienteSearch.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
-            }, 3000);
-            alert('Debe seleccionar un cliente');
-            return false;
-        }
+        // Event listeners para tipo de pago
+        document.querySelectorAll('input[name="TipoPago"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.tipo-pago-option').forEach(opt => {
+                    opt.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900');
+                });
+                const label = this.closest('.tipo-pago-option');
+                if (label) {
+                    label.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-blue-900');
+                }
+                mostrarPaso5();
+                if (window.mostrarCamposPago) window.mostrarCamposPago();
+            });
+        });
         
-        if (!facturaId) {
-            e.preventDefault();
-            alert('Debe seleccionar una factura');
-            return false;
-        }
+        // Event listener para cambio de moneda
+        document.getElementById('Moneda')?.addEventListener('change', function() {
+            actualizarMonedaEnInterfaz();
+            if (window.actualizarTipoCambio) window.actualizarTipoCambio();
+            if (window.mostrarCamposPago) window.mostrarCamposPago();
+        });
         
-        // Obtener el monto esperado de la factura seleccionada
-        const option = facturaSelect.options[facturaSelect.selectedIndex];
-        const montoEsperado = parseFloat(option.getAttribute('data-monto')) || 0;
+        // Ajustar interfaz de moneda al cargar (por defecto C$ → solo un input de monto físico)
+        actualizarMonedaEnInterfaz();
         
-        // Validar que el monto no sea más de 2 veces el esperado (permite un pequeño margen)
-        if (monto > montoEsperado * 2) {
-            e.preventDefault();
-            const mensaje = `⚠️ ERROR: El monto ingresado (C$ ${monto.toLocaleString('es-NI', {minimumFractionDigits: 2, maximumFractionDigits: 2})}) es demasiado alto.\n\n` +
-                          `El monto esperado es: C$ ${montoEsperado.toLocaleString('es-NI', {minimumFractionDigits: 2, maximumFractionDigits: 2})}\n\n` +
-                          `¿Estás seguro de que quieres continuar?`;
+        // Validar formulario antes de enviar
+        document.getElementById('formPago')?.addEventListener('submit', function(e) {
+            // Mostrar todos los pasos para que los campos requeridos sean validables
+            document.querySelectorAll('.paso-oculto').forEach(paso => {
+                paso.classList.remove('paso-oculto');
+                paso.classList.add('paso-activo');
+            });
             
-            if (!confirm(mensaje)) {
-                // Restaurar el monto correcto
-                montoInput.value = montoEsperado.toFixed(2).replace(',', '.');
-                montoInput.readOnly = true;
+            // Normalizar todos los montos: reemplazar coma por punto para evitar que el servidor interprete 898,40 como 89840
+            const camposMontos = [
+                'Monto',
+                'MontoCordobasFisico',
+                'MontoDolaresFisico',
+                'MontoCordobasElectronico',
+                'MontoDolaresElectronico',
+                'MontoRecibidoFisico'
+            ];
+            camposMontos.forEach(id => {
+                const input = document.getElementById(id);
+                if (input && input.value) {
+                    input.value = input.value.toString().replace(',', '.');
+                }
+            });
+            
+            // Forzar actualización de monto antes de validar
+            if (window.actualizarMonto) {
+                window.actualizarMonto();
+            }
+            
+            // Validar campos requeridos manualmente
+            const clienteId = document.getElementById('clienteId')?.value;
+            const facturaId = document.getElementById('FacturaId')?.value;
+            const facturaIds = document.getElementById('FacturaIds')?.value;
+            const monto = document.getElementById('Monto')?.value;
+            const moneda = document.getElementById('Moneda')?.value;
+            const tipoPago = document.querySelector('input[name="TipoPago"]:checked')?.value;
+            
+            console.log('Validación - ClienteId:', clienteId, 'FacturaId:', facturaId, 'FacturaIds:', facturaIds);
+            
+            if (!clienteId) {
+                e.preventDefault();
+                alert('Debe seleccionar un cliente');
+                document.getElementById('clienteSearch')?.focus();
                 return false;
             }
-        }
-        
-        // Asegurar que el valor se envía con punto como decimal
-        montoInput.value = monto.toFixed(2).replace(',', '.');
-    });
-</script>
-
-<script>
-    function cargarFacturas(clienteId) {
-        if (!clienteId) {
-            document.getElementById('FacturaId').innerHTML = '<option value="">Seleccionar factura...</option>';
-            return;
-        }
-
-        fetch(`/pagos/facturas-cliente/${clienteId}`)
-            .then(response => response.json())
-            .then(data => {
-                const select = document.getElementById('FacturaId');
-                select.innerHTML = '<option value="">Seleccionar factura...</option>';
-                
-                data.forEach(factura => {
-                    // Solo mostrar facturas que tienen saldo pendiente
-                    if (factura.puedePagar) {
-                        const option = document.createElement('option');
-                        option.value = factura.id;
-                        
-                        // Asegurar que los valores sean números, no strings formateados
-                        // El backend ya devuelve números, pero por si acaso...
-                        const saldoPendiente = parseFloat(factura.saldoPendiente) || 0;
-                        const totalPagado = parseFloat(factura.totalPagado) || 0;
-                        const montoTotal = parseFloat(factura.monto) || 0;
-                        
-                        // Validar que los valores sean razonables (no más de 1 millón)
-                        if (montoTotal > 1000000 || saldoPendiente > 1000000) {
-                            console.error('Valores sospechosos en factura:', factura);
-                            return; // Saltar esta factura
-                        }
-                        
-                        if (totalPagado > 0) {
-                            // Factura con pago parcial
-                            option.textContent = `${factura.numero} - C$ ${montoTotal.toFixed(2)} (Pagado: C$ ${totalPagado.toFixed(2)}, Pendiente: C$ ${saldoPendiente.toFixed(2)})`;
-                        } else {
-                            // Factura sin pagos
-                            option.textContent = `${factura.numero} - C$ ${montoTotal.toFixed(2)} (Pendiente)`;
-                        }
-                        
-                        // IMPORTANTE: Guardar el SALDO PENDIENTE, no el monto total
-                        option.setAttribute('data-monto', saldoPendiente);
-                        select.appendChild(option);
-                    }
-                });
-                
-                // Si no hay facturas con saldo pendiente, mostrar mensaje
-                if (select.options.length === 1) {
-                    const option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = 'No hay facturas con saldo pendiente';
-                    option.disabled = true;
-                    select.appendChild(option);
+            
+            // Validar facturas - verificar ambos campos
+            const tieneFactura = (facturaId && facturaId.trim() !== '') || (facturaIds && facturaIds.trim() !== '');
+            if (!tieneFactura) {
+                e.preventDefault();
+                alert('Debe seleccionar al menos una factura');
+                return false;
+            }
+            
+            if (!monto || parseFloat(monto) <= 0) {
+                e.preventDefault();
+                alert('El monto debe ser mayor a cero');
+                return false;
+            }
+            
+            if (!moneda) {
+                e.preventDefault();
+                alert('Debe seleccionar una moneda');
+                return false;
+            }
+            
+            if (!tipoPago) {
+                // No mostrar alerta, solo asegurarse de que el usuario vea la sección de método de pago
+                e.preventDefault();
+                mostrarPaso4();
+                mostrarPaso5();
+                mostrarPaso6();
+                const primerRadio = document.querySelector('input[name="TipoPago"]');
+                if (primerRadio) {
+                    primerRadio.focus();
                 }
-            })
-            .catch(error => {
-                console.error('Error al cargar facturas:', error);
-            });
-    }
-
-    function actualizarMonto(facturaId) {
-        const select = document.getElementById('FacturaId');
-        const option = select.options[select.selectedIndex];
-        const montoInput = document.getElementById('Monto');
-        const montoInfo = document.getElementById('montoInfo');
-        
-        if (option && option.value) {
-            const montoStr = option.getAttribute('data-monto');
-            // Asegurar que parseamos correctamente el número (sin comas ni formato)
-            let monto = parseFloat(montoStr) || 0;
-            
-            // Si el monto viene como string con formato, limpiarlo
-            if (typeof montoStr === 'string') {
-                // Remover cualquier formato (comas, espacios, etc.)
-                const montoLimpio = montoStr.toString().replace(/[,\s]/g, '');
-                monto = parseFloat(montoLimpio) || 0;
+                return false;
             }
             
-            console.log('Actualizando monto:', {
-                montoStr: montoStr,
-                monto: monto,
-                tipo: typeof montoStr
-            });
-            
-            // Validar que el monto sea razonable (no más de 100,000 por factura)
-            if (monto > 0 && monto <= 100000) {
-                // Usar punto como separador decimal (formato estándar para input type="number")
-                // Asegurar que siempre sea un número válido con máximo 2 decimales
-                const montoFormateado = Number(monto.toFixed(2));
-                montoInput.value = montoFormateado;
-                montoInput.readOnly = true; // Hacer readonly para evitar edición accidental
-                montoInfo.innerHTML = `<span class="font-medium text-green-600 dark:text-green-400">✓ Monto pendiente: C$ ${monto.toLocaleString('es-NI', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`;
-                montoInfo.className = 'text-xs text-gray-500 dark:text-gray-400 mt-1';
+            // Validar campos específicos según tipo de pago
+            if (tipoPago === 'Electronico' || tipoPago === 'Mixto') {
+                const banco = document.getElementById('Banco')?.value;
+                const tipoCuenta = document.getElementById('TipoCuenta')?.value;
                 
-                // Guardar el monto esperado en un atributo para validación posterior
-                montoInput.setAttribute('data-monto-esperado', montoFormateado);
-            } else {
-                console.error('Monto inválido:', monto);
-                montoInfo.innerHTML = '<span class="font-medium text-red-600 dark:text-red-400">⚠️ Error: El monto calculado parece incorrecto. Por favor, verifica la factura.</span>';
-                montoInfo.className = 'text-xs text-red-600 dark:text-red-400 mt-1';
-                montoInput.value = '';
-                montoInput.removeAttribute('data-monto-esperado');
+                if (!banco) {
+                    e.preventDefault();
+                    alert('Debe seleccionar un banco');
+                    return false;
+                }
+                
+                if (!tipoCuenta) {
+                    e.preventDefault();
+                    alert('Debe seleccionar un tipo de cuenta');
+                    return false;
+                }
             }
+        });
+    });
+    
+    function mostrarPaso2() {
+        document.getElementById('paso2')?.classList.remove('paso-oculto');
+        document.getElementById('paso2')?.classList.add('paso-activo');
+    }
+    
+    function mostrarPaso3() {
+        document.getElementById('paso3')?.classList.remove('paso-oculto');
+        document.getElementById('paso3')?.classList.add('paso-activo');
+    }
+    
+    function mostrarPaso4() {
+        document.getElementById('paso4')?.classList.remove('paso-oculto');
+        document.getElementById('paso4')?.classList.add('paso-activo');
+    }
+    
+    function mostrarPaso5() {
+        document.getElementById('paso5')?.classList.remove('paso-oculto');
+        document.getElementById('paso5')?.classList.add('paso-activo');
+    }
+    
+    function mostrarPaso6() {
+        document.getElementById('paso6')?.classList.remove('paso-oculto');
+        document.getElementById('paso6')?.classList.add('paso-activo');
+    }
+    
+    function actualizarMonedaEnInterfaz() {
+        const moneda = document.getElementById('Moneda')?.value;
+        const simbolo = moneda === '$' ? '$' : 'C$';
+        
+        // Actualizar labels de monto principal (físico y electrónico)
+        document.querySelectorAll('#labelMontoFisico1, #labelMontoElectronico1').forEach(el => {
+            el.textContent = `Monto (${simbolo})`;
+        });
+        
+        // Mostrar solo un campo de monto físico según la moneda (3 inputs visibles: Monto, Recibido, Vuelto)
+        const grupoMontoCordobasFisico = document.getElementById('grupoMontoCordobasFisico');
+        const grupoMontoDolaresFisico = document.getElementById('grupoMontoDolaresFisico');
+        const montoCordobasFisico = document.getElementById('MontoCordobasFisico');
+        const montoDolaresFisico = document.getElementById('MontoDolaresFisico');
+        
+        // Mostrar solo un campo de monto electrónico según la moneda
+        const grupoMontoCordobasElectronico = document.getElementById('grupoMontoCordobasElectronico');
+        const grupoMontoDolaresElectronico = document.getElementById('grupoMontoDolaresElectronico');
+        const montoCordobasElectronico = document.getElementById('MontoCordobasElectronico');
+        const montoDolaresElectronico = document.getElementById('MontoDolaresElectronico');
+        
+        if (moneda === '$') {
+            // Mostrar solo monto en dólares para pago físico
+            if (grupoMontoCordobasFisico) grupoMontoCordobasFisico.style.display = 'none';
+            if (grupoMontoDolaresFisico) grupoMontoDolaresFisico.style.display = 'block';
+            
+            // Limpiar monto en córdobas físico
+            if (montoCordobasFisico) montoCordobasFisico.value = '';
+            
+            // Electrónico: mostrar solo monto en dólares
+            if (grupoMontoCordobasElectronico) grupoMontoCordobasElectronico.style.display = 'none';
+            if (grupoMontoDolaresElectronico) grupoMontoDolaresElectronico.style.display = 'block';
+            if (montoCordobasElectronico) montoCordobasElectronico.value = '';
+        } else {
+            // Mostrar solo monto en córdobas para pago físico
+            if (grupoMontoCordobasFisico) grupoMontoCordobasFisico.style.display = 'block';
+            if (grupoMontoDolaresFisico) grupoMontoDolaresFisico.style.display = 'none';
+            
+            // Limpiar monto en dólares físico
+            if (montoDolaresFisico) montoDolaresFisico.value = '';
+            
+            // Electrónico: mostrar solo monto en córdobas
+            if (grupoMontoCordobasElectronico) grupoMontoCordobasElectronico.style.display = 'block';
+            if (grupoMontoDolaresElectronico) grupoMontoDolaresElectronico.style.display = 'none';
+            if (montoDolaresElectronico) montoDolaresElectronico.value = '';
+        }
+        
+        if (moneda === '$') {
+            document.getElementById('monedaRecibidoLabel').textContent = '$';
+        } else {
+            document.getElementById('monedaRecibidoLabel').textContent = 'C$';
         }
     }
     
-    function habilitarEdicionMonto() {
-        const montoInput = document.getElementById('Monto');
-        const btnEditar = document.getElementById('btnEditarMonto');
-        
-        if (montoInput.readOnly) {
-            montoInput.readOnly = false;
-            montoInput.focus();
-            btnEditar.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>';
-            btnEditar.title = 'Guardar (se llenará automáticamente)';
-            document.getElementById('montoInfo').innerHTML = '<span class="text-amber-600 dark:text-amber-400 font-medium">⚠️ Edición manual habilitada. Usa punto (.) para decimales.</span>';
-        } else {
-            montoInput.readOnly = true;
-            btnEditar.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>';
-            btnEditar.title = 'Hacer editable';
+    // Sobrescribir cargarFacturas para mostrar paso 2
+    const originalCargarFacturas = window.cargarFacturas;
+    window.cargarFacturas = function(clienteId) {
+        originalCargarFacturas(clienteId);
+        if (clienteId) {
+            mostrarPaso2();
+            document.getElementById('clienteSeleccionadoBadge')?.classList.remove('hidden');
         }
-    }
+    };
     
-    function validarMonto(input) {
-        // Reemplazar comas por puntos (formato español -> formato estándar)
-        let valor = input.value.toString();
-        if (valor.includes(',')) {
-            valor = valor.replace(',', '.');
-            input.value = valor;
+    // Sobrescribir actualizarMonto para mostrar pasos siguientes
+    const originalActualizarMonto = window.actualizarMonto;
+    window.actualizarMonto = function() {
+        originalActualizarMonto();
+        const monto = parseFloat(document.getElementById('Monto')?.value || 0);
+        if (monto > 0) {
+            mostrarPaso3();
+            mostrarPaso4();
         }
-        
-        // Remover cualquier carácter no numérico excepto punto
-        valor = valor.replace(/[^\d.]/g, '');
-        
-        // Asegurar que solo haya un punto decimal
-        const partes = valor.split('.');
-        if (partes.length > 2) {
-            valor = partes[0] + '.' + partes.slice(1).join('');
-        }
-        
-        // Limitar a 2 decimales
-        if (partes.length === 2 && partes[1].length > 2) {
-            valor = partes[0] + '.' + partes[1].substring(0, 2);
-        }
-        
-        input.value = valor;
-        const monto = parseFloat(valor) || 0;
-        const montoInfo = document.getElementById('montoInfo');
-        const montoEsperado = parseFloat(input.getAttribute('data-monto-esperado')) || 0;
-        
-        // Si hay un monto esperado, comparar con él
-        if (montoEsperado > 0 && monto > montoEsperado * 1.5) {
-            montoInfo.innerHTML = `<span class="font-medium text-red-600 dark:text-red-400">⚠️ ERROR: El monto (C$ ${monto.toLocaleString('es-NI', {minimumFractionDigits: 2, maximumFractionDigits: 2})}) es mucho mayor que el esperado (C$ ${montoEsperado.toLocaleString('es-NI', {minimumFractionDigits: 2, maximumFractionDigits: 2})}). Verifica el formato.</span>`;
-            montoInfo.className = 'text-xs text-red-600 dark:text-red-400 mt-1 font-medium';
-        } else if (monto > 100000) {
-            montoInfo.innerHTML = '<span class="font-medium text-red-600 dark:text-red-400">⚠️ ERROR: El monto es demasiado alto. Verifica que no hayas usado coma (,) en lugar de punto (.).</span>';
-            montoInfo.className = 'text-xs text-red-600 dark:text-red-400 mt-1 font-medium';
-        } else if (monto > 10000) {
-            montoInfo.innerHTML = '<span class="font-medium text-amber-600 dark:text-amber-400">⚠️ Advertencia: El monto parece alto. Verifica que sea correcto.</span>';
-            montoInfo.className = 'text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium';
-        } else if (monto > 0) {
-            montoInfo.innerHTML = `Monto ingresado: C$ ${monto.toLocaleString('es-NI', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            montoInfo.className = 'text-xs text-gray-500 dark:text-gray-400 mt-1';
-        }
-    }
-
-    function mostrarCamposPago() {
-        const tipoPago = document.querySelector('input[name="TipoPago"]:checked')?.value;
-        const camposFisico = document.getElementById('camposFisico');
-        const camposElectronico = document.getElementById('camposElectronico');
-        const banco = document.getElementById('Banco');
-        const tipoCuenta = document.getElementById('TipoCuenta');
-
-        if (tipoPago === 'Fisico') {
-            camposFisico.style.display = 'grid';
-            camposElectronico.style.display = 'none';
-            banco.removeAttribute('required');
-            tipoCuenta.removeAttribute('required');
-        } else if (tipoPago === 'Electronico') {
-            camposFisico.style.display = 'none';
-            camposElectronico.style.display = 'grid';
-            banco.setAttribute('required', 'required');
-            tipoCuenta.setAttribute('required', 'required');
-        } else {
-            camposFisico.style.display = 'none';
-            camposElectronico.style.display = 'none';
-            banco.removeAttribute('required');
-            tipoCuenta.removeAttribute('required');
-        }
-    }
-
-    function calcularVuelto() {
-        const montoRecibido = parseFloat(document.getElementById('MontoRecibido').value) || 0;
-        const monto = parseFloat(document.getElementById('Monto').value) || 0;
-        const vuelto = montoRecibido > monto ? montoRecibido - monto : 0;
-        document.getElementById('Vuelto').value = vuelto.toFixed(2);
-    }
-
-    function actualizarTipoCambio() {
-        // Aquí se puede agregar lógica para convertir montos según el tipo de cambio
-        // Por ahora solo actualizamos el display
-    }
+    };
+    
+    // Mostrar paso 6 cuando se selecciona tipo de pago
+    document.querySelectorAll('input[name="TipoPago"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            mostrarPaso6();
+        });
+    });
 </script>
 

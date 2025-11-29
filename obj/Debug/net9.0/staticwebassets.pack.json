@@ -9,6 +9,10 @@
       "PackagePath": "staticwebassets/images/logo.png"
     },
     {
+      "Id": "/home/william/Documentos/billing_system/wwwroot/js/pagos-crear.js",
+      "PackagePath": "staticwebassets/js/pagos-crear.js"
+    },
+    {
       "Id": "obj/Debug/net9.0/staticwebassets/msbuild.billing_system.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
     },
