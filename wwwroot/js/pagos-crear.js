@@ -17,7 +17,10 @@ const PagoSystem = {
     },
     
     setupEventListeners() {
-        // Event listeners para campos de moneda
+        // Inicializar validación para todos los inputs numéricos
+        Utilidades.inicializarValidacionInputsNumericos();
+        
+        // Event listeners para campos de moneda (después de la validación)
         ['MontoCordobasFisico', 'MontoDolaresFisico', 'MontoCordobasElectronico', 'MontoDolaresElectronico'].forEach(id => {
             const campo = document.getElementById(id);
             if (campo) {
@@ -37,7 +40,7 @@ const PagoSystem = {
             }
         });
         
-        // Event listener para monto recibido
+        // Event listener para monto recibido (ya está incluido en inicializarValidacionInputsNumericos, pero agregamos cálculo)
         const montoRecibidoFisico = document.getElementById('MontoRecibidoFisico');
         if (montoRecibidoFisico) {
             montoRecibidoFisico.addEventListener('input', () => {
@@ -596,6 +599,10 @@ const PagoManager = {
         const montoInput = document.getElementById('Monto');
         const montoDebeTotal = parseNumero(montoInput?.value); // Siempre en C$
         
+        // Ocultar error por defecto
+        const errorRecibidoFisico = document.getElementById('errorRecibidoFisico');
+        const inputRecibidoFisico = document.getElementById('MontoRecibidoFisico');
+        
         let vueltoFisico = 0;
         
         // Si estamos en mixto y el usuario solo escribe "Recibido" pero dejó el Monto físico vacío,
@@ -616,17 +623,49 @@ const PagoManager = {
             baseParaVuelto = montoCordobasFisico;
         }
         
+        // Validar que el monto recibido sea mayor o igual al monto a pagar
         if (montoRecibidoFisico > 0) {
+            let montoRecibidoEnCordobas = montoRecibidoFisico;
             if (moneda === '$') {
                 // Recibido se interpreta en dólares, convertir a C$
-                const montoRecibidoEnCordobas = montoRecibidoFisico * tipoCambioValor;
-                vueltoFisico = montoRecibidoEnCordobas > baseParaVuelto ? montoRecibidoEnCordobas - baseParaVuelto : 0;
+                montoRecibidoEnCordobas = montoRecibidoFisico * tipoCambioValor;
+            }
+            
+            // Validación: el monto recibido debe ser >= al monto a pagar
+            if (montoRecibidoEnCordobas < baseParaVuelto) {
+                // Mostrar error
+                if (errorRecibidoFisico) {
+                    const monedaSimbolo = moneda === '$' ? '$' : 'C$';
+                    const montoFormateado = baseParaVuelto.toFixed(2).replace('.', ',');
+                    errorRecibidoFisico.textContent = `El monto recibido debe ser mayor o igual a ${monedaSimbolo} ${montoFormateado}`;
+                    errorRecibidoFisico.classList.remove('hidden');
+                }
+                if (inputRecibidoFisico) {
+                    inputRecibidoFisico.classList.add('border-red-500', 'dark:border-red-500');
+                    inputRecibidoFisico.classList.remove('border-gray-300', 'dark:border-gray-600');
+                }
+                vueltoFisico = 0;
             } else {
-                // Recibido en córdobas
-                vueltoFisico = montoRecibidoFisico > baseParaVuelto ? montoRecibidoFisico - baseParaVuelto : 0;
+                // Ocultar error si es válido
+                if (errorRecibidoFisico) {
+                    errorRecibidoFisico.classList.add('hidden');
+                }
+                if (inputRecibidoFisico) {
+                    inputRecibidoFisico.classList.remove('border-red-500', 'dark:border-red-500');
+                    inputRecibidoFisico.classList.add('border-gray-300', 'dark:border-gray-600');
+                }
+                // Calcular vuelto
+                vueltoFisico = montoRecibidoEnCordobas > baseParaVuelto ? montoRecibidoEnCordobas - baseParaVuelto : 0;
             }
         } else {
-            // Si no se ingresó "Recibido", no calculamos vuelto (se queda en 0).
+            // Si no se ingresó "Recibido", ocultar error
+            if (errorRecibidoFisico) {
+                errorRecibidoFisico.classList.add('hidden');
+            }
+            if (inputRecibidoFisico) {
+                inputRecibidoFisico.classList.remove('border-red-500', 'dark:border-red-500');
+                inputRecibidoFisico.classList.add('border-gray-300', 'dark:border-gray-600');
+            }
             vueltoFisico = 0;
         }
         
@@ -640,6 +679,7 @@ const PagoManager = {
         
         const vueltoFisicoInput = document.getElementById('VueltoFisico');
         if (vueltoFisicoInput) {
+            // Mantener punto decimal para el servidor, pero mostrar formateado
             vueltoFisicoInput.value = vueltoFinal.toFixed(2);
         }
     },
@@ -983,6 +1023,145 @@ const Utilidades = {
             btnEditar.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>';
             btnEditar.title = 'Hacer editable';
         }
+    },
+    
+    /**
+     * Valida y formatea un input numérico en tiempo real
+     * Permite solo números, punto y coma
+     * Convierte coma a punto automáticamente
+     */
+    validarInputNumerico(input, event) {
+        let valor = input.value;
+        
+        // Permitir teclas de control (backspace, delete, tab, etc.)
+        if (event && (event.key === 'Backspace' || event.key === 'Delete' || event.key === 'Tab' || 
+            event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown' ||
+            event.ctrlKey || event.metaKey)) {
+            return true;
+        }
+        
+        // Si el campo está vacío, permitir borrar completamente
+        if (valor === '' || valor === null || valor === undefined) {
+            return true;
+        }
+        
+        // Reemplazar coma por punto
+        valor = valor.replace(',', '.');
+        
+        // Permitir solo números, un punto decimal, y espacios (que eliminaremos)
+        valor = valor.replace(/[^\d.]/g, '');
+        
+        // Eliminar espacios
+        valor = valor.replace(/\s/g, '');
+        
+        // Limitar a un solo punto decimal
+        const partes = valor.split('.');
+        if (partes.length > 2) {
+            valor = partes[0] + '.' + partes.slice(1).join('');
+        }
+        
+        // Limitar decimales a 2 dígitos
+        if (partes.length === 2 && partes[1].length > 2) {
+            valor = partes[0] + '.' + partes[1].substring(0, 2);
+        }
+        
+        // Actualizar el valor del input
+        input.value = valor;
+        
+        return false; // Prevenir el comportamiento por defecto si es necesario
+    },
+    
+    /**
+     * Formatea el valor cuando el usuario sale del campo (blur)
+     * Convierte a formato estándar con punto y 2 decimales
+     */
+    formatearInputNumerico(input) {
+        if (!input) return;
+        
+        let valor = input.value.trim();
+        
+        // Si está vacío, dejarlo vacío
+        if (valor === '' || valor === null || valor === undefined) {
+            input.value = '';
+            return;
+        }
+        
+        // Reemplazar coma por punto
+        valor = valor.replace(',', '.');
+        
+        // Limpiar caracteres no numéricos excepto punto
+        valor = valor.replace(/[^\d.]/g, '');
+        
+        // Convertir a número
+        let numero = parseFloat(valor);
+        
+        // Si no es un número válido, limpiar el campo
+        if (isNaN(numero)) {
+            input.value = '';
+            return;
+        }
+        
+        // Formatear con 2 decimales máximo (pero no forzar si es entero)
+        if (numero % 1 === 0) {
+            input.value = numero.toString();
+        } else {
+            input.value = numero.toFixed(2);
+        }
+    },
+    
+    /**
+     * Inicializa la validación para todos los inputs numéricos
+     */
+    inicializarValidacionInputsNumericos() {
+        const inputsNumericos = [
+            'MontoCordobasFisico',
+            'MontoDolaresFisico',
+            'MontoRecibidoFisico',
+            'MontoCordobasElectronico',
+            'MontoDolaresElectronico'
+        ];
+        
+        inputsNumericos.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                // Validación en tiempo real mientras escribe
+                input.addEventListener('input', (e) => {
+                    Utilidades.validarInputNumerico(input, e);
+                });
+                
+                // Formateo cuando sale del campo
+                input.addEventListener('blur', () => {
+                    Utilidades.formatearInputNumerico(input);
+                    // Recalcular después de formatear
+                    const tipoPago = document.querySelector('input[name="TipoPago"]:checked')?.value;
+                    if (tipoPago === 'Mixto' && (id === 'MontoCordobasFisico' || id === 'MontoDolaresFisico')) {
+                        CamposPagoManager.calcularMontoElectronicoAutomatico();
+                    }
+                    PagoManager.calcularTotalPago();
+                    if (id.includes('Fisico')) {
+                        PagoManager.calcularVueltoFisico();
+                    }
+                });
+                
+                // Prevenir pegado de valores inválidos
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const textoPegado = (e.clipboardData || window.clipboardData).getData('text');
+                    // Limpiar y validar el texto pegado
+                    let valor = textoPegado.replace(',', '.').replace(/[^\d.]/g, '');
+                    const partes = valor.split('.');
+                    if (partes.length > 2) {
+                        valor = partes[0] + '.' + partes.slice(1).join('');
+                    }
+                    if (partes.length === 2 && partes[1].length > 2) {
+                        valor = partes[0] + '.' + partes[1].substring(0, 2);
+                    }
+                    input.value = valor;
+                    // Disparar evento input para recalcular
+                    input.dispatchEvent(new Event('input'));
+                });
+            }
+        });
     },
     
     validarMonto(input) {

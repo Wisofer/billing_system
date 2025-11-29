@@ -48,8 +48,8 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>pngkfmfssx</Fingerprint>
-      <Integrity>q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4=</Integrity>
+      <Fingerprint>o8mqjrl0sz</Fingerprint>
+      <Integrity>GIJdS/eYJQ1FEUDbpMxbWuKfvNjx5949OyPiAuGUKXg=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\pagos-crear.js'))</OriginalItemSpec>

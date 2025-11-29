@@ -27,14 +27,14 @@
     <StaticWebAssetEndpoint Include="_content/billing_system/js/pagos-crear.js">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\pagos-crear.js'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"50133"},{"Name":"Content-Type","Value":"text/javascript"},{"Name":"ETag","Value":"\u0022q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4=\u0022"},{"Name":"Last-Modified","Value":"Sat, 29 Nov 2025 07:32:26 GMT"}]]]></ResponseHeaders>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-GIJdS/eYJQ1FEUDbpMxbWuKfvNjx5949OyPiAuGUKXg="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"57607"},{"Name":"Content-Type","Value":"text/javascript"},{"Name":"ETag","Value":"\u0022GIJdS/eYJQ1FEUDbpMxbWuKfvNjx5949OyPiAuGUKXg=\u0022"},{"Name":"Last-Modified","Value":"Sat, 29 Nov 2025 18:56:20 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
-    <StaticWebAssetEndpoint Include="_content/billing_system/js/pagos-crear.pngkfmfssx.js">
+    <StaticWebAssetEndpoint Include="_content/billing_system/js/pagos-crear.o8mqjrl0sz.js">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\pagos-crear.js'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"pngkfmfssx"},{"Name":"integrity","Value":"sha256-q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4="},{"Name":"label","Value":"_content/billing_system/js/pagos-crear.js"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"50133"},{"Name":"Content-Type","Value":"text/javascript"},{"Name":"ETag","Value":"\u0022q/dljhDINRa54mG4f4sgSnFrAafEjpieejbQXQjvVE4=\u0022"},{"Name":"Last-Modified","Value":"Sat, 29 Nov 2025 07:32:26 GMT"}]]]></ResponseHeaders>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"o8mqjrl0sz"},{"Name":"integrity","Value":"sha256-GIJdS/eYJQ1FEUDbpMxbWuKfvNjx5949OyPiAuGUKXg="},{"Name":"label","Value":"_content/billing_system/js/pagos-crear.js"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"57607"},{"Name":"Content-Type","Value":"text/javascript"},{"Name":"ETag","Value":"\u0022GIJdS/eYJQ1FEUDbpMxbWuKfvNjx5949OyPiAuGUKXg=\u0022"},{"Name":"Last-Modified","Value":"Sat, 29 Nov 2025 18:56:20 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
   </ItemGroup>
 </Project>

@@ -114,26 +114,31 @@
                     <div id="contenedorMontoFisico">
                         <div id="grupoMontoCordobasFisico">
                             <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1" id="labelMontoFisico1">Monto (C$)</label>
-                            <input type="number" name="MontoCordobasFisico" id="MontoCordobasFisico" step="0.01" min="0" 
-                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                            <input type="text" name="MontoCordobasFisico" id="MontoCordobasFisico" inputmode="decimal" 
+                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                                   placeholder="0.00" />
                         </div>
                         <div id="grupoMontoDolaresFisico" style="display:none;">
                             <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1" id="labelMontoFisico2">Monto ($)</label>
-                            <input type="number" name="MontoDolaresFisico" id="MontoDolaresFisico" step="0.01" min="0" 
-                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                            <input type="text" name="MontoDolaresFisico" id="MontoDolaresFisico" inputmode="decimal" 
+                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                                   placeholder="0.00" />
                         </div>
                     </div>
                     <div>
                         <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1" id="labelRecibidoFisico">Recibido (<span id="monedaRecibidoLabel">C$</span>)</label>
-                        <input type="number" name="MontoRecibidoFisico" id="MontoRecibidoFisico" step="0.01" min="0" 
-                               class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        <input type="text" name="MontoRecibidoFisico" id="MontoRecibidoFisico" inputmode="decimal" 
+                               class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                               placeholder="0.00" />
+                        <div id="errorRecibidoFisico" class="hidden text-xs text-red-600 dark:text-red-400 mt-1"></div>
                     </div>
                 </div>
                 <!-- Fila 2: Vuelto a lo ancho -->
                 <div class="mb-2">
                     <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Vuelto (C$)</label>
-                    <input type="number" name="VueltoFisico" id="VueltoFisico" step="0.01" readonly 
-                           class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300" />
+                    <input type="text" name="VueltoFisico" id="VueltoFisico" readonly 
+                           class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300" 
+                           value="0.00" />
                 </div>
                 <div class="text-xs text-right">
                     <span class="text-gray-600 dark:text-gray-400">Total: </span>
@@ -150,13 +155,15 @@
                 <div class="grid grid-cols-2 gap-2 mb-2">
                     <div id="grupoMontoCordobasElectronico">
                         <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1" id="labelMontoElectronico1">Monto (C$)</label>
-                        <input type="number" name="MontoCordobasElectronico" id="MontoCordobasElectronico" step="0.01" min="0" 
-                               class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        <input type="text" name="MontoCordobasElectronico" id="MontoCordobasElectronico" inputmode="decimal" 
+                               class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                               placeholder="0.00" />
                     </div>
                     <div id="grupoMontoDolaresElectronico" style="display:none;">
                         <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1" id="labelMontoElectronico2">Monto ($)</label>
-                        <input type="number" name="MontoDolaresElectronico" id="MontoDolaresElectronico" step="0.01" min="0" 
-                               class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        <input type="text" name="MontoDolaresElectronico" id="MontoDolaresElectronico" inputmode="decimal" 
+                               class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                               placeholder="0.00" />
                     </div>
                     <div>
                         <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Banco *</label>
@@ -241,6 +248,7 @@
     
     document.addEventListener('DOMContentLoaded', function() {
         ClienteManager.init(clientesJson);
+        PagoSystem.init(); // Inicializar sistema de pagos (incluye validación de inputs)
         
         // Event listeners para tipo de pago
         document.querySelectorAll('input[name="TipoPago"]').forEach(radio => {
@@ -344,6 +352,49 @@
                     primerRadio.focus();
                 }
                 return false;
+            }
+            
+            // Validar que el monto recibido sea >= al monto a pagar (solo para pago físico o mixto)
+            if (tipoPago === 'Fisico' || tipoPago === 'Mixto') {
+                const montoRecibidoFisicoInput = document.getElementById('MontoRecibidoFisico');
+                if (montoRecibidoFisicoInput && montoRecibidoFisicoInput.value) {
+                    const parseNumero = (valor) => {
+                        if (!valor || !valor.trim()) return 0;
+                        const valorNormalizado = valor.trim().replace(',', '.');
+                        return parseFloat(valorNormalizado) || 0;
+                    };
+                    
+                    const montoRecibidoFisico = parseNumero(montoRecibidoFisicoInput.value);
+                    const montoDebeTotal = parseNumero(monto);
+                    const tipoCambioValor = PagoSystem.tipoCambio;
+                    
+                    // Calcular el monto base para comparar (en mixto puede ser solo el monto físico)
+                    let baseParaVuelto = montoDebeTotal;
+                    if (tipoPago === 'Mixto' && moneda === 'C$') {
+                        const montoCordobasFisico = parseNumero(document.getElementById('MontoCordobasFisico')?.value);
+                        if (montoCordobasFisico > 0) {
+                            baseParaVuelto = montoCordobasFisico;
+                        }
+                    }
+                    
+                    let montoRecibidoEnCordobas = montoRecibidoFisico;
+                    if (moneda === '$') {
+                        montoRecibidoEnCordobas = montoRecibidoFisico * tipoCambioValor;
+                    }
+                    
+                    if (montoRecibidoEnCordobas < baseParaVuelto) {
+                        e.preventDefault();
+                        const monedaSimbolo = moneda === '$' ? '$' : 'C$';
+                        const montoFormateado = baseParaVuelto.toFixed(2).replace('.', ',');
+                        alert(`El monto recibido debe ser mayor o igual a ${monedaSimbolo} ${montoFormateado}`);
+                        montoRecibidoFisicoInput.focus();
+                        // Forzar recálculo para mostrar el error visual
+                        if (window.calcularVueltoFisico) {
+                            window.calcularVueltoFisico();
+                        }
+                        return false;
+                    }
+                }
             }
             
             // Validar campos específicos según tipo de pago
