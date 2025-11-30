@@ -74,6 +74,7 @@ public class PdfService : IPdfService
                                 empresaColumn.Item().Text("Nicaragua").FontSize(8).FontColor(Colors.Grey.Medium);
                                 empresaColumn.Item().Text("Correo: atencion.al.cliente@emsinetsolut.com").FontSize(8).FontColor(Colors.Grey.Medium);
                                 empresaColumn.Item().Text("Teléfonos: 89308058 / 82771485").FontSize(8).FontColor(Colors.Grey.Medium);
+                                empresaColumn.Item().Text("Sitio web: https://www.emsinetsolut.com/").FontSize(8).FontColor(Colors.Purple.Darken2);
                             });
                         });
 
