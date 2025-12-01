@@ -32,7 +32,7 @@ public class FacturasController : Controller
     }
 
     [HttpGet("/facturas")]
-    public IActionResult Index(string? estado, int? mes, int? año, string? busquedaCliente, int pagina = 1, int tamanoPagina = 10)
+    public IActionResult Index(string? estado, int? mes, int? año, string? busquedaCliente, string? categoria, int pagina = 1, int tamanoPagina = 10)
     {
         var esAdministrador = SecurityHelper.IsAdministrator(User);
 
@@ -68,6 +68,12 @@ public class FacturasController : Controller
             query = query.Where(f => f.MesFacturacion.Year == fechaFiltro.Year && f.MesFacturacion.Month == fechaFiltro.Month);
         }
 
+        // Aplicar filtro por categoría (Internet o Streaming)
+        if (!string.IsNullOrWhiteSpace(categoria) && categoria != "Todas")
+        {
+            query = query.Where(f => f.Categoria == categoria);
+        }
+
         if (!string.IsNullOrWhiteSpace(busquedaCliente))
         {
             var termino = busquedaCliente.ToLower();
@@ -93,6 +99,7 @@ public class FacturasController : Controller
         ViewBag.Mes = mes ?? DateTime.Now.Month;
         ViewBag.Año = año ?? DateTime.Now.Year;
         ViewBag.BusquedaCliente = busquedaCliente;
+        ViewBag.Categoria = categoria ?? "Todas";
         ViewBag.Pagina = pagina;
         ViewBag.TamanoPagina = tamanoPagina;
         ViewBag.TotalItems = totalItems;
@@ -509,7 +516,7 @@ public class FacturasController : Controller
 
     [HttpGet("/facturas/obtener-ids-facturas")]
     [Produces("application/json")]
-    public IActionResult ObtenerIdsFacturas(string? estado, int? mes, int? año, string? busquedaCliente)
+    public IActionResult ObtenerIdsFacturas(string? estado, int? mes, int? año, string? busquedaCliente, string? categoria)
     {
         try
         {
@@ -531,6 +538,12 @@ public class FacturasController : Controller
                 var añoFiltro = año ?? DateTime.Now.Year;
                 var fechaFiltro = new DateTime(añoFiltro, mesFiltro, 1);
                 query = query.Where(f => f.MesFacturacion.Year == fechaFiltro.Year && f.MesFacturacion.Month == fechaFiltro.Month);
+            }
+
+            // Aplicar filtro por categoría (Internet o Streaming)
+            if (!string.IsNullOrWhiteSpace(categoria) && categoria != "Todas")
+            {
+                query = query.Where(f => f.Categoria == categoria);
             }
 
             if (!string.IsNullOrWhiteSpace(busquedaCliente))

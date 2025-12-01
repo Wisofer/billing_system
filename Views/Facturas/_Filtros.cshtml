@@ -3,13 +3,23 @@
     var mes = ViewBag.Mes as int?;
     var año = ViewBag.Año as int? ?? DateTime.Now.Year;
     var busquedaCliente = ViewBag.BusquedaCliente as string ?? "";
+    var categoria = ViewBag.Categoria as string ?? "Todas";
     var clientes = ViewBag.Clientes as List<billing_system.Models.Entities.Cliente> ?? new List<billing_system.Models.Entities.Cliente>();
     var mesActual = DateTime.Now.Month;
 }
 
 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 mb-6">
-    <form method="get" action="/facturas" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <form method="get" action="/facturas" class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <input type="hidden" name="pagina" value="1" />
+        
+        <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Categoría</label>
+            <select name="categoria" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="Todas" @(categoria == "Todas" ? "selected" : "")>Todas las categorías</option>
+                <option value="@billing_system.Utils.SD.CategoriaInternet" @(categoria == billing_system.Utils.SD.CategoriaInternet ? "selected" : "")>Internet</option>
+                <option value="@billing_system.Utils.SD.CategoriaStreaming" @(categoria == billing_system.Utils.SD.CategoriaStreaming ? "selected" : "")>Streaming</option>
+            </select>
+        </div>
         
         <div>
             <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Mes</label>
@@ -52,7 +62,7 @@
                    class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
         </div>
         
-        <div class="md:col-span-4 flex items-end space-x-2">
+        <div class="md:col-span-5 flex items-end space-x-2">
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
                 Filtrar
             </button>
