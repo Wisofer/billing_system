@@ -310,9 +310,9 @@ public class FacturaService : IFacturaService
                 else
                 {
                     // Internet: aplicar proporcional
+                    // IMPORTANTE: Usar FechaCreacion del cliente para el cálculo proporcional
                     var precioTotalSinProporcional = servicio.Precio * cantidad;
-                    var fechaInicio = clienteServicio?.FechaInicio ?? cliente.FechaCreacion;
-                    var montoProporcionalUnitario = CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesFacturacion, fechaInicio);
+                    var montoProporcionalUnitario = CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesFacturacion, cliente.FechaCreacion);
                     var factorProporcional = servicio.Precio > 0 ? montoProporcionalUnitario / servicio.Precio : 1;
                     montoServicio = precioTotalSinProporcional * factorProporcional;
                 }
@@ -565,8 +565,9 @@ public class FacturaService : IFacturaService
                     else
                     {
                         // Internet: aplicar proporcional
+                        // IMPORTANTE: Usar FechaCreacion del cliente para el cálculo proporcional
                         var precioTotalSinProporcional = servicio.Precio * cantidad;
-                        var montoProporcionalUnitario = CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesFacturacion, clienteServicio.FechaInicio);
+                        var montoProporcionalUnitario = CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesFacturacion, cliente.FechaCreacion);
                         var factorProporcional = servicio.Precio > 0 ? montoProporcionalUnitario / servicio.Precio : 1;
                         montoServicio = precioTotalSinProporcional * factorProporcional;
                     }
@@ -612,14 +613,14 @@ public class FacturaService : IFacturaService
     }
 
     /// <summary>
-    /// Calcula el monto proporcional considerando la fecha de inicio del servicio específico.
-    /// El proporcional se aplica solo si el cliente inició en el mes de facturación y después del día 5.
+    /// Calcula el monto proporcional considerando la fecha de creación del cliente.
+    /// El proporcional se aplica solo si el cliente se creó en el mes de facturación y después del día 5.
     /// El ciclo es del día 5 al día 5 de cada mes.
     /// </summary>
     private decimal CalcularMontoProporcionalConFechaInicio(Cliente cliente, Servicio servicio, DateTime mesFacturacion, DateTime fechaInicioServicio)
     {
-        // Usar la fecha de inicio del servicio
-        var fechaInicio = fechaInicioServicio.Date;
+        // IMPORTANTE: Usar la fecha de creación del cliente para el cálculo proporcional
+        var fechaInicio = cliente.FechaCreacion.Date;
         var primerDiaMesFacturacion = new DateTime(mesFacturacion.Year, mesFacturacion.Month, 1);
         var ultimoDiaMesFacturacion = primerDiaMesFacturacion.AddMonths(1).AddDays(-1);
         
