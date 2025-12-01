@@ -305,17 +305,24 @@ public class PdfService : IPdfService
         
         // Fecha de emisión: usar la fecha de creación de la factura
         var fechaEmision = factura.FechaCreacion;
-        // Fecha de vencimiento: siempre día 06 del mes de facturación
-        var fechaVencimiento = new DateTime(factura.MesFacturacion.Year, factura.MesFacturacion.Month, 6);
+        // Fecha de vencimiento: día 06 del mes siguiente al mes de facturación
+        // Ejemplo: Factura de noviembre → Vence el 6 de diciembre
+        var mesSiguiente = factura.MesFacturacion.AddMonths(1);
+        var fechaVencimiento = new DateTime(mesSiguiente.Year, mesSiguiente.Month, 6);
         var mesFacturado = factura.MesFacturacion.ToString("MMM/yyyy").ToUpper();
         
-        // Calcular multa: 200.00 solo si la factura está pendiente y la fecha actual es después del día 6
+        // Calcular multa: 200.00 solo si la factura está pendiente y la fecha actual es después del día 12 a las 11pm
+        // La multa se aplica el día 12 del mes siguiente a las 11pm
         var fechaActual = DateTime.Now;
+        var fechaAplicacionMulta = new DateTime(mesSiguiente.Year, mesSiguiente.Month, 12, 23, 0, 0); // Día 12 a las 11pm
         var multaPorPagoTardio = 0.00m;
-        if (factura.Estado == SD.EstadoFacturaPendiente && fechaActual > fechaVencimiento)
+        if (factura.Estado == SD.EstadoFacturaPendiente && fechaActual > fechaAplicacionMulta)
         {
             multaPorPagoTardio = 200.00m;
         }
+        
+        // Calcular días facturados (para mostrar en el PDF)
+        var diasFacturados = CalcularDiasFacturados(factura);
         
         // Cargar logo si existe
         byte[]? logoBytes = null;
@@ -426,6 +433,7 @@ public class PdfService : IPdfService
                                             contactoColumn.Item().Text($"E-mail: {factura.Cliente.Email}").FontSize(9);
                                         }
                                         contactoColumn.Item().Text($"Mes facturado: {mesFacturado}").FontSize(9);
+                                        contactoColumn.Item().Text($"Días Facturado: {diasFacturados}").FontSize(9);
                                         contactoColumn.Item().Text($"Vencimiento: {fechaVencimiento:dd/MM/yyyy}").FontSize(10).Bold().FontColor(Colors.Red.Darken2);
                                     });
                                 });
@@ -749,6 +757,99 @@ public class PdfService : IPdfService
             .BorderColor(Colors.Grey.Medium)
             .PaddingVertical(8)
             .PaddingHorizontal(10);
+    }
+
+    /// <summary>
+    /// Calcula los días facturados basándose en si hay descuento proporcional
+    /// </summary>
+    private int CalcularDiasFacturados(Factura factura)
+    {
+        // Si no hay contexto de base de datos, retornar días del mes completo
+        if (_context == null)
+        {
+            return DateTime.DaysInMonth(factura.MesFacturacion.Year, factura.MesFacturacion.Month);
+        }
+
+        // Calcular subtotal sin proporcional para verificar si hay descuento
+        decimal subtotalSinProporcional = 0;
+        
+        if (factura.FacturaServicios != null && factura.FacturaServicios.Any())
+        {
+            foreach (var facturaServicio in factura.FacturaServicios)
+            {
+                var servicio = facturaServicio.Servicio;
+                if (servicio != null)
+                {
+                    if (servicio.Categoria == SD.CategoriaStreaming && facturaServicio.Cantidad > 1)
+                    {
+                        subtotalSinProporcional += servicio.Precio * facturaServicio.Cantidad;
+                    }
+                    else
+                    {
+                        subtotalSinProporcional += servicio.Precio;
+                    }
+                }
+            }
+        }
+        else if (factura.Servicio != null)
+        {
+            subtotalSinProporcional = factura.Servicio.Precio;
+        }
+
+        // Si no hay descuento proporcional (o la diferencia es muy pequeña), es mes completo
+        if (Math.Abs(subtotalSinProporcional - factura.Monto) <= 0.01m)
+        {
+            // Mes completo: retornar días del mes de facturación
+            return DateTime.DaysInMonth(factura.MesFacturacion.Year, factura.MesFacturacion.Month);
+        }
+
+        // Hay descuento proporcional: calcular días desde fecha de inicio hasta día 5 del mes siguiente
+        // Obtener el primer servicio de Internet de la factura para calcular días
+        var primerServicioInternet = factura.FacturaServicios?
+            .FirstOrDefault(fs => fs.Servicio?.Categoria == SD.CategoriaInternet)?.Servicio
+            ?? factura.Servicio;
+
+        if (primerServicioInternet == null || primerServicioInternet.Categoria != SD.CategoriaInternet)
+        {
+            // Si no hay servicio de Internet, retornar días del mes completo
+            return DateTime.DaysInMonth(factura.MesFacturacion.Year, factura.MesFacturacion.Month);
+        }
+
+        // Obtener la fecha de inicio del servicio desde ClienteServicios
+        var clienteServicio = _context.ClienteServicios
+            .FirstOrDefault(cs => cs.ClienteId == factura.ClienteId && 
+                                 cs.ServicioId == primerServicioInternet.Id && 
+                                 cs.Activo);
+
+        var fechaInicio = clienteServicio?.FechaInicio ?? factura.Cliente.FechaCreacion;
+        var fechaInicioDate = fechaInicio.Date;
+        var primerDiaMesFacturacion = new DateTime(factura.MesFacturacion.Year, factura.MesFacturacion.Month, 1);
+        var ultimoDiaMesFacturacion = primerDiaMesFacturacion.AddMonths(1).AddDays(-1);
+
+        // Si inició antes del mes de facturación o después, es mes completo
+        if (fechaInicioDate < primerDiaMesFacturacion || fechaInicioDate > ultimoDiaMesFacturacion)
+        {
+            return DateTime.DaysInMonth(factura.MesFacturacion.Year, factura.MesFacturacion.Month);
+        }
+
+        // Si inició el día 5 o antes, es mes completo
+        if (fechaInicioDate.Day <= 5)
+        {
+            return DateTime.DaysInMonth(factura.MesFacturacion.Year, factura.MesFacturacion.Month);
+        }
+
+        // Calcular días desde fecha de inicio hasta día 5 del mes siguiente
+        var siguienteMes = factura.MesFacturacion.AddMonths(1);
+        var fechaVencimiento = new DateTime(siguienteMes.Year, siguienteMes.Month, 5);
+        var diasConsumidos = (fechaVencimiento.Date - fechaInicioDate.Date).Days + 1;
+
+        // Asegurar que los días sean válidos
+        if (diasConsumidos <= 0)
+        {
+            return DateTime.DaysInMonth(factura.MesFacturacion.Year, factura.MesFacturacion.Month);
+        }
+
+        return diasConsumidos;
     }
 }
 

@@ -28,6 +28,12 @@ public class HomeController : Controller
     [HttpGet("/")]
     public IActionResult Index()
     {
+        // Si el usuario no es Administrador, redirigir según su rol
+        var rol = SecurityHelper.GetUserRole(User);
+        if (rol != SD.RolAdministrador)
+        {
+            return Redirect(SecurityHelper.GetRedirectUrlByRole(User));
+        }
         // Estadísticas generales (consultas optimizadas)
         var pagosPendientes = _facturaService.CalcularTotalPendiente();
         var pagosRealizados = _pagoService.CalcularTotalIngresos();

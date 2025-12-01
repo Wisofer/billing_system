@@ -68,12 +68,19 @@ public class ConfiguracionesController : Controller
             return Json(new { success = false, message = "El nombre de usuario ya existe." });
         }
 
+        // Validar y asignar el rol correctamente
+        string rolAsignado = "Normal"; // Valor por defecto
+        if (rol == "Administrador" || rol == "Normal" || rol == "Caja")
+        {
+            rolAsignado = rol;
+        }
+
         var usuario = new Usuario
         {
             NombreUsuario = nombreUsuario.Trim(),
             Contrasena = HashPassword(contrasena),
             NombreCompleto = nombreCompleto?.Trim() ?? nombreUsuario.Trim(),
-            Rol = rol == "Administrador" ? "Administrador" : "Normal",
+            Rol = rolAsignado,
             Activo = activo
         };
 
@@ -101,9 +108,16 @@ public class ConfiguracionesController : Controller
             return Json(new { success = false, message = "El nombre de usuario ya existe." });
         }
 
+        // Validar y asignar el rol correctamente
+        string rolAsignado = usuario.Rol; // Mantener el rol actual por defecto
+        if (rol == "Administrador" || rol == "Normal" || rol == "Caja")
+        {
+            rolAsignado = rol;
+        }
+
         usuario.NombreUsuario = nombreUsuario.Trim();
         usuario.NombreCompleto = nombreCompleto?.Trim() ?? nombreUsuario.Trim();
-        usuario.Rol = rol == "Administrador" ? "Administrador" : "Normal";
+        usuario.Rol = rolAsignado;
         usuario.Activo = activo;
 
         // Solo actualizar contraseña si se proporcionó una nueva

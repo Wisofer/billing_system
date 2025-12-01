@@ -69,5 +69,20 @@ public static class SecurityHelper
         var userRole = GetUserRole(user);
         return roles.Any(r => userRole.Equals(r, StringComparison.OrdinalIgnoreCase));
     }
+
+    /// <summary>
+    /// Obtiene la URL de redirección según el rol del usuario
+    /// </summary>
+    public static string GetRedirectUrlByRole(ClaimsPrincipal user)
+    {
+        var rol = GetUserRole(user);
+        return rol switch
+        {
+            SD.RolAdministrador => "/",
+            SD.RolNormal => "/facturas",
+            SD.RolCaja => "/pagos",
+            _ => "/login"
+        };
+    }
 }
 

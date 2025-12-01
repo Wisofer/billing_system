@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using billing_system.Models.Entities;
 using billing_system.Services.IServices;
+using billing_system.Utils;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -20,14 +22,14 @@ public class AuthController : Controller
     [HttpGet("/login")]
     public IActionResult Login(string? returnUrl = null)
     {
-        // Si ya está autenticado, redirigir a la URL original o al home
+        // Si ya está autenticado, redirigir según el rol
         if (User.Identity?.IsAuthenticated == true)
         {
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
                 return Redirect(returnUrl);
             }
-            return Redirect("/");
+            return RedirectSegunRol();
         }
         
         ViewBag.ReturnUrl = returnUrl;
@@ -79,13 +81,42 @@ public class AuthController : Controller
             ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) // 30 minutos
         });
 
-        // Redirigir a la URL original si existe, sino al home
+        // Redirigir a la URL original si existe, sino según el rol
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
         {
             return Redirect(returnUrl);
         }
         
-        return Redirect("/");
+        return RedirectSegunRol(usuario.Rol);
+    }
+
+    /// <summary>
+    /// Redirige al usuario según su rol después del login
+    /// </summary>
+    private IActionResult RedirectSegunRol(string? rol = null)
+    {
+        // Si se proporciona el rol directamente, crear un ClaimsPrincipal temporal
+        if (!string.IsNullOrEmpty(rol))
+        {
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim("Rol", rol)
+            };
+            var identity = new System.Security.Claims.ClaimsIdentity(claims, "Temp");
+            var tempPrincipal = new System.Security.Claims.ClaimsPrincipal(identity);
+            return Redirect(SecurityHelper.GetRedirectUrlByRole(tempPrincipal));
+        }
+
+        // Si no, usar el usuario actual
+        return Redirect(SecurityHelper.GetRedirectUrlByRole(User));
+    }
+
+    [HttpGet("/access-denied")]
+    [Authorize]
+    public IActionResult AccessDenied()
+    {
+        // Redirigir según el rol del usuario
+        return RedirectSegunRol();
     }
 
     [HttpPost("/logout")]

@@ -5,6 +5,7 @@ public static class SD
     // Roles de usuario
     public const string RolAdministrador = "Administrador";
     public const string RolNormal = "Normal";
+    public const string RolCaja = "Caja";
 
     // Estados de Factura
     public const string EstadoFacturaPendiente = "Pendiente";

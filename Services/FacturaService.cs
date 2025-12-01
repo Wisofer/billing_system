@@ -241,6 +241,7 @@ public class FacturaService : IFacturaService
         var facturasCreadas = new List<Factura>();
 
         // Obtener servicios y agrupar por categoría
+        // IMPORTANTE: Filtrar servicios válidos y evitar duplicados
         var serviciosConInfo = servicioIds
             .Select(id => new
             {
@@ -249,14 +250,24 @@ public class FacturaService : IFacturaService
                 ClienteServicio = _context.ClienteServicios
                     .FirstOrDefault(cs => cs.ClienteId == clienteId && cs.ServicioId == id && cs.Activo)
             })
-            .Where(x => x.Servicio != null && x.Servicio.Activo)
-            .GroupBy(x => x.Servicio!.Categoria)
+            .Where(x => x.Servicio != null && 
+                       x.Servicio.Activo && 
+                       !string.IsNullOrWhiteSpace(x.Servicio.Categoria))
+            .GroupBy(x => x.ServicioId) // Agrupar por ServicioId para evitar duplicados
+            .Select(g => g.First()) // Tomar el primero si hay duplicados
+            .GroupBy(x => x.Servicio!.Categoria) // Luego agrupar por categoría
             .ToList();
 
         foreach (var grupoCategoria in serviciosConInfo)
         {
             var categoria = grupoCategoria.Key;
             var serviciosDelGrupo = grupoCategoria.ToList();
+
+            // Validar que la categoría sea válida
+            if (categoria != SD.CategoriaInternet && categoria != SD.CategoriaStreaming)
+            {
+                continue; // Saltar categorías inválidas
+            }
 
             // Verificar si ya existe factura para esta categoría en este mes
             var existeFactura = _context.Facturas.Any(f =>
@@ -457,7 +468,10 @@ public class FacturaService : IFacturaService
     public void GenerarFacturasAutomaticas()
     {
         var clientes = _clienteService.ObtenerTodos().Where(c => c.Activo).ToList();
-        var mesActual = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+        // CORRECCIÓN: Facturar el mes anterior (primero se consume, luego se paga)
+        // Si estamos en diciembre, facturamos noviembre
+        var mesFacturacion = DateTime.Now.AddMonths(-1);
+        mesFacturacion = new DateTime(mesFacturacion.Year, mesFacturacion.Month, 1);
 
         if (!clientes.Any())
         {
@@ -476,9 +490,27 @@ public class FacturaService : IFacturaService
                 continue; // Saltar clientes sin servicios activos
             }
 
-            // Agrupar servicios por categoría
-            var serviciosPorCategoria = serviciosActivos
-                .Where(cs => cs.Servicio != null && cs.Servicio.Activo)
+            // Filtrar servicios válidos (con servicio activo y categoría válida)
+            var serviciosValidos = serviciosActivos
+                .Where(cs => cs.Servicio != null && 
+                            cs.Servicio.Activo && 
+                            !string.IsNullOrWhiteSpace(cs.Servicio.Categoria))
+                .ToList();
+
+            if (!serviciosValidos.Any())
+            {
+                continue; // Saltar si no hay servicios válidos
+            }
+
+            // IMPORTANTE: Agrupar por ServicioId primero para evitar duplicados
+            // Si hay múltiples ClienteServicio con el mismo ServicioId, solo tomar uno
+            var serviciosUnicos = serviciosValidos
+                .GroupBy(cs => cs.ServicioId)
+                .Select(g => g.OrderBy(cs => cs.FechaInicio).First()) // Tomar el más antiguo si hay duplicados
+                .ToList();
+
+            // Agrupar servicios únicos por categoría
+            var serviciosPorCategoria = serviciosUnicos
                 .GroupBy(cs => cs.Servicio!.Categoria)
                 .ToList();
 
@@ -487,12 +519,18 @@ public class FacturaService : IFacturaService
                 var categoria = grupoCategoria.Key;
                 var serviciosDelGrupo = grupoCategoria.ToList();
 
+                // Validar que la categoría sea válida
+                if (categoria != SD.CategoriaInternet && categoria != SD.CategoriaStreaming)
+                {
+                    continue; // Saltar categorías inválidas
+                }
+
                 // Verificar si ya existe factura para este cliente y categoría en este mes
                 var existeFactura = _context.Facturas.Any(f =>
                     f.ClienteId == cliente.Id &&
                     f.Categoria == categoria &&
-                    f.MesFacturacion.Year == mesActual.Year &&
-                    f.MesFacturacion.Month == mesActual.Month);
+                    f.MesFacturacion.Year == mesFacturacion.Year &&
+                    f.MesFacturacion.Month == mesFacturacion.Month);
 
                 if (existeFactura)
                 {
@@ -528,7 +566,7 @@ public class FacturaService : IFacturaService
                     {
                         // Internet: aplicar proporcional
                         var precioTotalSinProporcional = servicio.Precio * cantidad;
-                        var montoProporcionalUnitario = CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesActual, clienteServicio.FechaInicio);
+                        var montoProporcionalUnitario = CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesFacturacion, clienteServicio.FechaInicio);
                         var factorProporcional = servicio.Precio > 0 ? montoProporcionalUnitario / servicio.Precio : 1;
                         montoServicio = precioTotalSinProporcional * factorProporcional;
                     }
@@ -546,14 +584,14 @@ public class FacturaService : IFacturaService
 
                 // Crear la factura consolidada
                 // Usar GenerarNumeroFactura para evitar duplicados y obtener el número correcto
-                var numeroFactura = GenerarNumeroFactura(cliente, mesActual, categoria);
+                var numeroFactura = GenerarNumeroFactura(cliente, mesFacturacion, categoria);
                 
                 var factura = new Factura
                 {
                     ClienteId = cliente.Id,
                     ServicioId = primerServicio.Id, // Servicio principal para compatibilidad
                     Categoria = categoria,
-                    MesFacturacion = mesActual,
+                    MesFacturacion = mesFacturacion,
                     Numero = numeroFactura,
                     Monto = montoTotal,
                     Estado = SD.EstadoFacturaPendiente,
@@ -574,34 +612,44 @@ public class FacturaService : IFacturaService
     }
 
     /// <summary>
-    /// Calcula el monto proporcional considerando la fecha de inicio del servicio específico
+    /// Calcula el monto proporcional considerando la fecha de inicio del servicio específico.
+    /// El proporcional se aplica solo si el cliente inició en el mes de facturación y después del día 5.
+    /// El ciclo es del día 5 al día 5 de cada mes.
     /// </summary>
     private decimal CalcularMontoProporcionalConFechaInicio(Cliente cliente, Servicio servicio, DateTime mesFacturacion, DateTime fechaInicioServicio)
     {
-        // Verificar si es la primera factura del cliente para este servicio
-        var esPrimeraFacturaServicio = !_context.Facturas.Any(f => 
-            f.ClienteId == cliente.Id && 
-            f.ServicioId == servicio.Id);
-
-        // Si no es la primera factura del servicio, siempre paga mes completo
-        if (!esPrimeraFacturaServicio)
+        // Usar la fecha de inicio del servicio
+        var fechaInicio = fechaInicioServicio.Date;
+        var primerDiaMesFacturacion = new DateTime(mesFacturacion.Year, mesFacturacion.Month, 1);
+        var ultimoDiaMesFacturacion = primerDiaMesFacturacion.AddMonths(1).AddDays(-1);
+        
+        // Si el cliente inició después del mes de facturación, no debe facturarse aún
+        // (esto no debería pasar en la generación automática, pero es una validación de seguridad)
+        if (fechaInicio > ultimoDiaMesFacturacion)
+        {
+            return servicio.Precio; // No debería facturarse, pero por seguridad retornamos precio completo
+        }
+        
+        // Si el cliente inició antes del mes de facturación, ya pagó proporcional en su primera factura
+        // Por lo tanto, debe pagar mes completo
+        if (fechaInicio < primerDiaMesFacturacion)
         {
             return servicio.Precio;
         }
-
-        // Usar la fecha de inicio del servicio en lugar de la fecha de creación del cliente
-        var fechaInicio = fechaInicioServicio.Date;
         
-        // Si inició el día 5 o antes, paga mes completo
+        // Si el cliente inició en el mes de facturación:
+        // - Si inició el día 5 o antes, paga mes completo
         if (fechaInicio.Day <= 5)
         {
             return servicio.Precio;
         }
-
-        // Si inició después del día 5, calcular proporcional
+        
+        // - Si inició después del día 5, calcular proporcional
+        // El proporcional se calcula desde la fecha de inicio hasta el día 5 del mes siguiente
         var siguienteMes = mesFacturacion.AddMonths(1);
         var fechaVencimiento = new DateTime(siguienteMes.Year, siguienteMes.Month, 5);
         
+        // Calcular días consumidos: desde fecha de inicio hasta día 5 del siguiente mes (incluyendo ambos días)
         var diasConsumidos = (fechaVencimiento.Date - fechaInicio.Date).Days + 1;
         
         if (diasConsumidos <= 0)
@@ -609,15 +657,22 @@ public class FacturaService : IFacturaService
             return servicio.Precio;
         }
 
+        // Obtener días del mes de facturación (considera correctamente 28, 29, 30, 31 días)
         var diasDelMes = DateTime.DaysInMonth(mesFacturacion.Year, mesFacturacion.Month);
+        
+        // Calcular costo por día (precio del servicio dividido entre los días del mes de facturación)
         var costoPorDia = servicio.Precio / diasDelMes;
+        
+        // Calcular monto proporcional
         var montoProporcional = diasConsumidos * costoPorDia;
         
+        // Asegurar que el monto proporcional no exceda el precio completo (por seguridad)
         if (montoProporcional > servicio.Precio)
         {
             montoProporcional = servicio.Precio;
         }
         
+        // Redondear a 2 decimales
         return Math.Round(montoProporcional, 2);
     }
 
