@@ -74,7 +74,6 @@ public class PdfService : IPdfService
                                 empresaColumn.Item().Text("Nicaragua").FontSize(8).FontColor(Colors.Grey.Medium);
                                 empresaColumn.Item().Text("Correo: atencion.al.cliente@emsinetsolut.com").FontSize(8).FontColor(Colors.Grey.Medium);
                                 empresaColumn.Item().Text("Teléfonos: 89308058 / 82771485").FontSize(8).FontColor(Colors.Grey.Medium);
-                                empresaColumn.Item().Text("Sitio web: https://www.emsinetsolut.com/").FontSize(8).FontColor(Colors.Purple.Darken2);
                             });
                         });
 
@@ -246,6 +245,40 @@ public class PdfService : IPdfService
                                 table.Cell().Element(TotalCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(11).Bold();
                             });
                         });
+
+                        // Sección de Métodos de Pago - Compacta y visual
+                        column.Item().PaddingTop(10).PaddingBottom(5).Column(pagoColumn =>
+                        {
+                            pagoColumn.Item()
+                                .Background(Colors.Purple.Lighten5)
+                                .Border(2)
+                                .BorderColor(Colors.Purple.Darken2)
+                                .Padding(10)
+                                .Column(metodoPagoColumn =>
+                                {
+                                    metodoPagoColumn.Item()
+                                        .AlignCenter()
+                                        .Text("💳 MÉTODOS DE PAGO")
+                                        .FontSize(12)
+                                        .Bold()
+                                        .FontColor(Colors.Purple.Darken3);
+                                    
+                                    metodoPagoColumn.Item().PaddingTop(5)
+                                        .AlignCenter()
+                                        .Text("Consulta los métodos de pago disponibles")
+                                        .FontSize(9)
+                                        .FontColor(Colors.Grey.Darken2);
+                                    
+                                    metodoPagoColumn.Item().PaddingTop(5)
+                                        .AlignCenter()
+                                        .Hyperlink("https://www.emsinetsolut.com/#pagos")
+                                        .Text("https://www.emsinetsolut.com/#pagos")
+                                        .FontSize(10)
+                                        .Bold()
+                                        .FontColor(Colors.Purple.Darken2)
+                                        .Underline();
+                                });
+                        });
                     });
 
                 page.Footer()
@@ -329,7 +362,6 @@ public class PdfService : IPdfService
                                 empresaColumn.Item().Text("Nicaragua").FontSize(8).FontColor(Colors.Grey.Medium);
                                 empresaColumn.Item().Text("Correo: atencion.al.cliente@emsinetsolut.com").FontSize(8).FontColor(Colors.Grey.Medium);
                                 empresaColumn.Item().Text("Teléfonos: 89308058 / 82771485").FontSize(8).FontColor(Colors.Grey.Medium);
-                                empresaColumn.Item().Text("Sitio web: https://www.emsinetsolut.com/").FontSize(8).FontColor(Colors.Blue.Darken2);
                             });
                         });
 
@@ -639,6 +671,40 @@ public class PdfService : IPdfService
                                 });
                             });
                         }
+
+                        // Sección de Métodos de Pago - Compacta y visual
+                        column.Item().PaddingTop(10).PaddingBottom(5).Column(pagoColumn =>
+                        {
+                            pagoColumn.Item()
+                                .Background(Colors.Blue.Lighten5)
+                                .Border(2)
+                                .BorderColor(Colors.Blue.Darken2)
+                                .Padding(10)
+                                .Column(metodoPagoColumn =>
+                                {
+                                    metodoPagoColumn.Item()
+                                        .AlignCenter()
+                                        .Text("💳 MÉTODOS DE PAGO")
+                                        .FontSize(12)
+                                        .Bold()
+                                        .FontColor(Colors.Blue.Darken3);
+                                    
+                                    metodoPagoColumn.Item().PaddingTop(5)
+                                        .AlignCenter()
+                                        .Text("Consulta los métodos de pago disponibles")
+                                        .FontSize(9)
+                                        .FontColor(Colors.Grey.Darken2);
+                                    
+                                    metodoPagoColumn.Item().PaddingTop(5)
+                                        .AlignCenter()
+                                        .Hyperlink("https://www.emsinetsolut.com/#pagos")
+                                        .Text("https://www.emsinetsolut.com/#pagos")
+                                        .FontSize(10)
+                                        .Bold()
+                                        .FontColor(Colors.Blue.Darken2)
+                                        .Underline();
+                                });
+                        });
                     });
 
                 page.Footer()

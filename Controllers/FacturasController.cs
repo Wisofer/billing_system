@@ -6,6 +6,7 @@ using billing_system.Services.IServices;
 using billing_system.Utils;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace billing_system.Controllers;
 
@@ -451,6 +452,15 @@ public class FacturasController : Controller
         {
             var pdfBytes = _pdfService.GenerarPdfFactura(factura);
             var nombreArchivo = $"Factura-{factura.Numero}-{DateTime.Now:yyyyMMdd}.pdf";
+            
+            // Configurar headers para compatibilidad con móviles
+            // Forzar descarga (attachment) en lugar de abrir en el navegador (inline)
+            Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{nombreArchivo}\"; filename*=UTF-8''{Uri.EscapeDataString(nombreArchivo)}");
+            Response.Headers.Append("Content-Type", "application/pdf");
+            Response.Headers.Append("Content-Length", pdfBytes.Length.ToString());
+            Response.Headers.Append("Cache-Control", "no-cache, no-store, must-revalidate");
+            Response.Headers.Append("Pragma", "no-cache");
+            Response.Headers.Append("Expires", "0");
             
             return File(pdfBytes, "application/pdf", nombreArchivo);
         }
