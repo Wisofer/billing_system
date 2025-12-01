@@ -60,13 +60,31 @@ public class HomeController : Controller
             .Sum(f => (decimal?)f.Monto) ?? 0;
         
         // Ingresos Internet: incluir pagos directos y pagos con múltiples facturas
-        var ingresosInternet = _context.Pagos
+        // Procesar en memoria para calcular correctamente el monto por categoría
+        var pagosInternet = _context.Pagos
             .Include(p => p.Factura)
             .Include(p => p.PagoFacturas)
             .ThenInclude(pf => pf.Factura)
-            .Where(p => (p.Factura != null && p.Factura.Categoria == SD.CategoriaInternet) ||
-                       (p.PagoFacturas.Any(pf => pf.Factura != null && pf.Factura.Categoria == SD.CategoriaInternet)))
-            .Sum(p => (decimal?)p.Monto) ?? 0;
+            .ToList();
+        
+        decimal ingresosInternet = 0;
+        foreach (var pago in pagosInternet)
+        {
+            // Si tiene Factura directa de Internet
+            if (pago.Factura != null && pago.Factura.Categoria == SD.CategoriaInternet)
+            {
+                ingresosInternet += pago.Monto;
+            }
+            
+            // Si tiene PagoFacturas de Internet, sumar el MontoAplicado de cada una
+            foreach (var pagoFactura in pago.PagoFacturas)
+            {
+                if (pagoFactura.Factura != null && pagoFactura.Factura.Categoria == SD.CategoriaInternet)
+                {
+                    ingresosInternet += pagoFactura.MontoAplicado;
+                }
+            }
+        }
 
         // Estadísticas por categoría - Streaming (optimizado: agregaciones directas en BD)
         var facturasStreamingCount = _context.Facturas
@@ -86,13 +104,31 @@ public class HomeController : Controller
             .Sum(f => (decimal?)f.Monto) ?? 0;
         
         // Ingresos Streaming: incluir pagos directos y pagos con múltiples facturas
-        var ingresosStreaming = _context.Pagos
+        // Procesar en memoria para calcular correctamente el monto por categoría
+        var pagosStreaming = _context.Pagos
             .Include(p => p.Factura)
             .Include(p => p.PagoFacturas)
             .ThenInclude(pf => pf.Factura)
-            .Where(p => (p.Factura != null && p.Factura.Categoria == SD.CategoriaStreaming) ||
-                       (p.PagoFacturas.Any(pf => pf.Factura != null && pf.Factura.Categoria == SD.CategoriaStreaming)))
-            .Sum(p => (decimal?)p.Monto) ?? 0;
+            .ToList();
+        
+        decimal ingresosStreaming = 0;
+        foreach (var pago in pagosStreaming)
+        {
+            // Si tiene Factura directa de Streaming
+            if (pago.Factura != null && pago.Factura.Categoria == SD.CategoriaStreaming)
+            {
+                ingresosStreaming += pago.Monto;
+            }
+            
+            // Si tiene PagoFacturas de Streaming, sumar el MontoAplicado de cada una
+            foreach (var pagoFactura in pago.PagoFacturas)
+            {
+                if (pagoFactura.Factura != null && pagoFactura.Factura.Categoria == SD.CategoriaStreaming)
+                {
+                    ingresosStreaming += pagoFactura.MontoAplicado;
+                }
+            }
+        }
 
         // Estadísticas de clientes por tipo de servicio (optimizado: consultas directas en BD)
         var clientesConInternet = _context.Clientes
