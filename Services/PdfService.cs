@@ -324,6 +324,38 @@ public class PdfService : IPdfService
         // Calcular días facturados (para mostrar en el PDF)
         var diasFacturados = CalcularDiasFacturados(factura);
         
+        // Calcular subtotal sin proporcional para usar en toda la función
+        decimal subtotalSinProporcionalGlobal = 0;
+        if (factura.FacturaServicios != null && factura.FacturaServicios.Any())
+        {
+            foreach (var facturaServicio in factura.FacturaServicios)
+            {
+                var servicio = facturaServicio.Servicio;
+                if (servicio != null)
+                {
+                    if (servicio.Categoria == SD.CategoriaStreaming && facturaServicio.Cantidad > 1)
+                    {
+                        subtotalSinProporcionalGlobal += servicio.Precio * facturaServicio.Cantidad;
+                    }
+                    else
+                    {
+                        subtotalSinProporcionalGlobal += servicio.Precio;
+                    }
+                }
+            }
+        }
+        else if (factura.Servicio != null)
+        {
+            subtotalSinProporcionalGlobal = factura.Servicio.Precio;
+        }
+        
+        // Calcular monto a pagar: si hay descuento proporcional, usar el descuento proporcional (lo que el cliente va a pagar)
+        var montoAPagar = factura.Monto;
+        if (subtotalSinProporcionalGlobal > 0 && Math.Abs(subtotalSinProporcionalGlobal - factura.Monto) > 0.01m)
+        {
+            montoAPagar = subtotalSinProporcionalGlobal - factura.Monto; // Descuento proporcional = lo que va a pagar
+        }
+        
         // Cargar logo si existe
         byte[]? logoBytes = null;
         if (_environment != null)
@@ -509,16 +541,19 @@ public class PdfService : IPdfService
                                 else
                                 {
                                     // Fallback: mostrar servicio principal (compatibilidad con facturas antiguas)
-                                    subtotalSinProporcional = factura.Servicio.Precio;
-                                    table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
+                                    if (factura.Servicio != null)
                                     {
-                                        servicioInfoColumn.Item().Text(factura.Servicio.Nombre).FontSize(9);
-                                        if (!string.IsNullOrWhiteSpace(factura.Servicio.Descripcion))
+                                        subtotalSinProporcional = factura.Servicio.Precio;
+                                        table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
                                         {
-                                            servicioInfoColumn.Item().PaddingTop(2).Text(factura.Servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
-                                        }
-                                    });
-                                    table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Servicio.Precio:N2}").FontSize(9);
+                                            servicioInfoColumn.Item().Text(factura.Servicio.Nombre).FontSize(9);
+                                            if (!string.IsNullOrWhiteSpace(factura.Servicio.Descripcion))
+                                            {
+                                                servicioInfoColumn.Item().PaddingTop(2).Text(factura.Servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
+                                            }
+                                        });
+                                        table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Servicio.Precio:N2}").FontSize(9);
+                                    }
                                 }
 
                                 // Sub-total (sin proporcional si aplica)
@@ -527,12 +562,21 @@ public class PdfService : IPdfService
                                     table.Cell().Element(BodyCellStyle).Text("Sub-total C$").FontSize(9);
                                     table.Cell().Element(BodyCellStyle).AlignRight().Text($"{subtotalSinProporcional:N2}").FontSize(9);
                                     
-                                    // Descuento proporcional
-                                    var descuentoProporcional = subtotalSinProporcional - factura.Monto;
-                                    if (descuentoProporcional > 0)
+                                    // CORRECCIÓN: Intercambiar valores según solicitud del cliente
+                                    // El cliente dice que el "descuento proporcional" es lo que va a pagar
+                                    // Entonces: Descuento proporcional = monto a pagar (368), Descuento = diferencia (552)
+                                    var descuentoProporcional = subtotalSinProporcional - factura.Monto; // 368 (lo que va a pagar)
+                                    var descuento = factura.Monto; // 552 (lo que no se factura, se descuenta)
+                                    
+                                    // Mostrar el descuento proporcional como lo que el cliente va a pagar
+                                    table.Cell().Element(BodyCellStyle).Text("Descuento proporcional C$").FontSize(9).FontColor(Colors.Blue.Darken2);
+                                    table.Cell().Element(BodyCellStyle).AlignRight().Text($"{descuentoProporcional:N2}").FontSize(9).FontColor(Colors.Blue.Darken2);
+                                    
+                                    // Mostrar el descuento (lo que no se factura)
+                                    if (descuento > 0)
                                     {
-                                        table.Cell().Element(BodyCellStyle).Text("Descuento proporcional C$").FontSize(9).FontColor(Colors.Red.Darken1);
-                                        table.Cell().Element(BodyCellStyle).AlignRight().Text($"-{descuentoProporcional:N2}").FontSize(9).FontColor(Colors.Red.Darken1);
+                                        table.Cell().Element(BodyCellStyle).Text("Descuento C$").FontSize(9).FontColor(Colors.Red.Darken1);
+                                        table.Cell().Element(BodyCellStyle).AlignRight().Text($"-{descuento:N2}").FontSize(9).FontColor(Colors.Red.Darken1);
                                     }
                                 }
                                 else
@@ -564,9 +608,18 @@ public class PdfService : IPdfService
                                     }
                                 }
 
-                                // Total
-                                table.Cell().Element(TotalCellStyle).Text("Total C$").FontSize(11).Bold();
-                                table.Cell().Element(TotalCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(11).Bold();
+                                // Total - CORRECCIÓN: Si hay descuento proporcional, el total es el descuento proporcional (lo que va a pagar)
+                                if (subtotalSinProporcional > 0 && Math.Abs(subtotalSinProporcional - factura.Monto) > 0.01m)
+                                {
+                                    var descuentoProporcional = subtotalSinProporcional - factura.Monto; // Este es lo que el cliente va a pagar (368)
+                                    table.Cell().Element(TotalCellStyle).Text("Total C$").FontSize(11).Bold();
+                                    table.Cell().Element(TotalCellStyle).AlignRight().Text($"{descuentoProporcional:N2}").FontSize(11).Bold();
+                                }
+                                else
+                                {
+                                    table.Cell().Element(TotalCellStyle).Text("Total C$").FontSize(11).Bold();
+                                    table.Cell().Element(TotalCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(11).Bold();
+                                }
                             });
                         });
 
@@ -619,7 +672,7 @@ public class PdfService : IPdfService
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Monto consumido").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{montoAPagar:N2}").FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Multa por pago tardío").FontSize(9);
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{multaPorPagoTardio:N2}").FontSize(9);
@@ -628,11 +681,11 @@ public class PdfService : IPdfService
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{montoPagado:N2}").FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Saldo final del periodo").FontSize(9);
-                                    var saldoFinal = factura.Monto - montoPagado + multaPorPagoTardio;
+                                    var saldoFinal = montoAPagar - montoPagado + multaPorPagoTardio;
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{saldoFinal:N2}").FontSize(9);
 
-                                    // Monto total a pagar: siempre mostrar el monto de la factura (monto consumido)
-                                    var montoTotalPagar = factura.Monto;
+                                    // Monto total a pagar: usar el monto a pagar (descuento proporcional si aplica)
+                                    var montoTotalPagar = montoAPagar;
                                     estadoTable.Cell().Element(TotalCellStyle).Text("Monto total a pagar").FontSize(11).Bold();
                                     estadoTable.Cell().Element(TotalCellStyle).AlignRight().Text($"{montoTotalPagar:N2}").FontSize(11).Bold();
                                 });
@@ -662,7 +715,7 @@ public class PdfService : IPdfService
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Monto consumido").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{montoAPagar:N2}").FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Multa por pago tardío").FontSize(9);
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{multaPorPagoTardio:N2}").FontSize(9);
@@ -673,7 +726,7 @@ public class PdfService : IPdfService
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Saldo final del periodo").FontSize(9);
                                     estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
-                                    var montoTotalPagar = factura.Monto + multaPorPagoTardio;
+                                    var montoTotalPagar = montoAPagar + multaPorPagoTardio;
                                     estadoTable.Cell().Element(TotalCellStyle).Text("Monto total a pagar").FontSize(11).Bold();
                                     estadoTable.Cell().Element(TotalCellStyle).AlignRight().Text($"{montoTotalPagar:N2}").FontSize(11).Bold();
                                 });
