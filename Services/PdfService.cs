@@ -887,9 +887,13 @@ public class PdfService : IPdfService
         }
 
         // El ciclo de facturación es del día 5 al día 5 (del 5 de un mes al 5 del siguiente mes = 30 días)
-        // Los días facturados se cuentan solo dentro del mes de facturación (desde fecha inicio hasta fin de mes)
-        // Calcular días facturados: desde fecha de inicio hasta el último día del mes de facturación (incluyendo ambos días)
-        var diasFacturados = (ultimoDiaMesFacturacion.Date - fechaInicioDate.Date).Days + 1;
+        // Los días facturados se cuentan desde la fecha de inicio hasta el día 5 del mes siguiente
+        // Ejemplo: Cliente entra el 13 nov → cuenta del 13 nov al 5 dic = 23 días
+        var mesSiguiente = factura.MesFacturacion.AddMonths(1);
+        var dia5MesSiguiente = new DateTime(mesSiguiente.Year, mesSiguiente.Month, 5);
+        
+        // Calcular días facturados: desde fecha de inicio hasta el día 5 del mes siguiente (incluyendo ambos días)
+        var diasFacturados = (dia5MesSiguiente.Date - fechaInicioDate.Date).Days + 1;
 
         // Asegurar que los días sean válidos
         if (diasFacturados <= 0)
