@@ -258,25 +258,9 @@ public class FacturaService : IFacturaService
                     cantidad = clienteServicio.Cantidad;
                 }
                 
-                // Para Streaming: precio completo sin proporcional
-                // Para Internet: aplicar proporcional si aplica
-                decimal montoServicio;
+                // Calcular monto del servicio
+                var montoServicio = CalcularMontoServicio(servicio, cliente, mesFacturacion, cantidad);
                 
-                if (servicio.Categoria == SD.CategoriaStreaming)
-                {
-                    // Streaming: siempre precio completo (precio * cantidad)
-                    montoServicio = servicio.Precio * cantidad;
-                }
-                else
-                {
-                    // Internet: aplicar proporcional
-                    // IMPORTANTE: Usar FechaCreacion del cliente para el cálculo proporcional
-                    var precioTotalSinProporcional = servicio.Precio * cantidad;
-                    var montoProporcionalUnitario = CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesFacturacion, cliente.FechaCreacion);
-                    var factorProporcional = servicio.Precio > 0 ? montoProporcionalUnitario / servicio.Precio : 1;
-                    montoServicio = precioTotalSinProporcional * factorProporcional;
-                }
-
                 montoTotal += montoServicio;
 
                 // Crear FacturaServicio - guardar el monto total y la cantidad
@@ -513,25 +497,9 @@ public class FacturaService : IFacturaService
                         cantidad = clienteServicio.Cantidad;
                     }
                     
-                    // Para Streaming: precio completo sin proporcional
-                    // Para Internet: aplicar proporcional si aplica
-                    decimal montoServicio;
+                    // Calcular monto del servicio
+                    var montoServicio = CalcularMontoServicio(servicio, cliente, mesFacturacion, cantidad);
                     
-                    if (servicio.Categoria == SD.CategoriaStreaming)
-                    {
-                        // Streaming: siempre precio completo (precio * cantidad)
-                        montoServicio = servicio.Precio * cantidad;
-                    }
-                    else
-                    {
-                        // Internet: aplicar proporcional
-                        // IMPORTANTE: Usar FechaCreacion del cliente para el cálculo proporcional
-                        var precioTotalSinProporcional = servicio.Precio * cantidad;
-                        var montoProporcionalUnitario = CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesFacturacion, cliente.FechaCreacion);
-                        var factorProporcional = servicio.Precio > 0 ? montoProporcionalUnitario / servicio.Precio : 1;
-                        montoServicio = precioTotalSinProporcional * factorProporcional;
-                    }
-
                     montoTotal += montoServicio;
 
                     // Crear FacturaServicio - guardar el monto total y la cantidad
@@ -569,6 +537,31 @@ public class FacturaService : IFacturaService
         {
             _context.Facturas.AddRange(facturasACrear);
             _context.SaveChanges();
+        }
+    }
+
+    /// <summary>
+    /// Calcula el monto de un servicio
+    /// </summary>
+    private decimal CalcularMontoServicio(
+        Servicio servicio, 
+        Cliente cliente, 
+        DateTime mesFacturacion, 
+        int cantidad)
+    {
+        if (servicio.Categoria == SD.CategoriaStreaming)
+        {
+            // Streaming: siempre precio completo (precio * cantidad)
+            return servicio.Precio * cantidad;
+        }
+        else
+        {
+            // Internet: aplicar proporcional
+            // IMPORTANTE: Usar FechaCreacion del cliente para el cálculo proporcional
+            var precioTotalSinProporcional = servicio.Precio * cantidad;
+            var montoProporcionalUnitario = CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesFacturacion, cliente.FechaCreacion);
+            var factorProporcional = servicio.Precio > 0 ? montoProporcionalUnitario / servicio.Precio : 1;
+            return precioTotalSinProporcional * factorProporcional;
         }
     }
 

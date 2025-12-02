@@ -30,15 +30,7 @@ public class PdfService : IPdfService
         var mesFacturado = factura.MesFacturacion.ToString("MMM/yyyy").ToUpper();
         
         // Cargar logo si existe
-        byte[]? logoBytes = null;
-        if (_environment != null)
-        {
-            var logoPath = Path.Combine(_environment.WebRootPath, "images", "logo.png");
-            if (File.Exists(logoPath))
-            {
-                logoBytes = File.ReadAllBytes(logoPath);
-            }
-        }
+        var logoBytes = CargarLogo();
         
         var documento = Document.Create(container =>
         {
@@ -222,22 +214,11 @@ public class PdfService : IPdfService
                                 table.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
                                 // Método de pago (si hay pagos) - después de IVA
-                                if (factura.Pagos != null && factura.Pagos.Any())
+                                var metodoPagoTextoStreaming = ObtenerMetodoPagoTexto(factura);
+                                if (!string.IsNullOrEmpty(metodoPagoTextoStreaming))
                                 {
-                                    var primerPago = factura.Pagos.OrderBy(p => p.FechaPago).First();
-                                    string metodoPagoTexto = "";
-                                    if (primerPago.TipoPago == SD.TipoPagoFisico)
-                                        metodoPagoTexto = "Físico";
-                                    else if (primerPago.TipoPago == SD.TipoPagoElectronico)
-                                        metodoPagoTexto = "Electrónico";
-                                    else if (primerPago.TipoPago == SD.TipoPagoMixto)
-                                        metodoPagoTexto = "Mixto";
-                                    
-                                    if (!string.IsNullOrEmpty(metodoPagoTexto))
-                                    {
-                                        table.Cell().Element(BodyCellStyle).Text("Método de pago").FontSize(9);
-                                        table.Cell().Element(BodyCellStyle).AlignRight().Text(metodoPagoTexto).FontSize(9).Bold();
-                                    }
+                                    table.Cell().Element(BodyCellStyle).Text("Método de pago").FontSize(9);
+                                    table.Cell().Element(BodyCellStyle).AlignRight().Text(metodoPagoTextoStreaming).FontSize(9).Bold();
                                 }
 
                                 // Total
@@ -324,44 +305,11 @@ public class PdfService : IPdfService
         // Calcular días facturados (para mostrar en el PDF)
         var diasFacturados = CalcularDiasFacturados(factura);
         
-        // Calcular subtotal sin proporcional para usar en toda la función
-        decimal subtotalSinProporcionalGlobal = 0;
-        if (factura.FacturaServicios != null && factura.FacturaServicios.Any())
-        {
-            foreach (var facturaServicio in factura.FacturaServicios)
-            {
-                var servicio = facturaServicio.Servicio;
-                if (servicio != null)
-                {
-                    if (servicio.Categoria == SD.CategoriaStreaming && facturaServicio.Cantidad > 1)
-                    {
-                        subtotalSinProporcionalGlobal += servicio.Precio * facturaServicio.Cantidad;
-                    }
-                    else
-                    {
-                        subtotalSinProporcionalGlobal += servicio.Precio;
-                    }
-                }
-            }
-        }
-        else if (factura.Servicio != null)
-        {
-            subtotalSinProporcionalGlobal = factura.Servicio.Precio;
-        }
-        
         // Calcular monto a pagar: el monto a pagar es el factura.Monto (monto proporcional)
         var montoAPagar = factura.Monto; // El monto de la factura ya es el proporcional calculado
         
         // Cargar logo si existe
-        byte[]? logoBytes = null;
-        if (_environment != null)
-        {
-            var logoPath = Path.Combine(_environment.WebRootPath, "images", "logo.png");
-            if (File.Exists(logoPath))
-            {
-                logoBytes = File.ReadAllBytes(logoPath);
-            }
-        }
+        var logoBytes = CargarLogo();
         
         var documento = Document.Create(container =>
         {
@@ -488,6 +436,7 @@ public class PdfService : IPdfService
 
                                 // Calcular subtotal sin proporcional para mostrar descuento si aplica
                                 decimal subtotalSinProporcional = 0;
+                                bool subtotalCalculadoEnLoop = false;
                                 
                                 // Si la factura tiene FacturaServicios (múltiples servicios), mostrar todos
                                 if (factura.FacturaServicios != null && factura.FacturaServicios.Any())
@@ -496,12 +445,17 @@ public class PdfService : IPdfService
                                     {
                                         var servicio = facturaServicio.Servicio;
                                         
+                                        // Verificar que el servicio no sea null
+                                        if (servicio == null)
+                                            continue;
+                                        
                                         // Si es Streaming y tiene múltiples suscripciones, mostrar cada una
                                         if (servicio.Categoria == SD.CategoriaStreaming && facturaServicio.Cantidad > 1)
                                         {
                                             // Mostrar el precio completo del servicio por cada suscripción
                                             var precioUnitario = servicio.Precio;
                                             subtotalSinProporcional += precioUnitario * facturaServicio.Cantidad;
+                                            subtotalCalculadoEnLoop = true;
                                             
                                             for (int i = 1; i <= facturaServicio.Cantidad; i++)
                                             {
@@ -521,6 +475,7 @@ public class PdfService : IPdfService
                                             // Servicio único o Internet - mostrar precio completo
                                             var precioCompleto = servicio.Precio;
                                             subtotalSinProporcional += precioCompleto;
+                                            subtotalCalculadoEnLoop = true;
                                             
                                             table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
                                             {
@@ -540,6 +495,7 @@ public class PdfService : IPdfService
                                     if (factura.Servicio != null)
                                     {
                                         subtotalSinProporcional = factura.Servicio.Precio;
+                                        subtotalCalculadoEnLoop = true;
                                         table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
                                         {
                                             servicioInfoColumn.Item().Text(factura.Servicio.Nombre).FontSize(9);
@@ -550,6 +506,12 @@ public class PdfService : IPdfService
                                         });
                                         table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Servicio.Precio:N2}").FontSize(9);
                                     }
+                                }
+                                
+                                // Si no se calculó el subtotal en el loop anterior (caso edge), calcularlo
+                                if (!subtotalCalculadoEnLoop)
+                                {
+                                    subtotalSinProporcional = CalcularSubtotalSinProporcional(factura);
                                 }
 
                                 // Sub-total (precio completo sin proporcional)
@@ -569,22 +531,11 @@ public class PdfService : IPdfService
                                 table.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
 
                                 // Método de pago (si hay pagos) - después de IVA
-                                if (factura.Pagos != null && factura.Pagos.Any())
+                                var metodoPagoTextoInternet = ObtenerMetodoPagoTexto(factura);
+                                if (!string.IsNullOrEmpty(metodoPagoTextoInternet))
                                 {
-                                    var primerPago = factura.Pagos.OrderBy(p => p.FechaPago).First();
-                                    string metodoPagoTexto = "";
-                                    if (primerPago.TipoPago == SD.TipoPagoFisico)
-                                        metodoPagoTexto = "Físico";
-                                    else if (primerPago.TipoPago == SD.TipoPagoElectronico)
-                                        metodoPagoTexto = "Electrónico";
-                                    else if (primerPago.TipoPago == SD.TipoPagoMixto)
-                                        metodoPagoTexto = "Mixto";
-                                    
-                                    if (!string.IsNullOrEmpty(metodoPagoTexto))
-                                    {
-                                        table.Cell().Element(BodyCellStyle).Text("Método de pago").FontSize(9);
-                                        table.Cell().Element(BodyCellStyle).AlignRight().Text(metodoPagoTexto).FontSize(9).Bold();
-                                    }
+                                    table.Cell().Element(BodyCellStyle).Text("Método de pago").FontSize(9);
+                                    table.Cell().Element(BodyCellStyle).AlignRight().Text(metodoPagoTextoInternet).FontSize(9).Bold();
                                 }
 
                                 // Total: El total es el monto de la factura (monto proporcional)
@@ -752,6 +703,80 @@ public class PdfService : IPdfService
         return documento.GeneratePdf();
     }
 
+    /// <summary>
+    /// Calcula el subtotal sin proporcional de una factura
+    /// </summary>
+    private decimal CalcularSubtotalSinProporcional(Factura factura)
+    {
+        decimal subtotal = 0;
+        
+        if (factura.FacturaServicios != null && factura.FacturaServicios.Any())
+        {
+            foreach (var facturaServicio in factura.FacturaServicios)
+            {
+                var servicio = facturaServicio.Servicio;
+                if (servicio != null)
+                {
+                    if (servicio.Categoria == SD.CategoriaStreaming && facturaServicio.Cantidad > 1)
+                    {
+                        subtotal += servicio.Precio * facturaServicio.Cantidad;
+                    }
+                    else
+                    {
+                        subtotal += servicio.Precio;
+                    }
+                }
+            }
+        }
+        else if (factura.Servicio != null)
+        {
+            subtotal = factura.Servicio.Precio;
+        }
+        
+        return subtotal;
+    }
+
+    /// <summary>
+    /// Carga el logo desde el sistema de archivos
+    /// </summary>
+    private byte[]? CargarLogo()
+    {
+        if (_environment == null)
+        {
+            return null;
+        }
+        
+        var logoPath = Path.Combine(_environment.WebRootPath, "images", "logo.png");
+        if (File.Exists(logoPath))
+        {
+            return File.ReadAllBytes(logoPath);
+        }
+        
+        return null;
+    }
+
+    /// <summary>
+    /// Obtiene el texto del método de pago de una factura
+    /// </summary>
+    private string? ObtenerMetodoPagoTexto(Factura factura)
+    {
+        if (factura.Pagos == null || !factura.Pagos.Any())
+        {
+            return null;
+        }
+        
+        var primerPago = factura.Pagos.OrderBy(p => p.FechaPago).First();
+        
+        if (primerPago.TipoPago == SD.TipoPagoFisico)
+            return "Físico";
+        else if (primerPago.TipoPago == SD.TipoPagoElectronico)
+            return "Electrónico";
+        else if (primerPago.TipoPago == SD.TipoPagoMixto)
+            return "Mixto";
+        
+        return null;
+    }
+
     private static IContainer HeaderCellStyle(IContainer container)
     {
         return container
@@ -794,30 +819,7 @@ public class PdfService : IPdfService
         }
 
         // Calcular subtotal sin proporcional para verificar si hay descuento
-        decimal subtotalSinProporcional = 0;
-        
-        if (factura.FacturaServicios != null && factura.FacturaServicios.Any())
-        {
-            foreach (var facturaServicio in factura.FacturaServicios)
-            {
-                var servicio = facturaServicio.Servicio;
-                if (servicio != null)
-                {
-                    if (servicio.Categoria == SD.CategoriaStreaming && facturaServicio.Cantidad > 1)
-                    {
-                        subtotalSinProporcional += servicio.Precio * facturaServicio.Cantidad;
-                    }
-                    else
-                    {
-                        subtotalSinProporcional += servicio.Precio;
-                    }
-                }
-            }
-        }
-        else if (factura.Servicio != null)
-        {
-            subtotalSinProporcional = factura.Servicio.Precio;
-        }
+        var subtotalSinProporcional = CalcularSubtotalSinProporcional(factura);
 
         // Si no hay descuento proporcional (o la diferencia es muy pequeña), es mes completo
         if (Math.Abs(subtotalSinProporcional - factura.Monto) <= 0.01m)
