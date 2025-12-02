@@ -552,9 +552,17 @@ public class PdfService : IPdfService
                                     }
                                 }
 
-                                // Sub-total
+                                // Sub-total (precio completo sin proporcional)
                                 table.Cell().Element(BodyCellStyle).Text("Sub-total C$").FontSize(9);
-                                table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
+                                table.Cell().Element(BodyCellStyle).AlignRight().Text($"{subtotalSinProporcional:N2}").FontSize(9);
+
+                                // Descuento proporcional (solo si hay diferencia) - mostrar el descuento, no el monto a pagar
+                                if (subtotalSinProporcional > 0 && Math.Abs(subtotalSinProporcional - factura.Monto) > 0.01m)
+                                {
+                                    var descuentoProporcional = subtotalSinProporcional - factura.Monto; // El descuento es la diferencia
+                                    table.Cell().Element(BodyCellStyle).Text("Descuento proporcional C$").FontSize(9).FontColor(Colors.Red.Darken1);
+                                    table.Cell().Element(BodyCellStyle).AlignRight().Text($"-{descuentoProporcional:N2}").FontSize(9).FontColor(Colors.Red.Darken1);
+                                }
 
                                 // IVA
                                 table.Cell().Element(BodyCellStyle).Text("I.V.A. C$").FontSize(9);
