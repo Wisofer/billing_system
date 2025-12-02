@@ -3,6 +3,7 @@
 @{
     var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
     var busqueda = ViewBag.Busqueda as string ?? "";
+    var tamanoPaginaActual = ViewBag.TamanoPagina as int? ?? 25;
 }
 
 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
@@ -16,6 +17,16 @@
             </h3>
             <form method="get" action="/clientes" class="flex items-center space-x-2">
                 <input type="hidden" name="pagina" value="1" />
+                
+                <label class="text-xs text-gray-500 dark:text-gray-400">
+                    Tamaño:
+                    <select name="tamanoPagina" class="ml-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                        <option value="10" @(tamanoPaginaActual == 10 ? "selected" : "")>10</option>
+                        <option value="25" @(tamanoPaginaActual == 25 ? "selected" : "")>25</option>
+                        <option value="50" @(tamanoPaginaActual == 50 ? "selected" : "")>50</option>
+                    </select>
+                </label>
+
                 <input type="text" name="busqueda" value="@busqueda" placeholder="Buscar..." 
                        class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64">
                 <button type="submit" class="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">

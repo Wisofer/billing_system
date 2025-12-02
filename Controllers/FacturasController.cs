@@ -32,7 +32,7 @@ public class FacturasController : Controller
     }
 
     [HttpGet("/facturas")]
-    public IActionResult Index(string? estado, int? mes, int? año, string? busquedaCliente, string? categoria, int pagina = 1, int tamanoPagina = 10)
+    public IActionResult Index(string? estado, int? mes, int? año, string? busquedaCliente, string? categoria, int pagina = 1, int tamanoPagina = 25)
     {
         var esAdministrador = SecurityHelper.IsAdministrator(User);
 

@@ -29,7 +29,7 @@ public class ClientesController : Controller
     }
 
     [HttpGet("/clientes")]
-    public IActionResult Index(string? busqueda, int pagina = 1, int tamanoPagina = 10)
+    public IActionResult Index(string? busqueda, int pagina = 1, int tamanoPagina = 25)
     {
         // Validar parámetros de paginación
         if (pagina < 1) pagina = 1;

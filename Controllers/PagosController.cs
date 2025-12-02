@@ -27,9 +27,14 @@ public class PagosController : Controller
     }
 
     [HttpGet("/pagos")]
-    public IActionResult Index(string? tipoPago, string? banco, DateTime? fecha)
+    public IActionResult Index(string? tipoPago, string? banco, DateTime? fecha, int pagina = 1, int tamanoPagina = 25)
     {
         var esAdministrador = SecurityHelper.IsAdministrator(User);
+        
+        // Validar parámetros de paginación
+        if (pagina < 1) pagina = 1;
+        if (tamanoPagina < 5) tamanoPagina = 5;
+        if (tamanoPagina > 50) tamanoPagina = 50;
         
         var pagos = _pagoService.ObtenerTodos().AsQueryable();
 
@@ -49,7 +54,14 @@ public class PagosController : Controller
             pagos = pagos.Where(p => p.FechaPago.Date == fecha.Value.Date);
         }
 
-        var pagosLista = pagos.ToList();
+        // Aplicar paginación
+        var totalItems = pagos.Count();
+        var pagosLista = pagos
+            .OrderByDescending(p => p.FechaPago)
+            .ThenByDescending(p => p.Id)
+            .Skip((pagina - 1) * tamanoPagina)
+            .Take(tamanoPagina)
+            .ToList();
 
         // Estadísticas (optimizado: calcular una sola vez)
         var todosPagos = _pagoService.ObtenerTodos();
@@ -67,6 +79,10 @@ public class PagosController : Controller
         ViewBag.Fecha = fecha;
         ViewBag.EsAdministrador = esAdministrador;
         ViewBag.Bancos = new[] { SD.BancoBanpro, SD.BancoLafise, SD.BancoBAC, SD.BancoFicohsa, SD.BancoBDF };
+        ViewBag.Pagina = pagina;
+        ViewBag.TamanoPagina = tamanoPagina;
+        ViewBag.TotalItems = totalItems;
+        ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / tamanoPagina);
 
         return View(pagosLista);
     }
