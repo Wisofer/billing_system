@@ -157,6 +157,8 @@
 /home/william/Documentos/aplicaciones/billing_system/bin/Debug/net9.0/runtimes/win-x86/native/QuestPdfSkia.dll
 /home/william/Documentos/billing_system/bin/Debug/net9.0/appsettings.Development.json
 /home/william/Documentos/billing_system/bin/Debug/net9.0/appsettings.json
+/home/william/Documentos/billing_system/bin/Debug/net9.0/billing_system.staticwebassets.runtime.json
+/home/william/Documentos/billing_system/bin/Debug/net9.0/billing_system.staticwebassets.endpoints.json
 /home/william/Documentos/billing_system/bin/Debug/net9.0/LatoFont/Lato-Black.ttf
 /home/william/Documentos/billing_system/bin/Debug/net9.0/LatoFont/Lato-BlackItalic.ttf
 /home/william/Documentos/billing_system/bin/Debug/net9.0/LatoFont/Lato-Bold.ttf
@@ -176,8 +178,6 @@
 /home/william/Documentos/billing_system/bin/Debug/net9.0/LatoFont/Lato-Thin.ttf
 /home/william/Documentos/billing_system/bin/Debug/net9.0/LatoFont/Lato-ThinItalic.ttf
 /home/william/Documentos/billing_system/bin/Debug/net9.0/LatoFont/OFL.txt
-/home/william/Documentos/billing_system/bin/Debug/net9.0/billing_system.staticwebassets.runtime.json
-/home/william/Documentos/billing_system/bin/Debug/net9.0/billing_system.staticwebassets.endpoints.json
 /home/william/Documentos/billing_system/bin/Debug/net9.0/billing_system
 /home/william/Documentos/billing_system/bin/Debug/net9.0/billing_system.deps.json
 /home/william/Documentos/billing_system/bin/Debug/net9.0/billing_system.runtimeconfig.json
@@ -297,6 +297,7 @@
 /home/william/Documentos/billing_system/obj/Debug/net9.0/billing_system.sourcelink.json
 /home/william/Documentos/billing_system/obj/Debug/net9.0/scopedcss/bundle/billing_system.styles.css
 /home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz
+/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/ngoiiiitkb-o8mqjrl0sz.gz
 /home/william/Documentos/billing_system/obj/Debug/net9.0/staticwebassets.build.json
 /home/william/Documentos/billing_system/obj/Debug/net9.0/staticwebassets.development.json
 /home/william/Documentos/billing_system/obj/Debug/net9.0/staticwebassets.build.endpoints.json
@@ -312,4 +313,3 @@
 /home/william/Documentos/billing_system/obj/Debug/net9.0/billing_system.pdb
 /home/william/Documentos/billing_system/obj/Debug/net9.0/billing_system.genruntimeconfig.cache
 /home/william/Documentos/billing_system/obj/Debug/net9.0/ref/billing_system.dll
-/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/ngoiiiitkb-o8mqjrl0sz.gz

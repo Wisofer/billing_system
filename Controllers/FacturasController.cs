@@ -6,6 +6,7 @@ using billing_system.Services.IServices;
 using billing_system.Utils;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 
 namespace billing_system.Controllers;
@@ -481,7 +482,16 @@ public class FacturasController : Controller
         }
         catch (Exception ex)
         {
+            // Log detallado del error para debugging
+            var logger = HttpContext.RequestServices.GetService<ILogger<FacturasController>>();
+            logger?.LogError(ex, "Error al generar PDF para factura {FacturaId}: {Message}\n{StackTrace}", 
+                factura.Id, ex.Message, ex.StackTrace);
+            
             TempData["Error"] = $"Error al generar PDF: {ex.Message}";
+            if (ex.InnerException != null)
+            {
+                TempData["Error"] += $" Detalles: {ex.InnerException.Message}";
+            }
             return Redirect("/facturas");
         }
     }

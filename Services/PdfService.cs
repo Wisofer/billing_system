@@ -16,7 +16,7 @@ public class PdfService : IPdfService
 
     public PdfService(IWebHostEnvironment? environment = null, ApplicationDbContext? context = null)
     {
-        QuestPDF.Settings.License = LicenseType.Community;
+        // La licencia de QuestPDF se inicializa en Program.cs
         _environment = environment;
         _context = context;
     }
@@ -349,12 +349,8 @@ public class PdfService : IPdfService
             subtotalSinProporcionalGlobal = factura.Servicio.Precio;
         }
         
-        // Calcular monto a pagar: si hay descuento proporcional, usar el descuento proporcional (lo que el cliente va a pagar)
-        var montoAPagar = factura.Monto;
-        if (subtotalSinProporcionalGlobal > 0 && Math.Abs(subtotalSinProporcionalGlobal - factura.Monto) > 0.01m)
-        {
-            montoAPagar = subtotalSinProporcionalGlobal - factura.Monto; // Descuento proporcional = lo que va a pagar
-        }
+        // Calcular monto a pagar: el monto a pagar es el factura.Monto (monto proporcional)
+        var montoAPagar = factura.Monto; // El monto de la factura ya es el proporcional calculado
         
         // Cargar logo si existe
         byte[]? logoBytes = null;
@@ -556,34 +552,9 @@ public class PdfService : IPdfService
                                     }
                                 }
 
-                                // Sub-total (sin proporcional si aplica)
-                                if (subtotalSinProporcional > 0 && Math.Abs(subtotalSinProporcional - factura.Monto) > 0.01m)
-                                {
-                                    table.Cell().Element(BodyCellStyle).Text("Sub-total C$").FontSize(9);
-                                    table.Cell().Element(BodyCellStyle).AlignRight().Text($"{subtotalSinProporcional:N2}").FontSize(9);
-                                    
-                                    // CORRECCIÓN: Intercambiar valores según solicitud del cliente
-                                    // El cliente dice que el "descuento proporcional" es lo que va a pagar
-                                    // Entonces: Descuento proporcional = monto a pagar (368), Descuento = diferencia (552)
-                                    var descuentoProporcional = subtotalSinProporcional - factura.Monto; // 368 (lo que va a pagar)
-                                    var descuento = factura.Monto; // 552 (lo que no se factura, se descuenta)
-                                    
-                                    // Mostrar el descuento proporcional como lo que el cliente va a pagar
-                                    table.Cell().Element(BodyCellStyle).Text("Descuento proporcional C$").FontSize(9).FontColor(Colors.Blue.Darken2);
-                                    table.Cell().Element(BodyCellStyle).AlignRight().Text($"{descuentoProporcional:N2}").FontSize(9).FontColor(Colors.Blue.Darken2);
-                                    
-                                    // Mostrar el descuento (lo que no se factura)
-                                    if (descuento > 0)
-                                    {
-                                        table.Cell().Element(BodyCellStyle).Text("Descuento C$").FontSize(9).FontColor(Colors.Red.Darken1);
-                                        table.Cell().Element(BodyCellStyle).AlignRight().Text($"-{descuento:N2}").FontSize(9).FontColor(Colors.Red.Darken1);
-                                    }
-                                }
-                                else
-                                {
-                                    table.Cell().Element(BodyCellStyle).Text("Sub-total C$").FontSize(9);
-                                    table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
-                                }
+                                // Sub-total
+                                table.Cell().Element(BodyCellStyle).Text("Sub-total C$").FontSize(9);
+                                table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(9);
 
                                 // IVA
                                 table.Cell().Element(BodyCellStyle).Text("I.V.A. C$").FontSize(9);
@@ -608,18 +579,9 @@ public class PdfService : IPdfService
                                     }
                                 }
 
-                                // Total - CORRECCIÓN: Si hay descuento proporcional, el total es el descuento proporcional (lo que va a pagar)
-                                if (subtotalSinProporcional > 0 && Math.Abs(subtotalSinProporcional - factura.Monto) > 0.01m)
-                                {
-                                    var descuentoProporcional = subtotalSinProporcional - factura.Monto; // Este es lo que el cliente va a pagar (368)
-                                    table.Cell().Element(TotalCellStyle).Text("Total C$").FontSize(11).Bold();
-                                    table.Cell().Element(TotalCellStyle).AlignRight().Text($"{descuentoProporcional:N2}").FontSize(11).Bold();
-                                }
-                                else
-                                {
-                                    table.Cell().Element(TotalCellStyle).Text("Total C$").FontSize(11).Bold();
-                                    table.Cell().Element(TotalCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(11).Bold();
-                                }
+                                // Total: El total es el monto de la factura (monto proporcional)
+                                table.Cell().Element(TotalCellStyle).Text("Total C$").FontSize(11).Bold();
+                                table.Cell().Element(TotalCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(11).Bold();
                             });
                         });
 

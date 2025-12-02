@@ -5,6 +5,10 @@ using billing_system.Services.IServices;
 using billing_system.Utils;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
+
+// Inicializar QuestPDF antes de cualquier uso
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
