@@ -1,11 +1,12 @@
 @{
     var estado = ViewBag.Estado as string ?? "Todos";
     var mes = ViewBag.Mes as int?;
-    var año = ViewBag.Año as int? ?? DateTime.Now.Year;
+    var año = ViewBag.Año as int? ?? DateTime.Now.AddMonths(-1).Year;
     var busquedaCliente = ViewBag.BusquedaCliente as string ?? "";
     var categoria = ViewBag.Categoria as string ?? "Todas";
     var clientes = ViewBag.Clientes as List<billing_system.Models.Entities.Cliente> ?? new List<billing_system.Models.Entities.Cliente>();
-    var mesActual = DateTime.Now.Month;
+    // Usar mes anterior por defecto (primero consume, luego paga)
+    var mesAnterior = DateTime.Now.AddMonths(-1).Month;
 }
 
 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 mb-6">
@@ -28,9 +29,9 @@
                 @for (int i = 1; i <= 12; i++)
                 {
                     var fecha = new DateTime(año, i, 1);
-                    // Si no hay mes seleccionado (primera carga), seleccionar el mes actual
+                    // Si no hay mes seleccionado (primera carga), seleccionar el mes anterior
                     // Si hay un mes seleccionado, usar ese
-                    var seleccionado = mes.HasValue ? (mes == i) : (i == mesActual);
+                    var seleccionado = mes.HasValue ? (mes == i) : (i == mesAnterior);
                     <option value="@i" @(seleccionado ? "selected" : "")>@fecha.ToString("MMMM yyyy")</option>
                 }
             </select>

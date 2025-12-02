@@ -815,13 +815,8 @@ public class PdfService : IPdfService
             return DateTime.DaysInMonth(factura.MesFacturacion.Year, factura.MesFacturacion.Month);
         }
 
-        // Obtener la fecha de inicio del servicio desde ClienteServicios
-        var clienteServicio = _context.ClienteServicios
-            .FirstOrDefault(cs => cs.ClienteId == factura.ClienteId && 
-                                 cs.ServicioId == primerServicioInternet.Id && 
-                                 cs.Activo);
-
-        var fechaInicio = clienteServicio?.FechaInicio ?? factura.Cliente.FechaCreacion;
+        // IMPORTANTE: Usar la fecha de creación del cliente para el cálculo proporcional
+        var fechaInicio = factura.Cliente.FechaCreacion;
         var fechaInicioDate = fechaInicio.Date;
         var primerDiaMesFacturacion = new DateTime(factura.MesFacturacion.Year, factura.MesFacturacion.Month, 1);
         var ultimoDiaMesFacturacion = primerDiaMesFacturacion.AddMonths(1).AddDays(-1);
@@ -838,18 +833,18 @@ public class PdfService : IPdfService
             return DateTime.DaysInMonth(factura.MesFacturacion.Year, factura.MesFacturacion.Month);
         }
 
-        // Calcular días desde fecha de inicio hasta día 5 del mes siguiente
-        var siguienteMes = factura.MesFacturacion.AddMonths(1);
-        var fechaVencimiento = new DateTime(siguienteMes.Year, siguienteMes.Month, 5);
-        var diasConsumidos = (fechaVencimiento.Date - fechaInicioDate.Date).Days + 1;
+        // El ciclo de facturación es del día 5 al día 5 (del 5 de un mes al 5 del siguiente mes = 30 días)
+        // Los días facturados se cuentan solo dentro del mes de facturación (desde fecha inicio hasta fin de mes)
+        // Calcular días facturados: desde fecha de inicio hasta el último día del mes de facturación (incluyendo ambos días)
+        var diasFacturados = (ultimoDiaMesFacturacion.Date - fechaInicioDate.Date).Days + 1;
 
         // Asegurar que los días sean válidos
-        if (diasConsumidos <= 0)
+        if (diasFacturados <= 0)
         {
             return DateTime.DaysInMonth(factura.MesFacturacion.Year, factura.MesFacturacion.Month);
         }
 
-        return diasConsumidos;
+        return diasFacturados;
     }
 }
 

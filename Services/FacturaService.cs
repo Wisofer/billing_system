@@ -130,65 +130,25 @@ public class FacturaService : IFacturaService
 
     /// <summary>
     /// Calcula el monto de la factura aplicando lógica proporcional para clientes nuevos.
-    /// El proporcional solo se aplica en la primera factura del cliente si inició después del día 5.
-    /// Considera correctamente todos los meses (28, 29, 30, 31 días).
+    /// El proporcional se aplica SOLO si:
+    /// 1. Es la primera factura del cliente (usuario nuevo)
+    /// 2. El cliente se creó en el mes de facturación
+    /// 3. El cliente se creó después del día 5
+    /// El ciclo de facturación es del día 5 al día 5 (30 días).
     /// </summary>
     private decimal CalcularMontoProporcional(Cliente cliente, Servicio servicio, DateTime mesFacturacion)
     {
         // Verificar si es la primera factura del cliente
         var esPrimeraFactura = !_context.Facturas.Any(f => f.ClienteId == cliente.Id);
 
-        // Si no es la primera factura, siempre paga mes completo
+        // REGLA: Si NO es la primera factura (usuario viejo), SIEMPRE paga mes completo
         if (!esPrimeraFactura)
         {
             return servicio.Precio;
         }
 
-        // Si es la primera factura, verificar si inició después del día 5
-        var fechaInicioCliente = cliente.FechaCreacion.Date; // Normalizar a fecha sin hora
-        
-        // Si inició el día 5 o antes, paga mes completo
-        if (fechaInicioCliente.Day <= 5)
-        {
-            return servicio.Precio;
-        }
-
-        // Si inició después del día 5, calcular proporcional
-        // El ciclo de facturación es del día 5 de un mes al día 5 del siguiente mes
-        // Calcular días desde la fecha de inicio hasta el día 5 del siguiente mes (incluyendo ambos días)
-        
-        // Obtener el día 5 del siguiente mes (mes de facturación + 1)
-        var siguienteMes = mesFacturacion.AddMonths(1);
-        var fechaVencimiento = new DateTime(siguienteMes.Year, siguienteMes.Month, 5);
-        
-        // Calcular días consumidos: desde fecha de inicio hasta día 5 del siguiente mes (incluyendo ambos días)
-        // Ejemplo: del 23/nov al 5/dic = 13 días (23, 24, 25, 26, 27, 28, 29, 30 nov + 1, 2, 3, 4, 5 dic)
-        var diasConsumidos = (fechaVencimiento.Date - fechaInicioCliente.Date).Days + 1;
-        
-        // Si los días son 0 o negativos, retornar precio completo (no debería pasar)
-        if (diasConsumidos <= 0)
-        {
-            return servicio.Precio;
-        }
-
-        // Obtener días del mes de facturación (considera correctamente 28, 29, 30, 31 días)
-        // DateTime.DaysInMonth maneja automáticamente años bisiestos (febrero con 29 días)
-        var diasDelMes = DateTime.DaysInMonth(mesFacturacion.Year, mesFacturacion.Month);
-        
-        // Calcular costo por día (precio del servicio dividido entre los días del mes de facturación)
-        var costoPorDia = servicio.Precio / diasDelMes;
-        
-        // Calcular monto proporcional
-        var montoProporcional = diasConsumidos * costoPorDia;
-        
-        // Asegurar que el monto proporcional no exceda el precio completo (por seguridad)
-        if (montoProporcional > servicio.Precio)
-        {
-            montoProporcional = servicio.Precio;
-        }
-        
-        // Redondear a 2 decimales
-        return Math.Round(montoProporcional, 2);
+        // Si es la primera factura (usuario nuevo), usar la misma lógica unificada
+        return CalcularMontoProporcionalConFechaInicio(cliente, servicio, mesFacturacion, cliente.FechaCreacion);
     }
 
     public Factura Crear(Factura factura)
@@ -646,26 +606,27 @@ public class FacturaService : IFacturaService
         }
         
         // - Si inició después del día 5, calcular proporcional
-        // El proporcional se calcula desde la fecha de inicio hasta el día 5 del mes siguiente
-        var siguienteMes = mesFacturacion.AddMonths(1);
-        var fechaVencimiento = new DateTime(siguienteMes.Year, siguienteMes.Month, 5);
+        // El ciclo de facturación es del día 5 al día 5 (del 5 de un mes al 5 del siguiente mes = 30 días)
+        // Los días facturados se cuentan solo dentro del mes de facturación (desde fecha inicio hasta fin de mes)
+        var ultimoDiaDelMes = new DateTime(mesFacturacion.Year, mesFacturacion.Month, DateTime.DaysInMonth(mesFacturacion.Year, mesFacturacion.Month));
         
-        // Calcular días consumidos: desde fecha de inicio hasta día 5 del siguiente mes (incluyendo ambos días)
-        var diasConsumidos = (fechaVencimiento.Date - fechaInicio.Date).Days + 1;
+        // Calcular días facturados: desde fecha de inicio hasta el último día del mes de facturación (incluyendo ambos días)
+        var diasFacturados = (ultimoDiaDelMes.Date - fechaInicio.Date).Days + 1;
         
-        if (diasConsumidos <= 0)
+        if (diasFacturados <= 0)
         {
             return servicio.Precio;
         }
 
-        // Obtener días del mes de facturación (considera correctamente 28, 29, 30, 31 días)
-        var diasDelMes = DateTime.DaysInMonth(mesFacturacion.Year, mesFacturacion.Month);
+        // El ciclo completo es del día 5 al día 5 = 30 días (del 5 de un mes al 5 del siguiente mes)
+        // Ejemplo: del 5 de noviembre al 5 de diciembre = 30 días
+        const int diasDelCiclo = 30;
         
-        // Calcular costo por día (precio del servicio dividido entre los días del mes de facturación)
-        var costoPorDia = servicio.Precio / diasDelMes;
+        // Calcular costo por día (precio del servicio dividido entre los 30 días del ciclo)
+        var costoPorDia = servicio.Precio / diasDelCiclo;
         
-        // Calcular monto proporcional
-        var montoProporcional = diasConsumidos * costoPorDia;
+        // Calcular monto proporcional: días facturados × costo por día
+        var montoProporcional = diasFacturados * costoPorDia;
         
         // Asegurar que el monto proporcional no exceda el precio completo (por seguridad)
         if (montoProporcional > servicio.Precio)

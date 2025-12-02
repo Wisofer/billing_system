@@ -41,6 +41,9 @@ public class FacturasController : Controller
         if (tamanoPagina < 5) tamanoPagina = 5;
         if (tamanoPagina > 50) tamanoPagina = 50;
 
+        // Calcular mes anterior por defecto (primero consume, luego paga)
+        var mesAnterior = DateTime.Now.AddMonths(-1);
+
         // Obtener facturas con filtros
         var query = _facturaService.ObtenerTodas().AsQueryable();
 
@@ -61,9 +64,10 @@ public class FacturasController : Controller
         }
         else
         {
-            // Aplicar filtro: usar el mes especificado o el mes actual por defecto
-            var mesFiltro = mes ?? DateTime.Now.Month;
-            var añoFiltro = año ?? DateTime.Now.Year;
+            // Aplicar filtro: usar el mes especificado o el mes anterior por defecto
+            // Lógica: primero consume, luego paga (si estamos en diciembre, facturamos noviembre)
+            var mesFiltro = mes ?? mesAnterior.Month;
+            var añoFiltro = año ?? mesAnterior.Year;
             var fechaFiltro = new DateTime(añoFiltro, mesFiltro, 1);
             query = query.Where(f => f.MesFacturacion.Year == fechaFiltro.Year && f.MesFacturacion.Month == fechaFiltro.Month);
         }
@@ -95,9 +99,9 @@ public class FacturasController : Controller
         var montoTotal = _facturaService.ObtenerMontoTotal();
 
         ViewBag.Estado = estado ?? "Todos";
-        // Si no se especifica un mes, usar el mes actual
-        ViewBag.Mes = mes ?? DateTime.Now.Month;
-        ViewBag.Año = año ?? DateTime.Now.Year;
+        // Usar mes anterior por defecto (primero consume, luego paga)
+        ViewBag.Mes = mes ?? mesAnterior.Month;
+        ViewBag.Año = año ?? mesAnterior.Year;
         ViewBag.BusquedaCliente = busquedaCliente;
         ViewBag.Categoria = categoria ?? "Todas";
         ViewBag.Pagina = pagina;
@@ -460,16 +464,20 @@ public class FacturasController : Controller
             var pdfBytes = _pdfService.GenerarPdfFactura(factura);
             var nombreArchivo = $"Factura-{factura.Numero}-{DateTime.Now:yyyyMMdd}.pdf";
             
+            // Sanitizar el nombre del archivo para evitar caracteres especiales en headers HTTP
+            var nombreArchivoSanitizado = SanitizarNombreArchivo(nombreArchivo);
+            
             // Configurar headers para compatibilidad con móviles
             // Forzar descarga (attachment) en lugar de abrir en el navegador (inline)
-            Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{nombreArchivo}\"; filename*=UTF-8''{Uri.EscapeDataString(nombreArchivo)}");
+            // Usar nombre sanitizado en filename básico y nombre original en filename* con encoding
+            Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{nombreArchivoSanitizado}\"; filename*=UTF-8''{Uri.EscapeDataString(nombreArchivo)}");
             Response.Headers.Append("Content-Type", "application/pdf");
             Response.Headers.Append("Content-Length", pdfBytes.Length.ToString());
             Response.Headers.Append("Cache-Control", "no-cache, no-store, must-revalidate");
             Response.Headers.Append("Pragma", "no-cache");
             Response.Headers.Append("Expires", "0");
             
-            return File(pdfBytes, "application/pdf", nombreArchivo);
+            return File(pdfBytes, "application/pdf", nombreArchivoSanitizado);
         }
         catch (Exception ex)
         {
@@ -503,10 +511,14 @@ public class FacturasController : Controller
             var pdfBytes = _pdfService.GenerarPdfFactura(factura);
             var nombreArchivo = $"Factura-{factura.Numero}-{DateTime.Now:yyyyMMdd}.pdf";
             
-            // Configurar headers para descarga directa
-            Response.Headers.Append("Content-Disposition", $"inline; filename=\"{nombreArchivo}\"");
+            // Sanitizar el nombre del archivo para evitar caracteres especiales en headers HTTP
+            var nombreArchivoSanitizado = SanitizarNombreArchivo(nombreArchivo);
             
-            return File(pdfBytes, "application/pdf", nombreArchivo);
+            // Configurar headers para descarga directa
+            // Usar nombre sanitizado en filename básico y nombre original en filename* con encoding
+            Response.Headers.Append("Content-Disposition", $"inline; filename=\"{nombreArchivoSanitizado}\"; filename*=UTF-8''{Uri.EscapeDataString(nombreArchivo)}");
+            
+            return File(pdfBytes, "application/pdf", nombreArchivoSanitizado);
         }
         catch (Exception ex)
         {
@@ -534,8 +546,10 @@ public class FacturasController : Controller
             
             if (!mesVacio)
             {
-                var mesFiltro = mes ?? DateTime.Now.Month;
-                var añoFiltro = año ?? DateTime.Now.Year;
+                // Usar mes anterior por defecto (primero consume, luego paga)
+                var mesAnterior = DateTime.Now.AddMonths(-1);
+                var mesFiltro = mes ?? mesAnterior.Month;
+                var añoFiltro = año ?? mesAnterior.Year;
                 var fechaFiltro = new DateTime(añoFiltro, mesFiltro, 1);
                 query = query.Where(f => f.MesFacturacion.Year == fechaFiltro.Year && f.MesFacturacion.Month == fechaFiltro.Month);
             }
@@ -622,5 +636,42 @@ public class FacturasController : Controller
         var enlaceWhatsApp = _whatsAppService.GenerarEnlaceWhatsApp(numeroTelefono, mensaje);
         
         return Redirect(enlaceWhatsApp);
+    }
+
+    /// <summary>
+    /// Sanitiza el nombre del archivo removiendo o reemplazando caracteres especiales
+    /// para evitar errores en headers HTTP (RFC 5987)
+    /// </summary>
+    private string SanitizarNombreArchivo(string nombreArchivo)
+    {
+        if (string.IsNullOrEmpty(nombreArchivo))
+            return "Factura.pdf";
+
+        // Reemplazar caracteres especiales comunes en español por sus equivalentes ASCII
+        var texto = nombreArchivo
+            .Replace("Á", "A").Replace("á", "a")
+            .Replace("É", "E").Replace("é", "e")
+            .Replace("Í", "I").Replace("í", "i")
+            .Replace("Ó", "O").Replace("ó", "o")
+            .Replace("Ú", "U").Replace("ú", "u")
+            .Replace("Ñ", "N").Replace("ñ", "n")
+            .Replace("Ü", "U").Replace("ü", "u")
+            .Replace("Ç", "C").Replace("ç", "c");
+
+        // Remover cualquier otro carácter no ASCII o de control
+        var caracteresValidos = texto.Where(c => 
+            char.IsLetterOrDigit(c) || 
+            c == '-' || 
+            c == '_' || 
+            c == '.' || 
+            c == ' ').ToArray();
+
+        var nombreSanitizado = new string(caracteresValidos).Trim();
+        
+        // Si después de sanitizar está vacío, usar nombre por defecto
+        if (string.IsNullOrWhiteSpace(nombreSanitizado))
+            nombreSanitizado = "Factura.pdf";
+
+        return nombreSanitizado;
     }
 }
