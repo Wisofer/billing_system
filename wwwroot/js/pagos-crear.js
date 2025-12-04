@@ -617,26 +617,50 @@ const PagoManager = {
         
         // Determinar contra qué monto se calcula el vuelto:
         // - En Mixto con C$, el vuelto debe tomar como base SOLO el monto físico.
-        // - En los demás casos (Físico puro o moneda en $), usa el total de la deuda.
-        let baseParaVuelto = montoDebeTotal;
-        if (tipoPago === 'Mixto' && moneda === 'C$' && montoCordobasFisico > 0) {
-            baseParaVuelto = montoCordobasFisico;
+        // - En Mixto con $, el vuelto debe tomar como base SOLO el monto físico (convertido a C$).
+        // - En Físico puro con C$, usa el monto físico en córdobas.
+        // - En Físico puro con $, usa el monto físico en dólares convertido a córdobas.
+        let baseParaVuelto = montoDebeTotal; // Por defecto, el total en córdobas
+        if (tipoPago === 'Mixto') {
+            if (moneda === 'C$' && montoCordobasFisico > 0) {
+                baseParaVuelto = montoCordobasFisico;
+            } else if (moneda === '$' && montoDolaresFisico > 0) {
+                // Convertir monto físico en dólares a córdobas
+                baseParaVuelto = montoDolaresFisico * tipoCambioValor;
+            }
+        } else if (tipoPago === 'Fisico') {
+            // Para pago físico puro, usar el monto físico ingresado
+            if (moneda === 'C$' && montoCordobasFisico > 0) {
+                baseParaVuelto = montoCordobasFisico;
+            } else if (moneda === '$' && montoDolaresFisico > 0) {
+                // Convertir monto físico en dólares a córdobas
+                baseParaVuelto = montoDolaresFisico * tipoCambioValor;
+            }
         }
         
         // Validar que el monto recibido sea mayor o igual al monto a pagar
         if (montoRecibidoFisico > 0) {
+            // Convertir monto recibido a córdobas para comparar
             let montoRecibidoEnCordobas = montoRecibidoFisico;
             if (moneda === '$') {
                 // Recibido se interpreta en dólares, convertir a C$
                 montoRecibidoEnCordobas = montoRecibidoFisico * tipoCambioValor;
             }
             
-            // Validación: el monto recibido debe ser >= al monto a pagar
-            if (montoRecibidoEnCordobas < baseParaVuelto) {
+            // Validación: el monto recibido debe ser >= al monto a pagar (ambos en córdobas)
+            // Usar tolerancia de 0.01 para manejar errores de precisión de punto flotante
+            const diferencia = montoRecibidoEnCordobas - baseParaVuelto;
+            if (diferencia < -0.01) {
                 // Mostrar error
                 if (errorRecibidoFisico) {
                     const monedaSimbolo = moneda === '$' ? '$' : 'C$';
-                    const montoFormateado = baseParaVuelto.toFixed(2).replace('.', ',');
+                    // Convertir baseParaVuelto a la moneda seleccionada para el mensaje
+                    let montoFormateado;
+                    if (moneda === '$') {
+                        montoFormateado = (baseParaVuelto / tipoCambioValor).toFixed(2).replace('.', ',');
+                    } else {
+                        montoFormateado = baseParaVuelto.toFixed(2).replace('.', ',');
+                    }
                     errorRecibidoFisico.textContent = `El monto recibido debe ser mayor o igual a ${monedaSimbolo} ${montoFormateado}`;
                     errorRecibidoFisico.classList.remove('hidden');
                 }

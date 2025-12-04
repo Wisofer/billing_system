@@ -405,24 +405,42 @@ setTimeout(function() {
                     const montoDebeTotal = parseNumero(monto);
                     const tipoCambioValor = PagoSystem.tipoCambio;
                     
-                    // Calcular el monto base para comparar (en mixto puede ser solo el monto físico)
-                    let baseParaVuelto = montoDebeTotal;
-                    if (tipoPago === 'Mixto' && moneda === 'C$') {
-                        const montoCordobasFisico = parseNumero(document.getElementById('MontoCordobasFisico')?.value);
-                        if (montoCordobasFisico > 0) {
-                            baseParaVuelto = montoCordobasFisico;
+                    // Calcular el monto base para comparar (en mixto y físico puede ser solo el monto físico)
+                    let baseParaVuelto = montoDebeTotal; // Por defecto, el total en córdobas
+                    if (tipoPago === 'Mixto' || tipoPago === 'Fisico') {
+                        if (moneda === 'C$') {
+                            const montoCordobasFisico = parseNumero(document.getElementById('MontoCordobasFisico')?.value);
+                            if (montoCordobasFisico > 0) {
+                                baseParaVuelto = montoCordobasFisico;
+                            }
+                        } else if (moneda === '$') {
+                            const montoDolaresFisico = parseNumero(document.getElementById('MontoDolaresFisico')?.value);
+                            if (montoDolaresFisico > 0) {
+                                // Convertir a córdobas para la comparación
+                                baseParaVuelto = montoDolaresFisico * tipoCambioValor;
+                            }
                         }
                     }
                     
+                    // Convertir monto recibido a córdobas para comparar
                     let montoRecibidoEnCordobas = montoRecibidoFisico;
                     if (moneda === '$') {
                         montoRecibidoEnCordobas = montoRecibidoFisico * tipoCambioValor;
                     }
                     
-                    if (montoRecibidoEnCordobas < baseParaVuelto) {
+                    // Comparar ambos en córdobas
+                    // Usar tolerancia de 0.01 para manejar errores de precisión de punto flotante
+                    const diferencia = montoRecibidoEnCordobas - baseParaVuelto;
+                    if (diferencia < -0.01) {
                         e.preventDefault();
                         const monedaSimbolo = moneda === '$' ? '$' : 'C$';
-                        const montoFormateado = baseParaVuelto.toFixed(2).replace('.', ',');
+                        // Convertir baseParaVuelto a la moneda seleccionada para el mensaje
+                        let montoFormateado;
+                        if (moneda === '$') {
+                            montoFormateado = (baseParaVuelto / tipoCambioValor).toFixed(2).replace('.', ',');
+                        } else {
+                            montoFormateado = baseParaVuelto.toFixed(2).replace('.', ',');
+                        }
                         alert(`El monto recibido debe ser mayor o igual a ${monedaSimbolo} ${montoFormateado}`);
                         montoRecibidoFisicoInput.focus();
                         // Forzar recálculo para mostrar el error visual
