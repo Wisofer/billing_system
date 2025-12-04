@@ -561,9 +561,19 @@
 
         const result = await response.json();
         if (result.success) {
+            try {
+                const audioSuccess = new Audio('/sounds/success.mp3');
+                audioSuccess.volume = 0.6;
+                audioSuccess.play().catch(() => {});
+            } catch (e) { console.error(e); }
             alert(result.message);
             location.reload();
         } else {
+            try {
+                const audioError = new Audio('/sounds/error.mp3');
+                audioError.volume = 0.6;
+                audioError.play().catch(() => {});
+            } catch (e) { console.error(e); }
             alert(result.message);
         }
     }
@@ -588,9 +598,19 @@
 
         const result = await response.json();
         if (result.success) {
+            try {
+                const audioSuccess = new Audio('/sounds/success.mp3');
+                audioSuccess.volume = 0.6;
+                audioSuccess.play().catch(() => {});
+            } catch (e) { console.error(e); }
             alert(result.message);
             location.reload();
         } else {
+            try {
+                const audioError = new Audio('/sounds/error.mp3');
+                audioError.volume = 0.6;
+                audioError.play().catch(() => {});
+            } catch (e) { console.error(e); }
             alert(result.message);
         }
     }
@@ -610,9 +630,19 @@
 
         const result = await response.json();
         if (result.success) {
+            try {
+                const audioSuccess = new Audio('/sounds/success.mp3');
+                audioSuccess.volume = 0.6;
+                audioSuccess.play().catch(() => {});
+            } catch (e) { console.error(e); }
             alert(result.message);
             location.reload();
         } else {
+            try {
+                const audioError = new Audio('/sounds/error.mp3');
+                audioError.volume = 0.6;
+                audioError.play().catch(() => {});
+            } catch (e) { console.error(e); }
             alert(result.message);
         }
     }

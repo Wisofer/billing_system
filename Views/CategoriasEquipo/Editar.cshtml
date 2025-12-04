@@ -18,9 +18,19 @@
         </a>
     </div>
 
+    @if (TempData["Success"] != null)
+    {
+        <div id="successMessage" class="mb-4 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 px-4 py-3 rounded-lg flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+
     @if (TempData["Error"] != null)
     {
-        <div class="mb-4 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 rounded-lg flex items-center space-x-2">
+        <div id="errorMessage" class="mb-4 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 rounded-lg flex items-center space-x-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -77,4 +87,34 @@
         </form>
     </div>
 </div>
+
+<script>
+// Reproducir sonidos de éxito / error si hay notificaciones
+document.addEventListener('DOMContentLoaded', function () {
+    try {
+        const successMsg = document.getElementById('successMessage');
+        const errorMsg = document.getElementById('errorMessage');
+
+        if (successMsg) {
+            const audioSuccess = new Audio('/sounds/success.mp3');
+            audioSuccess.volume = 0.6;
+            audioSuccess.play().catch(function () { /* ignorar errores de autoplay */ });
+        } else if (errorMsg) {
+            const audioError = new Audio('/sounds/error.mp3');
+            audioError.volume = 0.6;
+            audioError.play().catch(function () { /* ignorar errores de autoplay */ });
+        }
+    } catch (e) {
+        console.error('Error reproduciendo sonido de notificación:', e);
+    }
+});
+
+// Ocultar mensajes después de 5 segundos
+setTimeout(function() {
+    const successMsg = document.getElementById('successMessage');
+    const errorMsg = document.getElementById('errorMessage');
+    if (successMsg) successMsg.style.display = 'none';
+    if (errorMsg) errorMsg.style.display = 'none';
+}, 5000);
+</script>
 

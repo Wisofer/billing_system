@@ -19,6 +19,25 @@
 }
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    try {
+        const successMsg = document.getElementById('successMessage');
+        const errorMsg = document.getElementById('errorMessage');
+
+        if (successMsg) {
+            const audioSuccess = new Audio('/sounds/success.mp3');
+            audioSuccess.volume = 0.6;
+            audioSuccess.play().catch(function () { /* ignorar errores de autoplay */ });
+        } else if (errorMsg) {
+            const audioError = new Audio('/sounds/error.mp3');
+            audioError.volume = 0.6;
+            audioError.play().catch(function () { /* ignorar errores de autoplay */ });
+        }
+    } catch (e) {
+        console.error('Error reproduciendo sonido de notificación:', e);
+    }
+});
+
 setTimeout(function() {
     const successMsg = document.getElementById('successMessage');
     const errorMsg = document.getElementById('errorMessage');
