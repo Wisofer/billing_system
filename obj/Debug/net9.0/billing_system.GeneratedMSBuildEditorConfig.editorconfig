@@ -32,6 +32,18 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXV0aC9Mb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/william/Documentos/billing_system/Views/CategoriasEquipo/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2F0ZWdvcmlhc0VxdWlwby9DcmVhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/CategoriasEquipo/Editar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2F0ZWdvcmlhc0VxdWlwby9FZGl0YXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/CategoriasEquipo/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2F0ZWdvcmlhc0VxdWlwby9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/william/Documentos/billing_system/Views/Clientes/Editar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ2xpZW50ZXMvRWRpdGFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -70,6 +82,42 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/home/william/Documentos/billing_system/Views/Configuraciones/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29uZmlndXJhY2lvbmVzL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Equipos/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXF1aXBvcy9DcmVhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Equipos/Editar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXF1aXBvcy9FZGl0YXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Equipos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXF1aXBvcy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Equipos/Ver.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXF1aXBvcy9WZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Equipos/_Estadisticas.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXF1aXBvcy9fRXN0YWRpc3RpY2FzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Equipos/_Header.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXF1aXBvcy9fSGVhZGVyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Equipos/_Notificaciones.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXF1aXBvcy9fTm90aWZpY2FjaW9uZXMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Equipos/_Paginacion.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXF1aXBvcy9fUGFnaW5hY2lvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Equipos/_TablaEquipos.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXF1aXBvcy9fVGFibGFFcXVpcG9zLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/home/william/Documentos/billing_system/Views/Facturas/Crear.cshtml]
@@ -162,4 +210,16 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/home/william/Documentos/billing_system/Views/Shared/_LoginPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Mb2dpblBhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Ubicaciones/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVWJpY2FjaW9uZXMvQ3JlYXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Ubicaciones/Editar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVWJpY2FjaW9uZXMvRWRpdGFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Ubicaciones/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVWJpY2FjaW9uZXMvSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 

@@ -20,6 +20,17 @@ public class ApplicationDbContext : DbContext
     public DbSet<ClienteServicio> ClienteServicios { get; set; }
     public DbSet<PlantillaMensajeWhatsApp> PlantillasMensajeWhatsApp { get; set; }
     public DbSet<Configuracion> Configuraciones { get; set; }
+    
+    // Inventario
+    public DbSet<Equipo> Equipos { get; set; }
+    public DbSet<CategoriaEquipo> CategoriasEquipo { get; set; }
+    public DbSet<Ubicacion> Ubicaciones { get; set; }
+    public DbSet<Proveedor> Proveedores { get; set; }
+    public DbSet<MovimientoInventario> MovimientosInventario { get; set; }
+    public DbSet<EquipoMovimiento> EquipoMovimientos { get; set; }
+    public DbSet<AsignacionEquipo> AsignacionesEquipo { get; set; }
+    public DbSet<MantenimientoReparacion> MantenimientosReparaciones { get; set; }
+    public DbSet<HistorialEstadoEquipo> HistorialEstadosEquipo { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -201,6 +212,171 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Descripcion).HasMaxLength(500);
             entity.Property(e => e.UsuarioActualizacion).HasMaxLength(200);
             entity.HasIndex(e => e.Clave).IsUnique(); // Clave única para evitar duplicados
+        });
+
+        // Configuración de Equipo
+        modelBuilder.Entity<Equipo>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Codigo).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.Property(e => e.NumeroSerie).HasMaxLength(100);
+            entity.Property(e => e.Marca).HasMaxLength(100);
+            entity.Property(e => e.Modelo).HasMaxLength(100);
+            entity.Property(e => e.Estado).IsRequired().HasMaxLength(50).HasDefaultValue("Disponible");
+            entity.Property(e => e.Stock).HasDefaultValue(0);
+            entity.Property(e => e.StockMinimo).HasDefaultValue(0);
+            entity.Property(e => e.PrecioCompra).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+            entity.HasIndex(e => e.Codigo).IsUnique();
+            entity.HasIndex(e => e.NumeroSerie).IsUnique().HasFilter("[NumeroSerie] IS NOT NULL AND [NumeroSerie] != ''");
+            
+            entity.HasOne(e => e.CategoriaEquipo)
+                .WithMany(c => c.Equipos)
+                .HasForeignKey(e => e.CategoriaEquipoId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.Ubicacion)
+                .WithMany(u => u.Equipos)
+                .HasForeignKey(e => e.UbicacionId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.Proveedor)
+                .WithMany(p => p.Equipos)
+                .HasForeignKey(e => e.ProveedorId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configuración de CategoriaEquipo
+        modelBuilder.Entity<CategoriaEquipo>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Descripcion).HasMaxLength(500);
+            entity.HasIndex(e => e.Nombre).IsUnique();
+        });
+
+        // Configuración de Ubicacion
+        modelBuilder.Entity<Ubicacion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Direccion).HasMaxLength(500);
+            entity.Property(e => e.Tipo).IsRequired().HasMaxLength(50).HasDefaultValue("Almacen");
+            entity.HasIndex(e => e.Nombre).IsUnique();
+        });
+
+        // Configuración de Proveedor
+        modelBuilder.Entity<Proveedor>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Contacto).HasMaxLength(200);
+            entity.Property(e => e.Telefono).HasMaxLength(20);
+            entity.Property(e => e.Email).HasMaxLength(200);
+            entity.Property(e => e.Direccion).HasMaxLength(500);
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+        });
+
+        // Configuración de MovimientoInventario
+        modelBuilder.Entity<MovimientoInventario>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Tipo).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.Subtipo).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+            
+            entity.HasOne(e => e.Usuario)
+                .WithMany()
+                .HasForeignKey(e => e.UsuarioId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configuración de EquipoMovimiento
+        modelBuilder.Entity<EquipoMovimiento>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Cantidad).IsRequired().HasDefaultValue(1);
+            entity.Property(e => e.PrecioUnitario).HasColumnType("decimal(18,2)");
+            
+            entity.HasOne(e => e.MovimientoInventario)
+                .WithMany(m => m.EquipoMovimientos)
+                .HasForeignKey(e => e.MovimientoInventarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.Equipo)
+                .WithMany()
+                .HasForeignKey(e => e.EquipoId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.UbicacionOrigen)
+                .WithMany()
+                .HasForeignKey(e => e.UbicacionOrigenId)
+                .OnDelete(DeleteBehavior.SetNull);
+            
+            entity.HasOne(e => e.UbicacionDestino)
+                .WithMany()
+                .HasForeignKey(e => e.UbicacionDestinoId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configuración de AsignacionEquipo
+        modelBuilder.Entity<AsignacionEquipo>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Cantidad).IsRequired().HasDefaultValue(1);
+            entity.Property(e => e.EmpleadoNombre).HasMaxLength(200);
+            entity.Property(e => e.Estado).IsRequired().HasMaxLength(50).HasDefaultValue("Activa");
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+            
+            entity.HasOne(e => e.Equipo)
+                .WithMany(eq => eq.AsignacionesEquipo)
+                .HasForeignKey(e => e.EquipoId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.Cliente)
+                .WithMany()
+                .HasForeignKey(e => e.ClienteId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configuración de MantenimientoReparacion
+        modelBuilder.Entity<MantenimientoReparacion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Tipo).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.ProveedorTecnico).HasMaxLength(200);
+            entity.Property(e => e.Costo).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.ProblemaReportado).HasMaxLength(1000);
+            entity.Property(e => e.SolucionAplicada).HasMaxLength(1000);
+            entity.Property(e => e.Estado).IsRequired().HasMaxLength(50).HasDefaultValue("Programado");
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+            
+            entity.HasOne(e => e.Equipo)
+                .WithMany(eq => eq.MantenimientosReparaciones)
+                .HasForeignKey(e => e.EquipoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configuración de HistorialEstadoEquipo
+        modelBuilder.Entity<HistorialEstadoEquipo>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.EstadoAnterior).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.EstadoNuevo).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Motivo).HasMaxLength(500);
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+            
+            entity.HasOne(e => e.Equipo)
+                .WithMany(eq => eq.HistorialEstados)
+                .HasForeignKey(e => e.EquipoId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.Usuario)
+                .WithMany()
+                .HasForeignKey(e => e.UsuarioId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

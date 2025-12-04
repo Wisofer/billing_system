@@ -41,6 +41,46 @@ public static class SD
     public const string CategoriaInternet = "Internet";
     public const string CategoriaStreaming = "Streaming";
 
+    // Estados de Equipo (Inventario)
+    public const string EstadoEquipoDisponible = "Disponible";
+    public const string EstadoEquipoEnUso = "En uso";
+    public const string EstadoEquipoDanado = "Dañado";
+    public const string EstadoEquipoEnReparacion = "En reparación";
+    public const string EstadoEquipoRetirado = "Retirado";
+
+    // Tipos de Movimiento de Inventario
+    public const string TipoMovimientoEntrada = "Entrada";
+    public const string TipoMovimientoSalida = "Salida";
+
+    // Subtipos de Movimiento de Inventario
+    public const string SubtipoMovimientoCompra = "Compra";
+    public const string SubtipoMovimientoVenta = "Venta";
+    public const string SubtipoMovimientoAsignacion = "Asignación";
+    public const string SubtipoMovimientoDevolucion = "Devolución";
+    public const string SubtipoMovimientoAjuste = "Ajuste";
+    public const string SubtipoMovimientoDano = "Daño";
+    public const string SubtipoMovimientoTransferencia = "Transferencia";
+
+    // Estados de Asignación de Equipo
+    public const string EstadoAsignacionActiva = "Activa";
+    public const string EstadoAsignacionDevuelta = "Devuelta";
+    public const string EstadoAsignacionPerdida = "Perdida";
+
+    // Tipos de Mantenimiento
+    public const string TipoMantenimientoPreventivo = "Preventivo";
+    public const string TipoMantenimientoCorrectivo = "Correctivo";
+
+    // Estados de Mantenimiento
+    public const string EstadoMantenimientoProgramado = "Programado";
+    public const string EstadoMantenimientoEnProceso = "En proceso";
+    public const string EstadoMantenimientoCompletado = "Completado";
+    public const string EstadoMantenimientoCancelado = "Cancelado";
+
+    // Tipos de Ubicación
+    public const string TipoUbicacionAlmacen = "Almacen";
+    public const string TipoUbicacionCampo = "Campo";
+    public const string TipoUbicacionReparacion = "Reparacion";
+
     // Servicios Principales
     public static class ServiciosPrincipales
     {

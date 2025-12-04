@@ -679,6 +679,170 @@
           "Value": "js/pagos-crear.js.gz"
         }
       ]
+    },
+    {
+      "Route": "sounds/error.h6ilyldrfd.mp3",
+      "AssetFile": "sounds/error.mp3",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "40748"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "audio/mpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"SbUNXHnSoOVUPQD1pX1S7u0c4xE9jsqkHD/AjrTtqq4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 04 Dec 2025 09:58:17 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "h6ilyldrfd"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-SbUNXHnSoOVUPQD1pX1S7u0c4xE9jsqkHD/AjrTtqq4="
+        },
+        {
+          "Name": "label",
+          "Value": "sounds/error.mp3"
+        }
+      ]
+    },
+    {
+      "Route": "sounds/error.mp3",
+      "AssetFile": "sounds/error.mp3",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "40748"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "audio/mpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"SbUNXHnSoOVUPQD1pX1S7u0c4xE9jsqkHD/AjrTtqq4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 04 Dec 2025 09:58:17 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-SbUNXHnSoOVUPQD1pX1S7u0c4xE9jsqkHD/AjrTtqq4="
+        }
+      ]
+    },
+    {
+      "Route": "sounds/success.i4w9s5iqsw.mp3",
+      "AssetFile": "sounds/success.mp3",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "137925"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "audio/mpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"4npXoCoN6hog5ErjSeSxWTE/OWIrLzZhtvfsdRiOOD0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 04 Dec 2025 09:56:43 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "i4w9s5iqsw"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-4npXoCoN6hog5ErjSeSxWTE/OWIrLzZhtvfsdRiOOD0="
+        },
+        {
+          "Name": "label",
+          "Value": "sounds/success.mp3"
+        }
+      ]
+    },
+    {
+      "Route": "sounds/success.mp3",
+      "AssetFile": "sounds/success.mp3",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "137925"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "audio/mpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"4npXoCoN6hog5ErjSeSxWTE/OWIrLzZhtvfsdRiOOD0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 04 Dec 2025 09:56:43 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-4npXoCoN6hog5ErjSeSxWTE/OWIrLzZhtvfsdRiOOD0="
+        }
+      ]
     }
   ]
 }

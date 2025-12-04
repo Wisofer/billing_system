@@ -1,0 +1,183 @@
+@model billing_system.Models.Entities.Equipo
+@{
+    ViewData["Title"] = "Editar Equipo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var categorias = ViewBag.Categorias as List<billing_system.Models.Entities.CategoriaEquipo> ?? new List<billing_system.Models.Entities.CategoriaEquipo>();
+    var ubicaciones = ViewBag.Ubicaciones as List<billing_system.Models.Entities.Ubicacion> ?? new List<billing_system.Models.Entities.Ubicacion>();
+    var proveedores = ViewBag.Proveedores as List<billing_system.Models.Entities.Proveedor> ?? new List<billing_system.Models.Entities.Proveedor>();
+    var estados = ViewBag.Estados as string[] ?? new string[0];
+}
+
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-1">Editar Equipo</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Modifica la información del equipo</p>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="mb-4 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 rounded-lg flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>@TempData["Error"]</span>
+        </div>
+    }
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="mb-4 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 px-4 py-3 rounded-lg">
+            <div class="flex items-center space-x-2 mb-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="font-semibold">Por favor corrige los siguientes errores:</span>
+            </div>
+            <ul class="list-disc list-inside space-y-1 text-sm">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+        <form method="post" action="/equipos/editar/@Model.Id" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="Codigo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Código *</label>
+                    <input type="text" asp-for="Codigo" name="Codigo" value="@Model.Codigo" required 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    <span asp-validation-for="Codigo" class="text-red-500 text-xs"></span>
+                </div>
+
+                <div>
+                    <label for="Nombre" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre del Equipo *</label>
+                    <input type="text" asp-for="Nombre" name="Nombre" value="@Model.Nombre" required 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    <span asp-validation-for="Nombre" class="text-red-500 text-xs"></span>
+                </div>
+
+                <div>
+                    <label for="CategoriaEquipoId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Categoría *</label>
+                    <select asp-for="CategoriaEquipoId" name="CategoriaEquipoId" required 
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                        <option value="">Seleccionar categoría...</option>
+                        @foreach (var cat in categorias)
+                        {
+                            <option value="@cat.Id" selected="@(Model.CategoriaEquipoId == cat.Id)">@cat.Nombre</option>
+                        }
+                    </select>
+                    <span asp-validation-for="CategoriaEquipoId" class="text-red-500 text-xs"></span>
+                </div>
+
+                <div>
+                    <label for="UbicacionId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ubicación *</label>
+                    <select asp-for="UbicacionId" name="UbicacionId" required 
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                        <option value="">Seleccionar ubicación...</option>
+                        @foreach (var ubi in ubicaciones)
+                        {
+                            <option value="@ubi.Id" selected="@(Model.UbicacionId == ubi.Id)">@ubi.Nombre</option>
+                        }
+                    </select>
+                    <span asp-validation-for="UbicacionId" class="text-red-500 text-xs"></span>
+                </div>
+
+                <div>
+                    <label for="Marca" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Marca</label>
+                    <input type="text" asp-for="Marca" name="Marca" value="@(Model.Marca ?? "")" 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+
+                <div>
+                    <label for="Modelo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Modelo</label>
+                    <input type="text" asp-for="Modelo" name="Modelo" value="@(Model.Modelo ?? "")" 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+
+                <div>
+                    <label for="NumeroSerie" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Número de Serie / MAC</label>
+                    <input type="text" asp-for="NumeroSerie" name="NumeroSerie" value="@(Model.NumeroSerie ?? "")" 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+
+                <div>
+                    <label for="ProveedorId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Proveedor</label>
+                    <select asp-for="ProveedorId" name="ProveedorId" 
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                        <option value="">Sin proveedor</option>
+                        @foreach (var prov in proveedores)
+                        {
+                            <option value="@prov.Id" selected="@(Model.ProveedorId.HasValue && Model.ProveedorId.Value == prov.Id)">@prov.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label for="Stock" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stock *</label>
+                    <input type="number" asp-for="Stock" name="Stock" value="@Model.Stock" min="0" required 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    <span asp-validation-for="Stock" class="text-red-500 text-xs"></span>
+                </div>
+
+                <div>
+                    <label for="StockMinimo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stock Mínimo</label>
+                    <input type="number" asp-for="StockMinimo" name="StockMinimo" value="@Model.StockMinimo" min="0" 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+
+                <div>
+                    <label for="PrecioCompra" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Precio de Compra (C$)</label>
+                    <input type="number" asp-for="PrecioCompra" name="PrecioCompra" value="@(Model.PrecioCompra?.ToString("F2") ?? "")" step="0.01" min="0" 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+
+                <div>
+                    <label for="FechaAdquisicion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha de Adquisición</label>
+                    <input type="date" asp-for="FechaAdquisicion" name="FechaAdquisicion" 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                           value="@(Model.FechaAdquisicion?.ToString("yyyy-MM-dd") ?? "")" />
+                </div>
+
+                <div>
+                    <label for="Estado" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estado *</label>
+                    <select asp-for="Estado" name="Estado" required 
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                        @foreach (var est in estados)
+                        {
+                            <option value="@est" selected="@(Model.Estado == est)">@est</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Estado" class="text-red-500 text-xs"></span>
+                </div>
+            </div>
+
+            <div>
+                <label for="Descripcion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descripción</label>
+                <textarea asp-for="Descripcion" name="Descripcion" rows="3"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">@(Model.Descripcion ?? "")</textarea>
+            </div>
+
+            <div>
+                <label for="Observaciones" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Observaciones</label>
+                <textarea asp-for="Observaciones" name="Observaciones" rows="2"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">@(Model.Observaciones ?? "")</textarea>
+            </div>
+
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <a href="/equipos" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 dark:bg-gray-700 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Cancelar
+                </a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                    Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+

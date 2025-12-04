@@ -13,6 +13,14 @@
       "PackagePath": "staticwebassets/js/pagos-crear.js"
     },
     {
+      "Id": "/home/william/Documentos/billing_system/wwwroot/sounds/error.mp3",
+      "PackagePath": "staticwebassets/sounds/error.mp3"
+    },
+    {
+      "Id": "/home/william/Documentos/billing_system/wwwroot/sounds/success.mp3",
+      "PackagePath": "staticwebassets/sounds/success.mp3"
+    },
+    {
       "Id": "obj/Debug/net9.0/staticwebassets/msbuild.billing_system.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
     },

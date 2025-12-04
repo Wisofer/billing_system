@@ -18,5 +18,6 @@ public class Cliente
     public virtual ICollection<Pago> Pagos { get; set; } = new List<Pago>();
     public virtual Servicio? Servicio { get; set; } // Relación con el último servicio usado (mantener para compatibilidad)
     public virtual ICollection<ClienteServicio> ClienteServicios { get; set; } = new List<ClienteServicio>(); // Relación muchos-a-muchos
+    public virtual ICollection<AsignacionEquipo> AsignacionesEquipo { get; set; } = new List<AsignacionEquipo>(); // Equipos asignados al cliente
 }
 

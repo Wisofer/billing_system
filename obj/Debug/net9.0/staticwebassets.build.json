@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "NPSHg4ZaejCksII1h6k6/BUmHdUbPeqhOCKfhhA+mW8=",
+  "Hash": "dSzpp2NxHkS3dDycf7g05+j0Setr/4D+QzIR2ZY9ui8=",
   "Source": "billing_system",
   "BasePath": "_content/billing_system",
   "Mode": "Default",
@@ -120,6 +120,48 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/js/pagos-crear.js"
+    },
+    {
+      "Identity": "/home/william/Documentos/billing_system/wwwroot/sounds/error.mp3",
+      "SourceId": "billing_system",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/william/Documentos/billing_system/wwwroot/",
+      "BasePath": "_content/billing_system",
+      "RelativePath": "sounds/error#[.{fingerprint}]?.mp3",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "h6ilyldrfd",
+      "Integrity": "SbUNXHnSoOVUPQD1pX1S7u0c4xE9jsqkHD/AjrTtqq4=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/sounds/error.mp3"
+    },
+    {
+      "Identity": "/home/william/Documentos/billing_system/wwwroot/sounds/success.mp3",
+      "SourceId": "billing_system",
+      "SourceType": "Discovered",
+      "ContentRoot": "/home/william/Documentos/billing_system/wwwroot/",
+      "BasePath": "_content/billing_system",
+      "RelativePath": "sounds/success#[.{fingerprint}]?.mp3",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "i4w9s5iqsw",
+      "Integrity": "4npXoCoN6hog5ErjSeSxWTE/OWIrLzZhtvfsdRiOOD0=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/sounds/success.mp3"
     }
   ],
   "Endpoints": [
@@ -798,6 +840,170 @@
         {
           "Name": "integrity",
           "Value": "sha256-xg/E/SCx80eicfvcsCPVm4Vvq3qBVkCtGj2vF++tvOI="
+        }
+      ]
+    },
+    {
+      "Route": "sounds/error.h6ilyldrfd.mp3",
+      "AssetFile": "/home/william/Documentos/billing_system/wwwroot/sounds/error.mp3",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "40748"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "audio/mpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"SbUNXHnSoOVUPQD1pX1S7u0c4xE9jsqkHD/AjrTtqq4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 04 Dec 2025 09:58:17 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "h6ilyldrfd"
+        },
+        {
+          "Name": "label",
+          "Value": "sounds/error.mp3"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-SbUNXHnSoOVUPQD1pX1S7u0c4xE9jsqkHD/AjrTtqq4="
+        }
+      ]
+    },
+    {
+      "Route": "sounds/error.mp3",
+      "AssetFile": "/home/william/Documentos/billing_system/wwwroot/sounds/error.mp3",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "40748"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "audio/mpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"SbUNXHnSoOVUPQD1pX1S7u0c4xE9jsqkHD/AjrTtqq4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 04 Dec 2025 09:58:17 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-SbUNXHnSoOVUPQD1pX1S7u0c4xE9jsqkHD/AjrTtqq4="
+        }
+      ]
+    },
+    {
+      "Route": "sounds/success.i4w9s5iqsw.mp3",
+      "AssetFile": "/home/william/Documentos/billing_system/wwwroot/sounds/success.mp3",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "137925"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "audio/mpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"4npXoCoN6hog5ErjSeSxWTE/OWIrLzZhtvfsdRiOOD0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 04 Dec 2025 09:56:43 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "i4w9s5iqsw"
+        },
+        {
+          "Name": "label",
+          "Value": "sounds/success.mp3"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-4npXoCoN6hog5ErjSeSxWTE/OWIrLzZhtvfsdRiOOD0="
+        }
+      ]
+    },
+    {
+      "Route": "sounds/success.mp3",
+      "AssetFile": "/home/william/Documentos/billing_system/wwwroot/sounds/success.mp3",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "137925"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "audio/mpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"4npXoCoN6hog5ErjSeSxWTE/OWIrLzZhtvfsdRiOOD0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 04 Dec 2025 09:56:43 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-4npXoCoN6hog5ErjSeSxWTE/OWIrLzZhtvfsdRiOOD0="
         }
       ]
     }

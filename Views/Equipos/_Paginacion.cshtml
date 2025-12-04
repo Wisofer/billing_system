@@ -1,0 +1,109 @@
+@{
+    var pagina = ViewBag.Pagina as int? ?? 1;
+    var tamanoPagina = ViewBag.TamanoPagina as int? ?? 10;
+    var totalItems = ViewBag.TotalItems as int? ?? 0;
+    var totalPages = Model.TotalPages;
+    var busqueda = ViewBag.Busqueda as string ?? "";
+    var estado = ViewBag.Estado as string ?? "";
+    var categoriaId = ViewBag.CategoriaId as int?;
+    var ubicacionId = ViewBag.UbicacionId as int?;
+    
+    var queryParams = new List<string>();
+    if (!string.IsNullOrEmpty(busqueda)) queryParams.Add($"busqueda={Uri.EscapeDataString(busqueda)}");
+    if (!string.IsNullOrEmpty(estado)) queryParams.Add($"estado={Uri.EscapeDataString(estado)}");
+    if (categoriaId.HasValue) queryParams.Add($"categoriaId={categoriaId.Value}");
+    if (ubicacionId.HasValue) queryParams.Add($"ubicacionId={ubicacionId.Value}");
+    queryParams.Add($"tamanoPagina={tamanoPagina}");
+    var queryString = string.Join("&", queryParams);
+    var baseUrl = "/equipos";
+}
+
+@if (totalItems > 0 && totalPages > 1)
+{
+    <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-100 dark:border-gray-600">
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                Mostrando <span class="font-medium text-gray-900 dark:text-white">@((pagina - 1) * tamanoPagina + 1)</span> a 
+                <span class="font-medium text-gray-900 dark:text-white">@(Math.Min(pagina * tamanoPagina, totalItems))</span> de 
+                <span class="font-medium text-gray-900 dark:text-white">@totalItems</span> equipo(s)
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                @if (pagina > 1)
+                {
+                    <a href="@baseUrl?pagina=@(pagina - 1)@(!string.IsNullOrEmpty(queryString) ? "&" + queryString : "")" 
+                       class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Anterior
+                    </a>
+                }
+                else
+                {
+                    <span class="px-3 py-2 text-sm font-medium text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg cursor-not-allowed">
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Anterior
+                    </span>
+                }
+
+                <div class="flex items-center space-x-1">
+                    @{
+                        int inicio = Math.Max(1, pagina - 2);
+                        int fin = Math.Min(totalPages, pagina + 2);
+                        
+                        if (inicio > 1)
+                        {
+                            <a href="@baseUrl?pagina=1@(!string.IsNullOrEmpty(queryString) ? "&" + queryString : "")" 
+                               class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">1</a>
+                            if (inicio > 2) { <span class="px-2 text-gray-500 dark:text-gray-400">...</span> }
+                        }
+                        
+                        for (int i = inicio; i <= fin; i++)
+                        {
+                            if (i == pagina)
+                            {
+                                <span class="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg">@i</span>
+                            }
+                            else
+                            {
+                                <a href="@baseUrl?pagina=@i@(!string.IsNullOrEmpty(queryString) ? "&" + queryString : "")" 
+                                   class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">@i</a>
+                            }
+                        }
+                        
+                        if (fin < totalPages)
+                        {
+                            if (fin < totalPages - 1) { <span class="px-2 text-gray-500 dark:text-gray-400">...</span> }
+                            <a href="@baseUrl?pagina=@totalPages@(!string.IsNullOrEmpty(queryString) ? "&" + queryString : "")" 
+                               class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">@totalPages</a>
+                        }
+                    }
+                </div>
+
+                @if (pagina < totalPages)
+                {
+                    <a href="@baseUrl?pagina=@(pagina + 1)@(!string.IsNullOrEmpty(queryString) ? "&" + queryString : "")" 
+                       class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Siguiente
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                }
+                else
+                {
+                    <span class="px-3 py-2 text-sm font-medium text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg cursor-not-allowed">
+                        Siguiente
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+}
+

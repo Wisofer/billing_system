@@ -1,0 +1,12 @@
+@model billing_system.Models.ViewModels.PagedResult<billing_system.Models.Entities.Equipo>
+@{
+    ViewData["Title"] = "Inventario de Equipos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@await Html.PartialAsync("_Header")
+@await Html.PartialAsync("_Notificaciones")
+@await Html.PartialAsync("_Estadisticas")
+@await Html.PartialAsync("_TablaEquipos", Model)
+@await Html.PartialAsync("_Paginacion")
+

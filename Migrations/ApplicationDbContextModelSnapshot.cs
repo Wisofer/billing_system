@@ -22,6 +22,97 @@ namespace billing_system.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("billing_system.Models.Entities.AsignacionEquipo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Cantidad")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<int?>("ClienteId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ClienteId1")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EmpleadoNombre")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("EquipoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasDefaultValue("Activa");
+
+                    b.Property<DateTime>("FechaAsignacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("FechaDevolucionEsperada")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("FechaDevolucionReal")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("ClienteId1");
+
+                    b.HasIndex("EquipoId");
+
+                    b.ToTable("AsignacionesEquipo");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.CategoriaEquipo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("CategoriasEquipo");
+                });
+
             modelBuilder.Entity("billing_system.Models.Entities.Cliente", b =>
                 {
                     b.Property<int>("Id")
@@ -156,6 +247,144 @@ namespace billing_system.Migrations
                     b.ToTable("Configuraciones");
                 });
 
+            modelBuilder.Entity("billing_system.Models.Entities.Equipo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("CategoriaEquipoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasDefaultValue("Disponible");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("FechaAdquisicion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Marca")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Modelo")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("NumeroSerie")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<decimal?>("PrecioCompra")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("ProveedorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Stock")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("StockMinimo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("UbicacionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoriaEquipoId");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.HasIndex("NumeroSerie")
+                        .IsUnique()
+                        .HasFilter("[NumeroSerie] IS NOT NULL AND [NumeroSerie] != ''");
+
+                    b.HasIndex("ProveedorId");
+
+                    b.HasIndex("UbicacionId");
+
+                    b.ToTable("Equipos");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.EquipoMovimiento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Cantidad")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<int>("EquipoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MovimientoInventarioId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PrecioUnitario")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("UbicacionDestinoId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UbicacionOrigenId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EquipoId");
+
+                    b.HasIndex("MovimientoInventarioId");
+
+                    b.HasIndex("UbicacionDestinoId");
+
+                    b.HasIndex("UbicacionOrigenId");
+
+                    b.ToTable("EquipoMovimientos");
+                });
+
             modelBuilder.Entity("billing_system.Models.Entities.Factura", b =>
                 {
                     b.Property<int>("Id")
@@ -238,6 +467,154 @@ namespace billing_system.Migrations
                     b.HasIndex("ServicioId");
 
                     b.ToTable("FacturaServicios");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.HistorialEstadoEquipo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EquipoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EstadoAnterior")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("EstadoNuevo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<DateTime>("FechaCambio")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Motivo")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EquipoId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("HistorialEstadosEquipo");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.MantenimientoReparacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("Costo")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("EquipoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasDefaultValue("Programado");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("FechaFin")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("FechaInicio")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("FechaProgramada")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<string>("ProblemaReportado")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<string>("ProveedorTecnico")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("SolucionAplicada")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EquipoId");
+
+                    b.ToTable("MantenimientosReparaciones");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.MovimientoInventario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("EquipoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<string>("Subtipo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EquipoId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("MovimientosInventario");
                 });
 
             modelBuilder.Entity("billing_system.Models.Entities.Pago", b =>
@@ -383,6 +760,50 @@ namespace billing_system.Migrations
                     b.ToTable("PlantillasMensajeWhatsApp");
                 });
 
+            modelBuilder.Entity("billing_system.Models.Entities.Proveedor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Contacto")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Direccion")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Proveedores");
+                });
+
             modelBuilder.Entity("billing_system.Models.Entities.Servicio", b =>
                 {
                     b.Property<int>("Id")
@@ -419,6 +840,44 @@ namespace billing_system.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Servicios");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.Ubicacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Direccion")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasDefaultValue("Almacen");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("Ubicaciones");
                 });
 
             modelBuilder.Entity("billing_system.Models.Entities.Usuario", b =>
@@ -460,6 +919,28 @@ namespace billing_system.Migrations
                     b.ToTable("Usuarios");
                 });
 
+            modelBuilder.Entity("billing_system.Models.Entities.AsignacionEquipo", b =>
+                {
+                    b.HasOne("billing_system.Models.Entities.Cliente", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("billing_system.Models.Entities.Cliente", null)
+                        .WithMany("AsignacionesEquipo")
+                        .HasForeignKey("ClienteId1");
+
+                    b.HasOne("billing_system.Models.Entities.Equipo", "Equipo")
+                        .WithMany("AsignacionesEquipo")
+                        .HasForeignKey("EquipoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("Equipo");
+                });
+
             modelBuilder.Entity("billing_system.Models.Entities.Cliente", b =>
                 {
                     b.HasOne("billing_system.Models.Entities.Servicio", "Servicio")
@@ -487,6 +968,65 @@ namespace billing_system.Migrations
                     b.Navigation("Cliente");
 
                     b.Navigation("Servicio");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.Equipo", b =>
+                {
+                    b.HasOne("billing_system.Models.Entities.CategoriaEquipo", "CategoriaEquipo")
+                        .WithMany("Equipos")
+                        .HasForeignKey("CategoriaEquipoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("billing_system.Models.Entities.Proveedor", "Proveedor")
+                        .WithMany("Equipos")
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("billing_system.Models.Entities.Ubicacion", "Ubicacion")
+                        .WithMany("Equipos")
+                        .HasForeignKey("UbicacionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CategoriaEquipo");
+
+                    b.Navigation("Proveedor");
+
+                    b.Navigation("Ubicacion");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.EquipoMovimiento", b =>
+                {
+                    b.HasOne("billing_system.Models.Entities.Equipo", "Equipo")
+                        .WithMany()
+                        .HasForeignKey("EquipoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("billing_system.Models.Entities.MovimientoInventario", "MovimientoInventario")
+                        .WithMany("EquipoMovimientos")
+                        .HasForeignKey("MovimientoInventarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("billing_system.Models.Entities.Ubicacion", "UbicacionDestino")
+                        .WithMany()
+                        .HasForeignKey("UbicacionDestinoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("billing_system.Models.Entities.Ubicacion", "UbicacionOrigen")
+                        .WithMany()
+                        .HasForeignKey("UbicacionOrigenId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Equipo");
+
+                    b.Navigation("MovimientoInventario");
+
+                    b.Navigation("UbicacionDestino");
+
+                    b.Navigation("UbicacionOrigen");
                 });
 
             modelBuilder.Entity("billing_system.Models.Entities.Factura", b =>
@@ -527,6 +1067,51 @@ namespace billing_system.Migrations
                     b.Navigation("Servicio");
                 });
 
+            modelBuilder.Entity("billing_system.Models.Entities.HistorialEstadoEquipo", b =>
+                {
+                    b.HasOne("billing_system.Models.Entities.Equipo", "Equipo")
+                        .WithMany("HistorialEstados")
+                        .HasForeignKey("EquipoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("billing_system.Models.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Equipo");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.MantenimientoReparacion", b =>
+                {
+                    b.HasOne("billing_system.Models.Entities.Equipo", "Equipo")
+                        .WithMany("MantenimientosReparaciones")
+                        .HasForeignKey("EquipoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Equipo");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.MovimientoInventario", b =>
+                {
+                    b.HasOne("billing_system.Models.Entities.Equipo", null)
+                        .WithMany("MovimientosInventario")
+                        .HasForeignKey("EquipoId");
+
+                    b.HasOne("billing_system.Models.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("billing_system.Models.Entities.Pago", b =>
                 {
                     b.HasOne("billing_system.Models.Entities.Cliente", null)
@@ -560,13 +1145,31 @@ namespace billing_system.Migrations
                     b.Navigation("Pago");
                 });
 
+            modelBuilder.Entity("billing_system.Models.Entities.CategoriaEquipo", b =>
+                {
+                    b.Navigation("Equipos");
+                });
+
             modelBuilder.Entity("billing_system.Models.Entities.Cliente", b =>
                 {
+                    b.Navigation("AsignacionesEquipo");
+
                     b.Navigation("ClienteServicios");
 
                     b.Navigation("Facturas");
 
                     b.Navigation("Pagos");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.Equipo", b =>
+                {
+                    b.Navigation("AsignacionesEquipo");
+
+                    b.Navigation("HistorialEstados");
+
+                    b.Navigation("MantenimientosReparaciones");
+
+                    b.Navigation("MovimientosInventario");
                 });
 
             modelBuilder.Entity("billing_system.Models.Entities.Factura", b =>
@@ -576,9 +1179,19 @@ namespace billing_system.Migrations
                     b.Navigation("Pagos");
                 });
 
+            modelBuilder.Entity("billing_system.Models.Entities.MovimientoInventario", b =>
+                {
+                    b.Navigation("EquipoMovimientos");
+                });
+
             modelBuilder.Entity("billing_system.Models.Entities.Pago", b =>
                 {
                     b.Navigation("PagoFacturas");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.Proveedor", b =>
+                {
+                    b.Navigation("Equipos");
                 });
 
             modelBuilder.Entity("billing_system.Models.Entities.Servicio", b =>
@@ -586,6 +1199,11 @@ namespace billing_system.Migrations
                     b.Navigation("ClienteServicios");
 
                     b.Navigation("Facturas");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.Ubicacion", b =>
+                {
+                    b.Navigation("Equipos");
                 });
 #pragma warning restore 612, 618
         }

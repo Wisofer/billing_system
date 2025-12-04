@@ -70,6 +70,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Caja", policy => policy.RequireClaim("Rol", "Caja", "Administrador"));
     options.AddPolicy("FacturasPagos", policy => policy.RequireClaim("Rol", "Normal", "Administrador"));
     options.AddPolicy("Pagos", policy => policy.RequireClaim("Rol", "Caja", "Normal", "Administrador"));
+    options.AddPolicy("Inventario", policy => policy.RequireClaim("Rol", "Normal", "Administrador"));
 });
 
 // Registrar servicios
@@ -87,6 +88,15 @@ builder.Services.AddScoped<IPdfService>(sp =>
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
 builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
+
+// Servicios de Inventario
+builder.Services.AddScoped<IEquipoService, EquipoService>();
+builder.Services.AddScoped<ICategoriaEquipoService, CategoriaEquipoService>();
+builder.Services.AddScoped<IUbicacionService, UbicacionService>();
+builder.Services.AddScoped<IProveedorService, ProveedorService>();
+builder.Services.AddScoped<IMovimientoInventarioService, MovimientoInventarioService>();
+builder.Services.AddScoped<IAsignacionEquipoService, AsignacionEquipoService>();
+builder.Services.AddScoped<IMantenimientoReparacionService, MantenimientoReparacionService>();
 
 // Registrar servicio en segundo plano para generación automática de facturas
 // Este servicio se ejecutará el día 1 de cada mes a las 2:00 AM
@@ -142,6 +152,9 @@ using (var scope = app.Services.CreateScope())
             SD.TipoCambioDolar.ToString("F2"),
             "Tipo de cambio dólar a córdoba (C$ por $1)"
         );
+
+        // Inicializar datos básicos de inventario
+        InicializarInventario.InicializarDatosBasicos(dbContext, logger);
     }
     catch (Exception ex)
     {
