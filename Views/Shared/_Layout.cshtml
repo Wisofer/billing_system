@@ -607,14 +607,12 @@
     </script>
 
     <!-- Keep-Alive: Renovar sesión automáticamente para evitar cierres inesperados -->
-    <script>
-        (function() {
-            'use strict';
-            
-            // Solo ejecutar si el usuario está autenticado
-            @if (estaAutenticado)
-            {
-                <text>
+    @if (estaAutenticado)
+    {
+        <script>
+            (function() {
+                'use strict';
+                
                 let keepAliveInterval;
                 let lastActivity = Date.now();
                 const KEEP_ALIVE_INTERVAL = 10 * 60 * 1000; // 10 minutos (menos que el tiempo de expiración)
@@ -690,10 +688,9 @@
                         clearInterval(keepAliveInterval);
                     }
                 });
-                </text>
-            }
-        })();
-    </script>
+            })();
+        </script>
+    }
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
