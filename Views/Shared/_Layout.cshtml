@@ -606,6 +606,95 @@
         })();
     </script>
 
+    <!-- Keep-Alive: Renovar sesión automáticamente para evitar cierres inesperados -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // Solo ejecutar si el usuario está autenticado
+            @if (estaAutenticado)
+            {
+                <text>
+                let keepAliveInterval;
+                let lastActivity = Date.now();
+                const KEEP_ALIVE_INTERVAL = 10 * 60 * 1000; // 10 minutos (menos que el tiempo de expiración)
+                const ACTIVITY_THRESHOLD = 5 * 60 * 1000; // 5 minutos de inactividad antes de dejar de renovar
+                
+                // Función para renovar la sesión
+                function renewSession() {
+                    fetch('/auth/keep-alive', {
+                        method: 'GET',
+                        credentials: 'include', // Incluir cookies
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        }
+                        // Si la respuesta no es OK, puede ser que la sesión expiró
+                        if (response.status === 401 || response.status === 403) {
+                            console.warn('Sesión expirada, redirigiendo al login...');
+                            window.location.href = '/login';
+                        }
+                        return null;
+                    })
+                    .then(data => {
+                        if (data && data.success) {
+                            console.log('Sesión renovada automáticamente');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al renovar sesión:', error);
+                    });
+                }
+                
+                // Detectar actividad del usuario
+                const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+                activityEvents.forEach(event => {
+                    document.addEventListener(event, function() {
+                        lastActivity = Date.now();
+                    }, { passive: true });
+                });
+                
+                // Iniciar keep-alive cuando la página carga
+                function startKeepAlive() {
+                    // Renovar inmediatamente al cargar
+                    renewSession();
+                    
+                    // Configurar intervalo para renovar cada 10 minutos
+                    keepAliveInterval = setInterval(function() {
+                        const timeSinceLastActivity = Date.now() - lastActivity;
+                        
+                        // Solo renovar si el usuario ha tenido actividad reciente
+                        // Si está inactivo por más de 5 minutos, dejar de renovar
+                        if (timeSinceLastActivity < ACTIVITY_THRESHOLD) {
+                            renewSession();
+                        } else {
+                            console.log('Usuario inactivo, pausando renovación de sesión');
+                        }
+                    }, KEEP_ALIVE_INTERVAL);
+                }
+                
+                // Iniciar cuando el DOM esté listo
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', startKeepAlive);
+                } else {
+                    startKeepAlive();
+                }
+                
+                // Limpiar intervalo cuando la página se descarga
+                window.addEventListener('beforeunload', function() {
+                    if (keepAliveInterval) {
+                        clearInterval(keepAliveInterval);
+                    }
+                });
+                </text>
+            }
+        })();
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

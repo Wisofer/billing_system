@@ -75,10 +75,11 @@ public class AuthController : Controller
         HttpContext.Session.SetString("NombreUsuario", usuario.NombreUsuario);
 
         // Iniciar sesión (crea la cookie de autenticación)
+        // No establecer ExpiresUtc explícitamente para que use la configuración de SlidingExpiration
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal, new AuthenticationProperties
         {
-            IsPersistent = false, // No recordar sesión después de cerrar navegador
-            ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) // 30 minutos
+            IsPersistent = false // No recordar sesión después de cerrar navegador
+            // ExpiresUtc se maneja automáticamente por la configuración de ExpireTimeSpan y SlidingExpiration
         });
 
         // Redirigir a la URL original si existe, sino según el rol
@@ -129,5 +130,18 @@ public class AuthController : Controller
         HttpContext.Session.Clear();
         
         return Redirect("/login");
+    }
+
+    /// <summary>
+    /// Endpoint para mantener la sesión activa (keep-alive)
+    /// Se llama periódicamente desde JavaScript para renovar la sesión automáticamente
+    /// </summary>
+    [HttpGet("/auth/keep-alive")]
+    [Authorize]
+    public IActionResult KeepAlive()
+    {
+        // Simplemente renovar la sesión tocando la cookie de autenticación
+        // Con SlidingExpiration activado, esto renueva automáticamente el tiempo de expiración
+        return Json(new { success = true, message = "Sesión renovada", timestamp = DateTime.Now });
     }
 }
