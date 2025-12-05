@@ -184,7 +184,37 @@ public class PagosController : Controller
 
         pago.MontoCordobasFisico = ParseDecimalFromForm("MontoCordobasFisico") ?? pago.MontoCordobasFisico;
         pago.MontoDolaresFisico = ParseDecimalFromForm("MontoDolaresFisico") ?? pago.MontoDolaresFisico;
-        pago.MontoRecibidoFisico = ParseDecimalFromForm("MontoRecibidoFisico") ?? pago.MontoRecibidoFisico;
+        
+        // Manejar MontoRecibidoFisico: si la moneda es "Ambos", buscar campos separados
+        if (pago.Moneda == "Ambos")
+        {
+            // Si la moneda es "Ambos", buscar campos separados para recibido en ambas monedas
+            var montoRecibidoCordobasFisico = ParseDecimalFromForm("MontoRecibidoCordobasFisico");
+            var montoRecibidoDolaresFisico = ParseDecimalFromForm("MontoRecibidoDolaresFisico");
+            
+            if (montoRecibidoCordobasFisico.HasValue || montoRecibidoDolaresFisico.HasValue)
+            {
+                // Obtener tipo de cambio para convertir dólares a córdobas
+                var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+                
+                // Calcular el total recibido en córdobas: córdobas + (dólares * tipo de cambio)
+                var totalRecibido = (montoRecibidoCordobasFisico ?? 0) + ((montoRecibidoDolaresFisico ?? 0) * tipoCambio);
+                pago.MontoRecibidoFisico = totalRecibido;
+                
+                logger?.LogInformation($"Pago con moneda 'Ambos': Recibido C$ {montoRecibidoCordobasFisico ?? 0} + $ {montoRecibidoDolaresFisico ?? 0} = Total C$ {totalRecibido}");
+            }
+            else
+            {
+                // Si no hay campos separados, usar el campo único (compatibilidad)
+                pago.MontoRecibidoFisico = ParseDecimalFromForm("MontoRecibidoFisico") ?? pago.MontoRecibidoFisico;
+            }
+        }
+        else
+        {
+            // Si la moneda es C$ o $, usar el campo único como siempre
+            pago.MontoRecibidoFisico = ParseDecimalFromForm("MontoRecibidoFisico") ?? pago.MontoRecibidoFisico;
+        }
+        
         pago.MontoCordobasElectronico = ParseDecimalFromForm("MontoCordobasElectronico") ?? pago.MontoCordobasElectronico;
         pago.MontoDolaresElectronico = ParseDecimalFromForm("MontoDolaresElectronico") ?? pago.MontoDolaresElectronico;
 

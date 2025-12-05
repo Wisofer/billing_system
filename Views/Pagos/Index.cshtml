@@ -396,21 +396,48 @@ setTimeout(function() {
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if (pago.TipoPago == SD.TipoPagoFisico)
                                 {
-                                    <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
-                                        Físico
-                                    </span>
+                                    @if (pago.Moneda == SD.MonedaAmbos)
+                                    {
+                                        <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                                            Físico (C$ + $)
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                                            Físico
+                                        </span>
+                                    }
                                 }
                                 else if (pago.TipoPago == SD.TipoPagoElectronico)
                                 {
-                                    <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300">
-                                        Electrónico
-                                    </span>
+                                    @if (pago.Moneda == SD.MonedaAmbos)
+                                    {
+                                        <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300">
+                                            Electrónico (C$ + $)
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300">
+                                            Electrónico
+                                        </span>
+                                    }
                                 }
                                 else if (pago.TipoPago == SD.TipoPagoMixto)
                                 {
-                                    <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
-                                        Mixto
-                                    </span>
+                                    @if (pago.Moneda == SD.MonedaAmbos)
+                                    {
+                                        <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
+                                            Mixto (C$ + $)
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
+                                            Mixto
+                                        </span>
+                                    }
                                 }
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">

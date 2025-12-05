@@ -101,30 +101,63 @@ public class FacturaService : IFacturaService
         var mesStr = mes.ToString("MM");
         var añoStr = mes.ToString("yyyy");
         
-        // Obtener el último número de factura para este mes y año de la misma categoría
-        var ultimoNumero = _context.Facturas
-            .Where(f => f.MesFacturacion.Year == mes.Year && 
-                       f.MesFacturacion.Month == mes.Month &&
-                       (categoria == null || f.Categoria == categoria))
-            .OrderByDescending(f => f.Id)
-            .Select(f => f.Numero)
-            .FirstOrDefault();
-        
-        int numero = 1;
-        if (!string.IsNullOrEmpty(ultimoNumero))
-        {
-            // Extraer el número del formato "XXXX-Nombre-MMYYYY" o "XXXX-Nombre-MMYYYY-STR"
-            var partes = ultimoNumero.Split('-');
-            if (partes.Length > 0 && int.TryParse(partes[0], out var num))
-            {
-                numero = num + 1;
-            }
-        }
-        
         var nombreSinEspacios = cliente.Nombre.Replace(" ", "");
         var longitudNombre = Math.Min(10, nombreSinEspacios.Length);
         var nombreCliente = longitudNombre > 0 ? nombreSinEspacios.Substring(0, longitudNombre) : "Cliente";
         var sufijo = categoria == SD.CategoriaStreaming ? "-STR" : "";
+        
+        // Obtener todas las facturas
+        var todasLasFacturas = _context.Facturas
+            .Select(f => f.Numero)
+            .ToList();
+        
+        int numero = 1;
+        
+        if (categoria == SD.CategoriaStreaming)
+        {
+            // STREAMING: Numeración propia separada (busca solo facturas con -STR)
+            int numeroMaximoSTR = 0;
+            foreach (var numeroFactura in todasLasFacturas)
+            {
+                if (!string.IsNullOrEmpty(numeroFactura) && numeroFactura.EndsWith("-STR"))
+                {
+                    // Extraer el número del formato "XXXX-Nombre-MMYYYY-STR"
+                    var partes = numeroFactura.Split('-');
+                    if (partes.Length > 0 && int.TryParse(partes[0], out var num))
+                    {
+                        if (num > numeroMaximoSTR)
+                        {
+                            numeroMaximoSTR = num;
+                        }
+                    }
+                }
+            }
+            // Streaming: continuar desde el más alto encontrado (o empezar desde 1)
+            numero = numeroMaximoSTR + 1;
+        }
+        else
+        {
+            // INTERNET: Numeración secuencial global desde 179 (solo facturas sin -STR)
+            int numeroMaximoInternet = 0;
+            foreach (var numeroFactura in todasLasFacturas)
+            {
+                if (!string.IsNullOrEmpty(numeroFactura) && !numeroFactura.EndsWith("-STR"))
+                {
+                    // Extraer el número del formato "XXXX-Nombre-MMYYYY"
+                    var partes = numeroFactura.Split('-');
+                    if (partes.Length > 0 && int.TryParse(partes[0], out var num))
+                    {
+                        if (num > numeroMaximoInternet)
+                        {
+                            numeroMaximoInternet = num;
+                        }
+                    }
+                }
+            }
+            // Internet: Si el número máximo es >= 179, continuar la secuencia, sino empezar desde 179
+            numero = numeroMaximoInternet >= 179 ? numeroMaximoInternet + 1 : 179;
+        }
+        
         return $"{numero:D4}-{nombreCliente}-{mesStr}{añoStr}{sufijo}";
     }
 

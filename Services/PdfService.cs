@@ -467,7 +467,7 @@ public class PdfService : IPdfService
                                                         servicioInfoColumn.Item().PaddingTop(2).Text(servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
                                                     }
                                                 });
-                                                table.Cell().Element(BodyCellStyle).AlignRight().Text($"{precioUnitario:N2}").FontSize(9);
+                                                table.Cell().Element(BodyCellStyle).AlignRight().Text(FormatearMontoEntero(precioUnitario)).FontSize(9);
                                             }
                                         }
                                         else
@@ -485,7 +485,7 @@ public class PdfService : IPdfService
                                                     servicioInfoColumn.Item().PaddingTop(2).Text(servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
                                                 }
                                             });
-                                            table.Cell().Element(BodyCellStyle).AlignRight().Text($"{precioCompleto:N2}").FontSize(9);
+                                            table.Cell().Element(BodyCellStyle).AlignRight().Text(FormatearMontoEntero(precioCompleto)).FontSize(9);
                                         }
                                     }
                                 }
@@ -504,7 +504,7 @@ public class PdfService : IPdfService
                                                 servicioInfoColumn.Item().PaddingTop(2).Text(factura.Servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
                                             }
                                         });
-                                        table.Cell().Element(BodyCellStyle).AlignRight().Text($"{factura.Servicio.Precio:N2}").FontSize(9);
+                                        table.Cell().Element(BodyCellStyle).AlignRight().Text(FormatearMontoEntero(factura.Servicio.Precio)).FontSize(9);
                                     }
                                 }
                                 
@@ -516,19 +516,19 @@ public class PdfService : IPdfService
 
                                 // Sub-total (precio completo sin proporcional)
                                 table.Cell().Element(BodyCellStyle).Text("Sub-total C$").FontSize(9);
-                                table.Cell().Element(BodyCellStyle).AlignRight().Text($"{subtotalSinProporcional:N2}").FontSize(9);
+                                table.Cell().Element(BodyCellStyle).AlignRight().Text(FormatearMontoEntero(subtotalSinProporcional)).FontSize(9);
 
                                 // Descuento proporcional (solo si hay diferencia) - mostrar el descuento, no el monto a pagar
                                 if (subtotalSinProporcional > 0 && Math.Abs(subtotalSinProporcional - factura.Monto) > 0.01m)
                                 {
                                     var descuentoProporcional = subtotalSinProporcional - factura.Monto; // El descuento es la diferencia
                                     table.Cell().Element(BodyCellStyle).Text("Descuento proporcional C$").FontSize(9).FontColor(Colors.Red.Darken1);
-                                    table.Cell().Element(BodyCellStyle).AlignRight().Text($"-{descuentoProporcional:N2}").FontSize(9).FontColor(Colors.Red.Darken1);
+                                    table.Cell().Element(BodyCellStyle).AlignRight().Text($"-{FormatearMontoEntero(descuentoProporcional)}").FontSize(9).FontColor(Colors.Red.Darken1);
                                 }
 
                                 // IVA
                                 table.Cell().Element(BodyCellStyle).Text("I.V.A. C$").FontSize(9);
-                                table.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+                                table.Cell().Element(BodyCellStyle).AlignRight().Text("0").FontSize(9);
 
                                 // Método de pago (si hay pagos) - después de IVA
                                 var metodoPagoTextoInternet = ObtenerMetodoPagoTexto(factura);
@@ -540,7 +540,7 @@ public class PdfService : IPdfService
 
                                 // Total: El total es el monto de la factura (monto proporcional)
                                 table.Cell().Element(TotalCellStyle).Text("Total C$").FontSize(11).Bold();
-                                table.Cell().Element(TotalCellStyle).AlignRight().Text($"{factura.Monto:N2}").FontSize(11).Bold();
+                                table.Cell().Element(TotalCellStyle).AlignRight().Text(FormatearMontoEntero(factura.Monto)).FontSize(11).Bold();
                             });
                         });
 
@@ -590,25 +590,25 @@ public class PdfService : IPdfService
                                     });
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Saldo inicial del periodo").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0").FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Monto consumido").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{montoAPagar:N2}").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text(FormatearMontoEntero(montoAPagar)).FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Multa por pago tardío").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{multaPorPagoTardio:N2}").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text(FormatearMontoEntero(multaPorPagoTardio)).FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Monto pagado").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{montoPagado:N2}").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text(FormatearMontoEntero(montoPagado)).FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Saldo final del periodo").FontSize(9);
                                     var saldoFinal = montoAPagar - montoPagado + multaPorPagoTardio;
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{saldoFinal:N2}").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text(FormatearMontoEntero(saldoFinal)).FontSize(9);
 
                                     // Monto total a pagar: usar el monto a pagar (descuento proporcional si aplica)
                                     var montoTotalPagar = montoAPagar;
                                     estadoTable.Cell().Element(TotalCellStyle).Text("Monto total a pagar").FontSize(11).Bold();
-                                    estadoTable.Cell().Element(TotalCellStyle).AlignRight().Text($"{montoTotalPagar:N2}").FontSize(11).Bold();
+                                    estadoTable.Cell().Element(TotalCellStyle).AlignRight().Text(FormatearMontoEntero(montoTotalPagar)).FontSize(11).Bold();
                                 });
                             });
                         }
@@ -633,23 +633,23 @@ public class PdfService : IPdfService
                                     });
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Saldo inicial del periodo").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0").FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Monto consumido").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{montoAPagar:N2}").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text(FormatearMontoEntero(montoAPagar)).FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Multa por pago tardío").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text($"{multaPorPagoTardio:N2}").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text(FormatearMontoEntero(multaPorPagoTardio)).FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Monto pagado").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0").FontSize(9);
 
                                     estadoTable.Cell().Element(BodyCellStyle).Text("Saldo final del periodo").FontSize(9);
-                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0.00").FontSize(9);
+                                    estadoTable.Cell().Element(BodyCellStyle).AlignRight().Text("0").FontSize(9);
 
                                     var montoTotalPagar = montoAPagar + multaPorPagoTardio;
                                     estadoTable.Cell().Element(TotalCellStyle).Text("Monto total a pagar").FontSize(11).Bold();
-                                    estadoTable.Cell().Element(TotalCellStyle).AlignRight().Text($"{montoTotalPagar:N2}").FontSize(11).Bold();
+                                    estadoTable.Cell().Element(TotalCellStyle).AlignRight().Text(FormatearMontoEntero(montoTotalPagar)).FontSize(11).Bold();
                                 });
                             });
                         }
@@ -701,6 +701,28 @@ public class PdfService : IPdfService
         });
 
         return documento.GeneratePdf();
+    }
+
+    /// <summary>
+    /// Formatea un monto como entero para facturas de Internet (redondea)
+    /// </summary>
+    private string FormatearMontoEntero(decimal monto)
+    {
+        // Redondear: si pasa de 5 (>= 0.5), redondea hacia arriba
+        var montoRedondeado = Math.Round(monto, MidpointRounding.AwayFromZero);
+        return ((int)montoRedondeado).ToString("N0");
+    }
+
+    /// <summary>
+    /// Formatea un monto según la categoría: enteros para Internet, decimales para Streaming
+    /// </summary>
+    private string FormatearMontoSegunCategoria(decimal monto, string categoria)
+    {
+        if (categoria == SD.CategoriaInternet)
+        {
+            return FormatearMontoEntero(monto);
+        }
+        return monto.ToString("N2");
     }
 
     /// <summary>

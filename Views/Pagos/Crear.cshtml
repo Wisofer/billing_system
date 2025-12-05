@@ -110,6 +110,7 @@ setTimeout(function() {
                                 class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                             <option value="C$">C$ (Córdobas)</option>
                             <option value="$">$ (Dólares)</option>
+                            <option value="Ambos">Ambos (C$ y $)</option>
                         </select>
                         <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">TC: C$ @tipoCambio = $1</p>
                     </div>
@@ -162,12 +163,29 @@ setTimeout(function() {
                                    placeholder="0.00" />
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1" id="labelRecibidoFisico">Recibido (<span id="monedaRecibidoLabel">C$</span>)</label>
-                        <input type="text" name="MontoRecibidoFisico" id="MontoRecibidoFisico" inputmode="decimal" 
-                               class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
-                               placeholder="0.00" />
-                        <div id="errorRecibidoFisico" class="hidden text-xs text-red-600 dark:text-red-400 mt-1"></div>
+                    <div id="contenedorRecibidoFisico">
+                        <!-- Campo único cuando es C$ o $ -->
+                        <div id="grupoRecibidoUnico">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1" id="labelRecibidoFisico">Recibido (<span id="monedaRecibidoLabel">C$</span>)</label>
+                            <input type="text" name="MontoRecibidoFisico" id="MontoRecibidoFisico" inputmode="decimal" 
+                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                                   placeholder="0.00" />
+                            <div id="errorRecibidoFisico" class="hidden text-xs text-red-600 dark:text-red-400 mt-1"></div>
+                        </div>
+                        <!-- Campos separados cuando es Ambos -->
+                        <div id="grupoRecibidoCordobasFisico" style="display:none;">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Recibido (C$)</label>
+                            <input type="text" name="MontoRecibidoCordobasFisico" id="MontoRecibidoCordobasFisico" inputmode="decimal" 
+                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-2" 
+                                   placeholder="0.00" />
+                        </div>
+                        <div id="grupoRecibidoDolaresFisico" style="display:none;">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Recibido ($)</label>
+                            <input type="text" name="MontoRecibidoDolaresFisico" id="MontoRecibidoDolaresFisico" inputmode="decimal" 
+                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                                   placeholder="0.00" />
+                            <div id="errorRecibidoFisicoAmbos" class="hidden text-xs text-red-600 dark:text-red-400 mt-1"></div>
+                        </div>
                     </div>
                 </div>
                 <!-- Fila 2: Vuelto a lo ancho -->
@@ -281,7 +299,14 @@ setTimeout(function() {
 <script src="~/js/pagos-crear.js"></script>
 <script>
     const clientesJson = @Html.Raw(clientesJson);
-    PagoSystem.tipoCambio = @tipoCambio;
+    // Asegurar que el tipo de cambio use formato con punto decimal (invariante)
+    const tipoCambioRaw = @tipoCambio.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    PagoSystem.tipoCambio = parseFloat(tipoCambioRaw.toString().replace(',', '.')) || 36.80;
+    // Validar que el tipo de cambio sea válido
+    if (isNaN(PagoSystem.tipoCambio) || PagoSystem.tipoCambio <= 0) {
+        PagoSystem.tipoCambio = 36.80;
+    }
+    console.log('Tipo de cambio inicializado:', PagoSystem.tipoCambio);
     
     document.addEventListener('DOMContentLoaded', function() {
         ClienteManager.init(clientesJson);
@@ -499,32 +524,61 @@ setTimeout(function() {
     
     function actualizarMonedaEnInterfaz() {
         const moneda = document.getElementById('Moneda')?.value;
-        const simbolo = moneda === '$' ? '$' : 'C$';
+        const simbolo = moneda === '$' ? '$' : (moneda === 'Ambos' ? 'C$ y $' : 'C$');
         
         // Actualizar labels de monto principal (físico y electrónico)
-        document.querySelectorAll('#labelMontoFisico1, #labelMontoElectronico1').forEach(el => {
-            el.textContent = `Monto (${simbolo})`;
-        });
+        if (moneda !== 'Ambos') {
+            document.querySelectorAll('#labelMontoFisico1, #labelMontoElectronico1').forEach(el => {
+                el.textContent = `Monto (${simbolo})`;
+            });
+        }
         
-        // Mostrar solo un campo de monto físico según la moneda (3 inputs visibles: Monto, Recibido, Vuelto)
+        // Campos de monto físico
         const grupoMontoCordobasFisico = document.getElementById('grupoMontoCordobasFisico');
         const grupoMontoDolaresFisico = document.getElementById('grupoMontoDolaresFisico');
         const montoCordobasFisico = document.getElementById('MontoCordobasFisico');
         const montoDolaresFisico = document.getElementById('MontoDolaresFisico');
         
-        // Mostrar solo un campo de monto electrónico según la moneda
+        // Campos de recibido físico
+        const grupoRecibidoUnico = document.getElementById('grupoRecibidoUnico');
+        const grupoRecibidoCordobasFisico = document.getElementById('grupoRecibidoCordobasFisico');
+        const grupoRecibidoDolaresFisico = document.getElementById('grupoRecibidoDolaresFisico');
+        const montoRecibidoCordobasFisico = document.getElementById('MontoRecibidoCordobasFisico');
+        const montoRecibidoDolaresFisico = document.getElementById('MontoRecibidoDolaresFisico');
+        
+        // Campos de monto electrónico
         const grupoMontoCordobasElectronico = document.getElementById('grupoMontoCordobasElectronico');
         const grupoMontoDolaresElectronico = document.getElementById('grupoMontoDolaresElectronico');
         const montoCordobasElectronico = document.getElementById('MontoCordobasElectronico');
         const montoDolaresElectronico = document.getElementById('MontoDolaresElectronico');
         
-        if (moneda === '$') {
+        if (moneda === 'Ambos') {
+            // Mostrar AMBOS campos de monto físico
+            if (grupoMontoCordobasFisico) grupoMontoCordobasFisico.style.display = 'block';
+            if (grupoMontoDolaresFisico) grupoMontoDolaresFisico.style.display = 'block';
+            
+            // Mostrar AMBOS campos de recibido físico
+            if (grupoRecibidoUnico) grupoRecibidoUnico.style.display = 'none';
+            if (grupoRecibidoCordobasFisico) grupoRecibidoCordobasFisico.style.display = 'block';
+            if (grupoRecibidoDolaresFisico) grupoRecibidoDolaresFisico.style.display = 'block';
+            
+            // Electrónico: mostrar ambos campos
+            if (grupoMontoCordobasElectronico) grupoMontoCordobasElectronico.style.display = 'block';
+            if (grupoMontoDolaresElectronico) grupoMontoDolaresElectronico.style.display = 'block';
+        } else if (moneda === '$') {
             // Mostrar solo monto en dólares para pago físico
             if (grupoMontoCordobasFisico) grupoMontoCordobasFisico.style.display = 'none';
             if (grupoMontoDolaresFisico) grupoMontoDolaresFisico.style.display = 'block';
             
             // Limpiar monto en córdobas físico
             if (montoCordobasFisico) montoCordobasFisico.value = '';
+            
+            // Mostrar solo recibido único
+            if (grupoRecibidoUnico) grupoRecibidoUnico.style.display = 'block';
+            if (grupoRecibidoCordobasFisico) grupoRecibidoCordobasFisico.style.display = 'none';
+            if (grupoRecibidoDolaresFisico) grupoRecibidoDolaresFisico.style.display = 'none';
+            if (montoRecibidoCordobasFisico) montoRecibidoCordobasFisico.value = '';
+            if (montoRecibidoDolaresFisico) montoRecibidoDolaresFisico.value = '';
             
             // Electrónico: mostrar solo monto en dólares
             if (grupoMontoCordobasElectronico) grupoMontoCordobasElectronico.style.display = 'none';
@@ -538,16 +592,26 @@ setTimeout(function() {
             // Limpiar monto en dólares físico
             if (montoDolaresFisico) montoDolaresFisico.value = '';
             
+            // Mostrar solo recibido único
+            if (grupoRecibidoUnico) grupoRecibidoUnico.style.display = 'block';
+            if (grupoRecibidoCordobasFisico) grupoRecibidoCordobasFisico.style.display = 'none';
+            if (grupoRecibidoDolaresFisico) grupoRecibidoDolaresFisico.style.display = 'none';
+            if (montoRecibidoCordobasFisico) montoRecibidoCordobasFisico.value = '';
+            if (montoRecibidoDolaresFisico) montoRecibidoDolaresFisico.value = '';
+            
             // Electrónico: mostrar solo monto en córdobas
             if (grupoMontoCordobasElectronico) grupoMontoCordobasElectronico.style.display = 'block';
             if (grupoMontoDolaresElectronico) grupoMontoDolaresElectronico.style.display = 'none';
             if (montoDolaresElectronico) montoDolaresElectronico.value = '';
         }
         
-        if (moneda === '$') {
-            document.getElementById('monedaRecibidoLabel').textContent = '$';
-        } else {
-            document.getElementById('monedaRecibidoLabel').textContent = 'C$';
+        // Actualizar label del campo único de recibido
+        if (moneda !== 'Ambos') {
+            if (moneda === '$') {
+                document.getElementById('monedaRecibidoLabel').textContent = '$';
+            } else {
+                document.getElementById('monedaRecibidoLabel').textContent = 'C$';
+            }
         }
     }
     
