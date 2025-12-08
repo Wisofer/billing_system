@@ -5,7 +5,7 @@ using billing_system.Services.IServices;
 using billing_system.Utils;
 using Microsoft.AspNetCore.Http;
 
-namespace billing_system.Controllers;
+namespace billing_system.Controllers.Web;
 
 [Authorize(Policy = "Administrador")]
 [Route("[controller]/[action]")]

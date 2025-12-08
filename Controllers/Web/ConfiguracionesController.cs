@@ -9,7 +9,7 @@ using System.Text;
 using System.Globalization;
 using System;
 
-namespace billing_system.Controllers;
+namespace billing_system.Controllers.Web;
 
 [Authorize(Policy = "Administrador")]
 [Route("[controller]/[action]")]

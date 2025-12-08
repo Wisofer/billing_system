@@ -6,7 +6,7 @@ using billing_system.Data;
 using billing_system.Utils;
 using Microsoft.EntityFrameworkCore;
 
-namespace billing_system.Controllers;
+namespace billing_system.Controllers.Web;
 
 [Authorize]
 [Route("[action]")]

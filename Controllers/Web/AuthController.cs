@@ -8,7 +8,7 @@ using billing_system.Utils;
 using System.Security.Claims;
 using System.Text.Json;
 
-namespace billing_system.Controllers;
+namespace billing_system.Controllers.Web;
 
 public class AuthController : Controller
 {

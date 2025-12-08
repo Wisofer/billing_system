@@ -7,7 +7,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 
-namespace billing_system.Controllers;
+namespace billing_system.Controllers.Web;
 
 [Authorize(Policy = "Pagos")]
 [Route("[controller]/[action]")]

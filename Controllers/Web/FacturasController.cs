@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 
-namespace billing_system.Controllers;
+namespace billing_system.Controllers.Web;
 
 [Authorize(Policy = "FacturasPagos")]
 [Route("[controller]/[action]")]

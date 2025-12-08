@@ -7,7 +7,7 @@ using billing_system.Utils;
 using billing_system.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace billing_system.Controllers;
+namespace billing_system.Controllers.Web;
 
 [Authorize(Policy = "Administrador")]
 [Route("[controller]/[action]")]
