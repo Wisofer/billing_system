@@ -20,6 +20,81 @@
             darkMode: 'class',
         }
     </script>
+    <style>
+        /* Sidebar Colapsable */
+        #sidebar.sidebar-collapsed {
+            width: 5rem !important; /* 80px */
+        }
+        
+        #sidebar.sidebar-collapsed .sidebar-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            transition: opacity 0.2s ease, width 0.3s ease;
+        }
+        
+        #sidebar.sidebar-collapsed .sidebar-logo-link {
+            justify-content: center;
+        }
+        
+        #sidebar.sidebar-collapsed .sidebar-item {
+            justify-content: center;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        #sidebar.sidebar-collapsed .sidebar-user-info {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+        
+        #sidebar.sidebar-collapsed .sidebar-user-section {
+            padding: 1rem 0.5rem;
+        }
+        
+        #sidebar.sidebar-collapsed .sidebar-logout-btn {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+        
+        #sidebar.sidebar-expanded .sidebar-text {
+            opacity: 1;
+            width: auto;
+            transition: opacity 0.3s ease 0.1s, width 0.3s ease 0.1s;
+        }
+        
+        
+        /* Ajustar margen del contenido principal cuando está colapsado */
+        #mainContent.sidebar-collapsed-margin {
+            margin-left: 5rem !important;
+        }
+        
+        /* Tooltip para iconos cuando está colapsado */
+        #sidebar.sidebar-collapsed .sidebar-item {
+            position: relative;
+        }
+        
+        #sidebar.sidebar-collapsed .sidebar-item:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 100%;
+            margin-left: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            border-radius: 0.5rem;
+            white-space: nowrap;
+            z-index: 1000;
+            font-size: 0.875rem;
+            pointer-events: none;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-5px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
     <script>
         // Script inline para aplicar el tema ANTES de que se renderice el HTML
         // Esto evita el "flash" del tema al cambiar de página
@@ -108,11 +183,45 @@
                 const isDesktop = window.innerWidth >= 1024;
                 
                 if (isDesktop && sidebarState === 'open') {
+                    // Leer estado colapsado para usar el ancho correcto
+                    const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                    const sidebarWidth = sidebarCollapsed ? '5rem' : '16rem';
+                    
                     // Crear y aplicar estilo inmediatamente
                     const style = document.createElement('style');
                     style.id = 'sidebar-initial-state';
-                    style.textContent = '#sidebar{transform:translateX(0)!important;transition:none!important;}#mainContent{margin-left:256px!important;transition:none!important;}';
+                    // Aplicar estilos con !important para sobrescribir cualquier otro estilo
+                    style.textContent = `
+                        #sidebar{transform:translateX(0)!important;transition:none!important;width:${sidebarWidth}!important;}
+                        #mainContent{margin-left:${sidebarWidth}!important;transition:none!important;}
+                        ${sidebarCollapsed ? '#mainContent.sidebar-collapsed-margin{margin-left:5rem!important;}' : ''}
+                    `;
                     (document.head || document.getElementsByTagName('head')[0]).appendChild(style);
+                    
+                    // Aplicar clases al sidebar y mainContent si ya existen en el DOM
+                    // Usar requestAnimationFrame para ejecutar después del render inicial
+                    requestAnimationFrame(function() {
+                        const sidebar = document.getElementById('sidebar');
+                        const main = document.getElementById('mainContent');
+                        
+                        if (sidebar) {
+                            if (sidebarCollapsed) {
+                                sidebar.classList.add('sidebar-collapsed');
+                                sidebar.classList.remove('sidebar-expanded');
+                            } else {
+                                sidebar.classList.add('sidebar-expanded');
+                                sidebar.classList.remove('sidebar-collapsed');
+                            }
+                        }
+                        
+                        if (main) {
+                            if (sidebarCollapsed) {
+                                main.classList.add('sidebar-collapsed-margin');
+                            } else {
+                                main.classList.remove('sidebar-collapsed-margin');
+                            }
+                        }
+                    });
                     
                     // Remover el estilo después de que se cargue el JavaScript principal
                     setTimeout(function() {
@@ -120,7 +229,7 @@
                         if (initialStyle) {
                             initialStyle.remove();
                         }
-                    }, 100);
+                    }, 200);
                 }
             } catch (e) {
                 // Silenciar errores si localStorage no está disponible
@@ -134,15 +243,15 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-40 z-40 hidden lg:hidden transition-opacity" onclick="closeSidebar()"></div>
 
         <!-- Sidebar Mejorado -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-xl flex flex-col transform transition-transform duration-300 ease-in-out" style="transform: translateX(-100%);">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 sidebar-expanded bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-xl flex flex-col transform transition-all duration-300 ease-in-out" style="transform: translateX(-100%);">
             <!-- Logo Mejorado -->
-            <div class="h-20 flex items-center px-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
-                <a href="/" class="flex items-center space-x-3 group">
-                    <div class="relative">
+            <div class="h-20 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+                <a href="/" class="flex items-center space-x-3 group sidebar-logo-link">
+                    <div class="relative flex-shrink-0">
                         <div class="absolute inset-0 bg-blue-500 rounded-lg blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
                         <img src="~/images/logo.png" alt="Logo" class="w-10 h-10 object-contain relative z-10 transform group-hover:scale-110 transition-transform duration-200" />
                     </div>
-                    <div>
+                    <div class="sidebar-text">
                         <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">EMSINET</span>
                         <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Sistema de Facturación</p>
                     </div>
@@ -161,99 +270,99 @@
                 <!-- 1. Inicio (Dashboard) - Solo Administrador -->
                 @if (esAdmin)
                 {
-                    <a href="/" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden">
+                    <a href="/" data-tooltip="Inicio" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
                         <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors flex-shrink-0">
                             <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10">Inicio</span>
+                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Inicio</span>
                     </a>
                 }
 
                 <!-- 2. Clientes - Solo Administrador -->
                 @if (esAdmin)
                 {
-                    <a href="/clientes" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden">
+                    <a href="/clientes" data-tooltip="Clientes" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
                         <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/30 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/50 transition-colors">
+                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/30 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/50 transition-colors flex-shrink-0">
                             <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10">Clientes</span>
+                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Clientes</span>
                     </a>
                 }
 
                 <!-- 3. Servicios - Solo Administrador -->
                 @if (esAdmin)
                 {
-                    <a href="/servicios" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden">
+                    <a href="/servicios" data-tooltip="Servicios" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
                         <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/30 group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors">
+                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/30 group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors flex-shrink-0">
                             <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10">Servicios</span>
+                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Servicios</span>
                     </a>
                 }
 
                 <!-- 4. Inventario - Solo Administrador -->
                 @if (esAdmin)
                 {
-                    <a href="/equipos" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden">
+                    <a href="/equipos" data-tooltip="Inventario" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
                         <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-900/30 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/50 transition-colors">
+                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-900/30 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/50 transition-colors flex-shrink-0">
                             <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10">Inventario</span>
+                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Inventario</span>
                     </a>
                 }
 
                 <!-- 5. Facturas - Administrador y Normal -->
                 @if (esAdmin || esNormal)
                 {
-                    <a href="/facturas" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden">
+                    <a href="/facturas" data-tooltip="Facturas" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
                         <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/30 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 transition-colors">
+                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/30 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 transition-colors flex-shrink-0">
                             <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10">Facturas</span>
+                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Facturas</span>
                     </a>
                 }
 
                 <!-- 6. Pagos - Administrador, Normal y Caja -->
                 @if (esAdmin || esNormal || esCaja)
                 {
-                    <a href="/pagos" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden">
+                    <a href="/pagos" data-tooltip="Pagos" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
                         <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-900/30 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50 transition-colors">
+                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-900/30 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50 transition-colors flex-shrink-0">
                             <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10">Pagos</span>
+                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Pagos</span>
                     </a>
                 }
 
                 <!-- 7. Configuraciones - Solo Administrador -->
                 @if (esAdmin)
                 {
-                    <a href="/configuraciones" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden">
+                    <a href="/configuraciones" data-tooltip="Configuraciones" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
                         <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/30 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
+                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/30 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors flex-shrink-0">
                             <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10">Configuraciones</span>
+                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Configuraciones</span>
                     </a>
                 }
             </nav>
@@ -261,25 +370,25 @@
             <!-- Usuario Mejorado -->
             @if (estaAutenticado)
             {
-                <div class="border-t border-gray-200 dark:border-gray-700 p-5 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
-                    <div class="flex items-center space-x-3 mb-4 p-3 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700">
-                        <div class="relative">
+                <div class="border-t border-gray-200 dark:border-gray-700 p-4 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 sidebar-user-section">
+                    <div class="flex items-center space-x-3 mb-4 p-3 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 sidebar-user-info">
+                        <div class="relative flex-shrink-0">
                             <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full blur opacity-20"></div>
                             <div class="relative w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-700 flex items-center justify-center shadow-lg">
                                 <span class="text-white font-bold text-lg">@(nombreUsuario.Length > 0 ? nombreUsuario[0].ToString().ToUpper() : "U")</span>
                             </div>
                         </div>
-                        <div class="flex-1 min-w-0">
+                        <div class="flex-1 min-w-0 sidebar-text">
                             <p class="text-sm font-bold text-gray-900 dark:text-white truncate">@nombreUsuario</p>
                             <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">@rolUsuario</p>
                         </div>
                     </div>
                     <form action="/logout" method="post">
-                        <button type="submit" class="w-full flex items-center justify-center space-x-2 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 dark:from-red-600 dark:to-red-700 dark:hover:from-red-700 dark:hover:to-red-800 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button type="submit" class="w-full flex items-center justify-center space-x-2 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 dark:from-red-600 dark:to-red-700 dark:hover:from-red-700 dark:hover:to-red-800 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] sidebar-logout-btn">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                             </svg>
-                            <span>Cerrar Sesión</span>
+                            <span class="sidebar-text whitespace-nowrap">Cerrar Sesión</span>
                         </button>
                     </form>
                 </div>
@@ -368,12 +477,14 @@
                 if (!sidebar) return;
                 
                 sidebarOpen = isOpen;
+                const isCollapsed = sidebar.classList.contains('sidebar-collapsed');
+                const sidebarWidth = isCollapsed ? '5rem' : '16rem';
                 
                 if (isOpen) {
                     sidebar.style.transform = 'translateX(0)';
                     sidebar.style.transition = 'transform 0.3s ease-in-out';
-                    if (main) {
-                        main.style.marginLeft = '256px';
+                    if (main && window.innerWidth >= 1024) {
+                        main.style.marginLeft = sidebarWidth;
                         main.style.transition = 'margin-left 0.3s ease-in-out';
                     }
                     if (overlay && window.innerWidth < 1024) {
@@ -397,9 +508,33 @@
                 
                 if (!sidebar) return;
                 
-                sidebarOpen = !sidebarOpen;
-                applySidebarState(sidebarOpen, sidebar, main, overlay);
-                saveSidebarState(sidebarOpen);
+                const isCollapsed = sidebar.classList.contains('sidebar-collapsed');
+                const isDesktop = window.innerWidth >= 1024;
+                
+                // En desktop: si está abierto, colapsar/expandir; si está cerrado, abrir expandido
+                // En móvil: solo abrir/cerrar
+                if (isDesktop) {
+                    if (sidebarOpen) {
+                        // Si está abierto, colapsar o expandir
+                        toggleSidebarCollapse();
+                    } else {
+                        // Si está cerrado, abrir expandido
+                        sidebarCollapsed = false;
+                        sidebar.classList.remove('sidebar-collapsed');
+                        sidebar.classList.add('sidebar-expanded');
+                        sidebar.style.width = '16rem';
+                        saveCollapsedState(false);
+                        
+                        sidebarOpen = true;
+                        applySidebarState(true, sidebar, main, overlay);
+                        saveSidebarState(true);
+                    }
+                } else {
+                    // En móvil: solo abrir/cerrar
+                    sidebarOpen = !sidebarOpen;
+                    applySidebarState(sidebarOpen, sidebar, main, overlay);
+                    saveSidebarState(sidebarOpen);
+                }
             }
             
             function closeSidebar() {
@@ -414,6 +549,114 @@
             
             window.toggleSidebar = toggleSidebar;
             window.closeSidebar = closeSidebar;
+            
+            // Funcionalidad de colapsar/expandir sidebar
+            let sidebarCollapsed = false;
+            let sidebarStateRestored = false; // Bandera para evitar múltiples restauraciones
+            const COLLAPSE_STORAGE_KEY = 'sidebarCollapsed';
+            
+            function getCollapsedState() {
+                try {
+                    const state = localStorage.getItem(COLLAPSE_STORAGE_KEY);
+                    return state === 'true';
+                } catch (e) {
+                    return false;
+                }
+            }
+            
+            function saveCollapsedState(collapsed) {
+                try {
+                    localStorage.setItem(COLLAPSE_STORAGE_KEY, collapsed ? 'true' : 'false');
+                } catch (e) {
+                    console.warn('No se pudo guardar el estado de colapso:', e);
+                }
+            }
+            
+            function toggleSidebarCollapse() {
+                const sidebar = document.getElementById('sidebar');
+                const main = document.getElementById('mainContent');
+                
+                if (!sidebar) return;
+                
+                sidebarCollapsed = !sidebarCollapsed;
+                
+                if (sidebarCollapsed) {
+                    sidebar.classList.remove('sidebar-expanded');
+                    sidebar.classList.add('sidebar-collapsed');
+                    sidebar.style.width = '5rem';
+                    if (main) {
+                        main.classList.add('sidebar-collapsed-margin');
+                        if (sidebarOpen && window.innerWidth >= 1024) {
+                            main.style.marginLeft = '5rem';
+                        }
+                    }
+                } else {
+                    sidebar.classList.remove('sidebar-collapsed');
+                    sidebar.classList.add('sidebar-expanded');
+                    sidebar.style.width = '16rem';
+                    if (main) {
+                        main.classList.remove('sidebar-collapsed-margin');
+                        if (sidebarOpen && window.innerWidth >= 1024) {
+                            main.style.marginLeft = '16rem';
+                        }
+                    }
+                }
+                
+                saveCollapsedState(sidebarCollapsed);
+            }
+            
+            function applyCollapsedState() {
+                const sidebar = document.getElementById('sidebar');
+                const main = document.getElementById('mainContent');
+                
+                if (!sidebar) return;
+                
+                sidebarCollapsed = getCollapsedState();
+                
+                if (sidebarCollapsed) {
+                    sidebar.classList.remove('sidebar-expanded');
+                    sidebar.classList.add('sidebar-collapsed');
+                    sidebar.style.width = '5rem';
+                    if (main) {
+                        main.classList.add('sidebar-collapsed-margin');
+                        if (sidebarOpen && window.innerWidth >= 1024) {
+                            main.style.marginLeft = '5rem';
+                        }
+                    }
+                } else {
+                    sidebar.classList.remove('sidebar-collapsed');
+                    sidebar.classList.add('sidebar-expanded');
+                    sidebar.style.width = '16rem';
+                    if (main) {
+                        main.classList.remove('sidebar-collapsed-margin');
+                        if (sidebarOpen && window.innerWidth >= 1024) {
+                            main.style.marginLeft = '16rem';
+                        }
+                    }
+                }
+            }
+            
+            window.toggleSidebarCollapse = toggleSidebarCollapse;
+            
+            // Aplicar estado colapsado al cargar (solo si no se aplicó ya en restoreSidebarState)
+            // Esto es un respaldo por si restoreSidebarState no se ejecutó aún
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(function() {
+                        const sidebar = document.getElementById('sidebar');
+                        if (sidebar && !sidebar.classList.contains('sidebar-collapsed') && !sidebar.classList.contains('sidebar-expanded')) {
+                            applyCollapsedState();
+                        }
+                    }, 150);
+                });
+            } else {
+                setTimeout(function() {
+                    const sidebar = document.getElementById('sidebar');
+                    if (sidebar && !sidebar.classList.contains('sidebar-collapsed') && !sidebar.classList.contains('sidebar-expanded')) {
+                        applyCollapsedState();
+                    }
+                }, 150);
+            }
             
             // Función global para aplicar tema (usada desde Configuraciones)
             window.aplicarTema = function(tema) {
@@ -478,6 +721,10 @@
                     return;
                 }
                 
+                // Aplicar estado colapsado ANTES de restaurar el estado abierto/cerrado
+                applyCollapsedState();
+                
+                // Restaurar estado inmediatamente (sin delay para evitar parpadeos)
                 restoreSidebarState(sidebar, main, overlay);
                 
                 const btn = document.getElementById('hamburgerBtn');
@@ -515,8 +762,25 @@
             }
             
             function restoreSidebarState(sidebar, main, overlay) {
+                // Evitar múltiples restauraciones
+                if (sidebarStateRestored) {
+                    return;
+                }
+                
                 const isDesktop = window.innerWidth >= 1024;
                 const savedState = getSavedSidebarState();
+                
+                // PRIMERO: Aplicar estado colapsado desde localStorage
+                sidebarCollapsed = getCollapsedState();
+                if (sidebarCollapsed) {
+                    sidebar.classList.remove('sidebar-expanded');
+                    sidebar.classList.add('sidebar-collapsed');
+                    sidebar.style.width = '5rem';
+                } else {
+                    sidebar.classList.remove('sidebar-collapsed');
+                    sidebar.classList.add('sidebar-expanded');
+                    sidebar.style.width = '16rem';
+                }
                 
                 // En desktop: usar el estado guardado si existe, sino abrir por defecto
                 // En móvil: siempre cerrar por defecto
@@ -530,13 +794,17 @@
                     shouldBeOpen = false;
                 }
                 
+                // Usar el estado colapsado que acabamos de aplicar
+                const sidebarWidth = sidebarCollapsed ? '5rem' : '16rem';
+                
                 // Aplicar sin transición inicialmente para evitar flash
                 if (shouldBeOpen) {
                     sidebar.style.transition = 'none';
                     sidebar.style.transform = 'translateX(0)';
-                    if (main) {
+                    if (main && isDesktop) {
                         main.style.transition = 'none';
-                        main.style.marginLeft = '256px';
+                        main.style.marginLeft = sidebarWidth;
+                        main.classList.toggle('sidebar-collapsed-margin', sidebarCollapsed);
                     }
                     if (overlay && window.innerWidth < 1024) {
                         overlay.style.display = 'block';
@@ -564,6 +832,7 @@
                 }
                 
                 sidebarOpen = shouldBeOpen;
+                sidebarStateRestored = true; // Marcar como restaurado
             }
             
             // Ejecutar inmediatamente si el DOM ya está listo, sino esperar
@@ -576,7 +845,10 @@
             }
             
             // Ejecutar también cuando la página esté completamente cargada como respaldo
+            // PERO solo si no se ha restaurado ya
             window.addEventListener('load', function() {
+                if (sidebarStateRestored) return; // Ya se restauró, no hacer nada
+                
                 const sidebar = document.getElementById('sidebar');
                 const main = document.getElementById('mainContent');
                 const overlay = document.getElementById('sidebarOverlay');
