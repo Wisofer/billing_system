@@ -23,7 +23,9 @@ public static class MigrateClientesData
             bool tableExists = false;
             using (var command = connection.CreateCommand())
             {
-                command.CommandText = "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'clientes'";
+                // PostgreSQL usa current_database() en lugar de DATABASE()
+                // También verificamos en el schema 'public' que es el default
+                command.CommandText = "SELECT COUNT(*) FROM information_schema.tables WHERE (table_schema = 'public' OR table_schema = current_database()) AND table_name = 'clientes'";
                 var result = command.ExecuteScalar();
                 tableExists = result != null && Convert.ToInt32(result) > 0;
             }
@@ -58,7 +60,7 @@ public static class MigrateClientesData
                             Cedula = reader.IsDBNull(cedulaOrdinal) ? null : reader.GetString(cedulaOrdinal),
                             Telefono = reader.IsDBNull(telefonoOrdinal) ? null : reader.GetString(telefonoOrdinal),
                             Facturas = reader.IsDBNull(facturasOrdinal) ? 0 : reader.GetInt32(facturasOrdinal),
-                            FechaRegistro = reader.IsDBNull(fechaRegistroOrdinal) ? DateTime.Now : reader.GetDateTime(fechaRegistroOrdinal)
+                            FechaRegistro = reader.IsDBNull(fechaRegistroOrdinal) ? DateTime.UtcNow : reader.GetDateTime(fechaRegistroOrdinal)
                         });
                     }
                 }

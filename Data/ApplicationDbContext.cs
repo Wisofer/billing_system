@@ -230,7 +230,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.PrecioCompra).HasColumnType("decimal(18,2)");
             entity.Property(e => e.Observaciones).HasMaxLength(1000);
             entity.HasIndex(e => e.Codigo).IsUnique();
-            entity.HasIndex(e => e.NumeroSerie).IsUnique().HasFilter("[NumeroSerie] IS NOT NULL AND [NumeroSerie] != ''");
+            entity.HasIndex(e => e.NumeroSerie).IsUnique().HasFilter("\"NumeroSerie\" IS NOT NULL AND \"NumeroSerie\" != ''");
             
             entity.HasOne(e => e.CategoriaEquipo)
                 .WithMany(c => c.Equipos)

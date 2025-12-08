@@ -203,8 +203,6 @@
 /home/william/Documentos/billing_system/bin/Debug/net9.0/Microsoft.IO.RecyclableMemoryStream.dll
 /home/william/Documentos/billing_system/bin/Debug/net9.0/Microsoft.Win32.SystemEvents.dll
 /home/william/Documentos/billing_system/bin/Debug/net9.0/Mono.TextTemplating.dll
-/home/william/Documentos/billing_system/bin/Debug/net9.0/MySqlConnector.dll
-/home/william/Documentos/billing_system/bin/Debug/net9.0/Pomelo.EntityFrameworkCore.MySql.dll
 /home/william/Documentos/billing_system/bin/Debug/net9.0/QuestPDF.dll
 /home/william/Documentos/billing_system/bin/Debug/net9.0/System.CodeDom.dll
 /home/william/Documentos/billing_system/bin/Debug/net9.0/System.Composition.AttributedModel.dll
@@ -312,4 +310,6 @@
 /home/william/Documentos/billing_system/obj/Debug/net9.0/billing_system.pdb
 /home/william/Documentos/billing_system/obj/Debug/net9.0/billing_system.genruntimeconfig.cache
 /home/william/Documentos/billing_system/obj/Debug/net9.0/ref/billing_system.dll
-/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/ngoiiiitkb-bgffo14dx0.gz
+/home/william/Documentos/billing_system/bin/Debug/net9.0/Npgsql.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll
+/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/ngoiiiitkb-kqfcujz1uq.gz

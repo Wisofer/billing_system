@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "uDlpw2qZDPw=",
+  "dgSpecHash": "JSDIPpBp+mI=",
   "success": true,
   "projectFilePath": "/home/william/Documentos/billing_system/billing_system.csproj",
   "expectedPackageFiles": [
@@ -41,8 +41,8 @@
     "/home/william/.nuget/packages/microsoft.io.recyclablememorystream/3.0.1/microsoft.io.recyclablememorystream.3.0.1.nupkg.sha512",
     "/home/william/.nuget/packages/microsoft.win32.systemevents/8.0.0/microsoft.win32.systemevents.8.0.0.nupkg.sha512",
     "/home/william/.nuget/packages/mono.texttemplating/3.0.0/mono.texttemplating.3.0.0.nupkg.sha512",
-    "/home/william/.nuget/packages/mysqlconnector/2.4.0/mysqlconnector.2.4.0.nupkg.sha512",
-    "/home/william/.nuget/packages/pomelo.entityframeworkcore.mysql/9.0.0/pomelo.entityframeworkcore.mysql.9.0.0.nupkg.sha512",
+    "/home/william/.nuget/packages/npgsql/9.0.0/npgsql.9.0.0.nupkg.sha512",
+    "/home/william/.nuget/packages/npgsql.entityframeworkcore.postgresql/9.0.0/npgsql.entityframeworkcore.postgresql.9.0.0.nupkg.sha512",
     "/home/william/.nuget/packages/questpdf/2024.10.1/questpdf.2024.10.1.nupkg.sha512",
     "/home/william/.nuget/packages/system.codedom/6.0.0/system.codedom.6.0.0.nupkg.sha512",
     "/home/william/.nuget/packages/system.collections.immutable/7.0.0/system.collections.immutable.7.0.0.nupkg.sha512",

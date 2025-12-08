@@ -24,17 +24,17 @@
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-pNx1ajWAyQInO2YLT4XE/K/7xq/ZL5q1iIDxqHulyWU="}]]]></EndpointProperties>
       <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=3600, must-revalidate"},{"Name":"Content-Length","Value":"159830"},{"Name":"Content-Type","Value":"image/png"},{"Name":"ETag","Value":"\u0022pNx1ajWAyQInO2YLT4XE/K/7xq/ZL5q1iIDxqHulyWU=\u0022"},{"Name":"Last-Modified","Value":"Mon, 24 Nov 2025 18:55:12 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
-    <StaticWebAssetEndpoint Include="_content/billing_system/js/pagos-crear.bgffo14dx0.js">
-      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\pagos-crear.js'))</AssetFile>
-      <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"bgffo14dx0"},{"Name":"integrity","Value":"sha256-BcispeuPhjPlraAXYOVCEhceA64tL14DwqTVuQgL8QY="},{"Name":"label","Value":"_content/billing_system/js/pagos-crear.js"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"73576"},{"Name":"Content-Type","Value":"text/javascript"},{"Name":"ETag","Value":"\u0022BcispeuPhjPlraAXYOVCEhceA64tL14DwqTVuQgL8QY=\u0022"},{"Name":"Last-Modified","Value":"Fri, 05 Dec 2025 05:03:01 GMT"}]]]></ResponseHeaders>
-    </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/billing_system/js/pagos-crear.js">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\pagos-crear.js'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-BcispeuPhjPlraAXYOVCEhceA64tL14DwqTVuQgL8QY="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"73576"},{"Name":"Content-Type","Value":"text/javascript"},{"Name":"ETag","Value":"\u0022BcispeuPhjPlraAXYOVCEhceA64tL14DwqTVuQgL8QY=\u0022"},{"Name":"Last-Modified","Value":"Fri, 05 Dec 2025 05:03:01 GMT"}]]]></ResponseHeaders>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-rFQHDmxDzpQA2cPWFEh5zZ3/E2ru\u002BgXb2Niyr/\u002BhBSU="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"75871"},{"Name":"Content-Type","Value":"text/javascript"},{"Name":"ETag","Value":"\u0022rFQHDmxDzpQA2cPWFEh5zZ3/E2ru\u002BgXb2Niyr/\u002BhBSU=\u0022"},{"Name":"Last-Modified","Value":"Fri, 05 Dec 2025 06:48:41 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/billing_system/js/pagos-crear.kqfcujz1uq.js">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\pagos-crear.js'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"kqfcujz1uq"},{"Name":"integrity","Value":"sha256-rFQHDmxDzpQA2cPWFEh5zZ3/E2ru\u002BgXb2Niyr/\u002BhBSU="},{"Name":"label","Value":"_content/billing_system/js/pagos-crear.js"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"75871"},{"Name":"Content-Type","Value":"text/javascript"},{"Name":"ETag","Value":"\u0022rFQHDmxDzpQA2cPWFEh5zZ3/E2ru\u002BgXb2Niyr/\u002BhBSU=\u0022"},{"Name":"Last-Modified","Value":"Fri, 05 Dec 2025 06:48:41 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/billing_system/sounds/error.h6ilyldrfd.mp3">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\sounds\error.mp3'))</AssetFile>

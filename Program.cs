@@ -5,10 +5,15 @@ using billing_system.Services.IServices;
 using billing_system.Utils;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using QuestPDF.Infrastructure;
 
 // Inicializar QuestPDF antes de cualquier uso
 QuestPDF.Settings.License = LicenseType.Community;
+
+// Configurar Npgsql para manejar DateTime correctamente con PostgreSQL
+// Esto permite usar DateTime.Now sin especificar UTC explícitamente
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +23,7 @@ builder.Services.AddControllersWithViews();
 // Configurar URLs en minúsculas
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
-// Configurar Entity Framework con MySQL
+// Configurar Entity Framework con PostgreSQL (Neon)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrEmpty(connectionString))
 {
@@ -27,15 +32,7 @@ if (string.IsNullOrEmpty(connectionString))
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    try
-    {
-        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-    }
-    catch
-    {
-        // Si no puede detectar la versión, usar una versión específica
-        options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 21)));
-    }
+    options.UseNpgsql(connectionString);
 });
 
 // Configurar sesiones
@@ -122,10 +119,10 @@ using (var scope = app.Services.CreateScope())
             
             var servicios = new List<Servicio>
             {
-                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio1, Precio = SD.ServiciosPrincipales.PrecioServicio1, Categoria = SD.CategoriaInternet, Activo = true, FechaCreacion = DateTime.Now },
-                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio2, Precio = SD.ServiciosPrincipales.PrecioServicio2, Categoria = SD.CategoriaInternet, Activo = true, FechaCreacion = DateTime.Now },
-                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio3, Precio = SD.ServiciosPrincipales.PrecioServicio3, Categoria = SD.CategoriaInternet, Activo = true, FechaCreacion = DateTime.Now },
-                new Servicio { Nombre = SD.ServiciosPrincipales.ServicioEspecial, Precio = SD.ServiciosPrincipales.PrecioServicioEspecial, Categoria = SD.CategoriaInternet, Activo = true, FechaCreacion = DateTime.Now }
+                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio1, Precio = SD.ServiciosPrincipales.PrecioServicio1, Categoria = SD.CategoriaInternet, Activo = true, FechaCreacion = DateTime.UtcNow },
+                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio2, Precio = SD.ServiciosPrincipales.PrecioServicio2, Categoria = SD.CategoriaInternet, Activo = true, FechaCreacion = DateTime.UtcNow },
+                new Servicio { Nombre = SD.ServiciosPrincipales.Servicio3, Precio = SD.ServiciosPrincipales.PrecioServicio3, Categoria = SD.CategoriaInternet, Activo = true, FechaCreacion = DateTime.UtcNow },
+                new Servicio { Nombre = SD.ServiciosPrincipales.ServicioEspecial, Precio = SD.ServiciosPrincipales.PrecioServicioEspecial, Categoria = SD.CategoriaInternet, Activo = true, FechaCreacion = DateTime.UtcNow }
             };
             
             dbContext.Servicios.AddRange(servicios);
