@@ -19546,6 +19546,11 @@
       "FileKind": "mvc"
     },
     {
+      "FilePath": "/home/william/Documentos/billing_system/Views/LandingPageAdmin/Index.cshtml",
+      "TargetPath": "Views\\LandingPageAdmin\\Index.cshtml",
+      "FileKind": "mvc"
+    },
+    {
       "FilePath": "/home/william/Documentos/billing_system/Views/Clientes/Editar.cshtml",
       "TargetPath": "Views\\Clientes\\Editar.cshtml",
       "FileKind": "mvc"
