@@ -3,6 +3,7 @@
 @{
     var busqueda = ViewBag.Busqueda as string ?? "";
     var estado = ViewBag.Estado as string ?? "";
+    var estadoSistema = ViewBag.EstadoSistema as string ?? "activos";
     var categoriaId = ViewBag.CategoriaId as int?;
     var ubicacionId = ViewBag.UbicacionId as int?;
     var tamanoPaginaActual = ViewBag.TamanoPagina as int? ?? 25;
@@ -22,6 +23,12 @@
             </h3>
             <form method="get" action="/equipos" class="flex items-center space-x-2 flex-wrap gap-2">
                 <input type="hidden" name="pagina" value="1" />
+                
+                <select name="estadoSistema" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 font-semibold">
+                    <option value="activos" @(estadoSistema == "activos" ? "selected" : "")>✅ Solo Activos</option>
+                    <option value="deshabilitados" @(estadoSistema == "deshabilitados" ? "selected" : "")>🔒 Solo Deshabilitados</option>
+                    <option value="todos" @(estadoSistema == "todos" ? "selected" : "")>📋 Todos</option>
+                </select>
                 
                 <select name="estado" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
                     <option value="">Todos los estados</option>
@@ -49,10 +56,12 @@
                 
                 <input type="text" name="busqueda" value="@busqueda" placeholder="Buscar..." 
                        class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64">
-                <button type="submit" class="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors flex items-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                     </svg>
+                    <span>Filtrar</span>
                 </button>
                 
                 <label class="text-xs text-gray-500 dark:text-gray-400">
@@ -77,6 +86,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ubicación</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Stock</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Asignado a</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
                 </tr>
             </thead>
@@ -85,12 +95,20 @@
                 {
                     @foreach (var equipo in Model.Items)
                     {
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <tr class="@(equipo.Activo ? "hover:bg-gray-50 dark:hover:bg-gray-700" : "bg-gray-100 dark:bg-gray-700/50 opacity-75") transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-medium text-gray-900 dark:text-white">@equipo.Codigo</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm font-medium @(equipo.Activo ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400")">@equipo.Codigo</span>
+                                    @if (!equipo.Activo)
+                                    {
+                                        <span class="px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                                            🔒 DESHABILITADO
+                                        </span>
+                                    }
+                                </div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900 dark:text-white">@equipo.Nombre</div>
+                                <div class="text-sm font-medium @(equipo.Activo ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400")">@equipo.Nombre</div>
                                 @if (!string.IsNullOrEmpty(equipo.Marca) || !string.IsNullOrEmpty(equipo.Modelo))
                                 {
                                     <div class="text-sm text-gray-500 dark:text-gray-400">
@@ -136,29 +154,136 @@
                                     @equipo.Estado
                                 </span>
                             </td>
+                            <td class="px-6 py-4">
+                                @{
+                                    var asignacionActiva = equipo.AsignacionesEquipo?.FirstOrDefault(a => a.Estado == "Activa");
+                                }
+                                @if (asignacionActiva != null && asignacionActiva.Cliente != null)
+                                {
+                                    <div class="text-sm">
+                                        <span class="font-medium text-blue-600 dark:text-blue-400">@asignacionActiva.Cliente.Codigo</span>
+                                        <div class="text-xs text-gray-600 dark:text-gray-400">@asignacionActiva.Cliente.Nombre</div>
+                                    </div>
+                                }
+                                else if (asignacionActiva != null && !string.IsNullOrEmpty(asignacionActiva.EmpleadoNombre))
+                                {
+                                    <div class="text-sm">
+                                        <span class="font-medium text-purple-600 dark:text-purple-400">Empleado</span>
+                                        <div class="text-xs text-gray-600 dark:text-gray-400">@asignacionActiva.EmpleadoNombre</div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-sm text-gray-400 dark:text-gray-500 italic">Sin asignar</span>
+                                }
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex items-center space-x-2">
-                                    <a href="/equipos/ver/@equipo.Id" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300" title="Ver detalles">
+                                <div class="flex items-center space-x-1">
+                                    <!-- Ver detalles -->
+                                    <a href="/equipos/ver/@equipo.Id" class="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded" title="Ver detalles">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </a>
-                                    <a href="/equipos/editar/@equipo.Id" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300" title="Editar">
+                                    
+                                    <!-- Editar -->
+                                    <a href="/equipos/editar/@equipo.Id" class="p-1 text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded" title="Editar">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </a>
-                                    <form method="post" action="/equipos/eliminar/@equipo.Id" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar el equipo \'@equipo.Nombre\'? Esta acción no se puede deshacer.');">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" 
-                                                class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300" 
-                                                title="Eliminar equipo">
+                                    
+                                    <!-- Ver historial -->
+                                    <button type="button" 
+                                            onclick="verHistorial(@equipo.Id, '@equipo.Nombre')"
+                                            class="p-1 text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded" 
+                                            title="Ver historial completo">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </button>
+                                    
+                                    <!-- Cambio rápido de estado -->
+                                    <div class="relative inline-block">
+                                        <button type="button" 
+                                                onclick="toggleDropdownEstado(@equipo.Id)"
+                                                class="p-1 text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded" 
+                                                title="Cambiar estado">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                             </svg>
                                         </button>
+                                        <div id="dropdown-estado-@equipo.Id" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-50 border border-gray-200 dark:border-gray-600">
+                                            <form method="post" action="/equipos/cambiar-estado-rapido" class="py-1">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="equipoId" value="@equipo.Id" />
+                                                <button type="submit" name="nuevoEstado" value="Disponible" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                    <span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>Disponible
+                                                </button>
+                                                <button type="submit" name="nuevoEstado" value="En Uso" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                    <span class="inline-block w-2 h-2 rounded-full bg-blue-500 mr-2"></span>En Uso
+                                                </button>
+                                                <button type="submit" name="nuevoEstado" value="Dañado" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                    <span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-2"></span>Dañado
+                                                </button>
+                                                <button type="submit" name="nuevoEstado" value="En Reparación" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                    <span class="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>En Reparación
+                                                </button>
+                                                <button type="submit" name="nuevoEstado" value="Retirado" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                    <span class="inline-block w-2 h-2 rounded-full bg-gray-500 mr-2"></span>Retirado
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Devolver asignación (solo si está asignado) -->
+                                    @if (asignacionActiva != null)
+                                    {
+                                        <form method="post" action="/equipos/devolver-asignacion/@equipo.Id" class="inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" 
+                                                    onclick="return confirm('¿Devolver el equipo asignado a @(asignacionActiva.Cliente?.Nombre ?? asignacionActiva.EmpleadoNombre)?')"
+                                                    class="p-1 text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded" 
+                                                    title="Devolver asignación">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    }
+                                    
+                                    <!-- Habilitar/Deshabilitar -->
+                                    <form method="post" action="/equipos/toggle-activo/@equipo.Id" class="inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" 
+                                                onclick="return confirm('@(equipo.Activo ? "¿Deshabilitar" : "¿Habilitar") el equipo @equipo.Nombre?')"
+                                                class="p-1 @(equipo.Activo ? "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700" : "text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20") rounded" 
+                                                title="@(equipo.Activo ? "Deshabilitar" : "Habilitar") equipo">
+                                            @if (equipo.Activo)
+                                            {
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                                </svg>
+                                            }
+                                            else
+                                            {
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            }
+                                        </button>
                                     </form>
+                                    
+                                    <!-- Eliminar -->
+                                    <button type="button" 
+                                            onclick="mostrarModalEliminar(@equipo.Id, '@equipo.Nombre', '@(asignacionActiva != null)', '@(asignacionActiva?.Cliente?.Codigo ?? "")', '@(asignacionActiva?.Cliente?.Nombre ?? "")', '@(asignacionActiva?.EmpleadoNombre ?? "")')"
+                                            class="p-1 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded" 
+                                            title="Eliminar equipo">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -167,7 +292,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                        <td colspan="8" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -181,4 +306,337 @@
         </table>
     </div>
 </div>
+
+<!-- Modal de Historial Completo -->
+<div id="modalHistorial" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white dark:bg-gray-800 mb-10">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                        📊 Historial Completo del Equipo
+                    </h3>
+                    <div class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        <span id="historialEquipoCodigo" class="font-semibold"></span> - 
+                        <span id="historialEquipoNombre"></span>
+                        <span id="historialEquipoEstado" class="ml-2 px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"></span>
+                    </div>
+                </div>
+                <button id="btnCerrarHistorial" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 max-h-[70vh] overflow-y-auto">
+                <!-- Asignaciones -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Asignaciones
+                    </h4>
+                    <div id="historialAsignaciones" class="space-y-3">
+                        <!-- Se llenará con JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Cambios de Estado -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Cambios de Estado
+                    </h4>
+                    <div id="historialEstados" class="space-y-3">
+                        <!-- Se llenará con JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Mantenimientos -->
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Mantenimientos
+                    </h4>
+                    <div id="historialMantenimientos" class="space-y-3">
+                        <!-- Se llenará con JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 flex justify-end">
+                <button id="btnCerrarHistorial2" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div id="modalEliminarEquipo" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="mt-3">
+            <div class="flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 mx-auto">
+                <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white text-center mt-4">
+                ⚠️ Confirmar Eliminación
+            </h3>
+            <div class="mt-4 px-7 py-3">
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Estás a punto de eliminar el equipo:
+                </p>
+                <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg mb-4">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white" id="equipoNombreEliminar"></p>
+                </div>
+                
+                <div id="advertenciaAsignacion" class="hidden">
+                    <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 mb-4">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-red-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                            <div>
+                                <h4 class="text-sm font-bold text-red-800 dark:text-red-300 mb-2">
+                                    ⚠️ ESTE EQUIPO TIENE UNA ASIGNACIÓN ACTIVA
+                                </h4>
+                                <p class="text-sm text-red-700 dark:text-red-400 mb-2">
+                                    Asignado actualmente a:
+                                </p>
+                                <div class="bg-white dark:bg-gray-800 p-2 rounded border border-red-200 dark:border-red-700">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white" id="asignacionInfo"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 mb-4">
+                        <h4 class="text-sm font-bold text-yellow-800 dark:text-yellow-300 mb-2">
+                            📋 Se perderá la siguiente información:
+                        </h4>
+                        <ul class="text-sm text-yellow-700 dark:text-yellow-400 list-disc list-inside space-y-1">
+                            <li>Historial de asignación actual</li>
+                            <li>Fecha de asignación al cliente/empleado</li>
+                            <li>Todos los movimientos de inventario relacionados</li>
+                            <li>Historial de cambios de estado del equipo</li>
+                            <li>Registros de mantenimiento y reparaciones</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 p-3 rounded-lg mb-4">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                        ❌ Esta acción NO se puede deshacer
+                    </p>
+                </div>
+                
+                <p class="text-sm text-gray-600 dark:text-gray-300 text-center">
+                    ¿Estás seguro de que deseas continuar?
+                </p>
+            </div>
+            <div class="items-center px-4 py-3 flex flex-col sm:flex-row gap-2 justify-center">
+                <button id="btnCancelarEliminar"
+                        class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full sm:w-auto shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Cancelar
+                </button>
+                <form id="formEliminarEquipo" method="post" action="" class="w-full sm:w-auto">
+                    @Html.AntiForgeryToken()
+                    <button type="submit"
+                            class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+                        Sí, eliminar equipo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function mostrarModalEliminar(equipoId, equipoNombre, tieneAsignacion, clienteCodigo, clienteNombre, empleadoNombre) {
+    // Actualizar información del equipo
+    document.getElementById('equipoNombreEliminar').textContent = equipoNombre;
+    
+    // Actualizar action del formulario
+    document.getElementById('formEliminarEquipo').action = '/equipos/eliminar/' + equipoId;
+    
+    // Mostrar/ocultar advertencia de asignación
+    const advertencia = document.getElementById('advertenciaAsignacion');
+    const asignacionInfo = document.getElementById('asignacionInfo');
+    
+    if (tieneAsignacion === 'True') {
+        advertencia.classList.remove('hidden');
+        
+        // Determinar si es cliente o empleado
+        if (clienteCodigo && clienteNombre) {
+            asignacionInfo.innerHTML = `
+                <span class="text-blue-600 dark:text-blue-400 font-semibold">👤 Cliente:</span><br>
+                <span class="text-gray-900 dark:text-white">${clienteCodigo} - ${clienteNombre}</span>
+            `;
+        } else if (empleadoNombre) {
+            asignacionInfo.innerHTML = `
+                <span class="text-purple-600 dark:text-purple-400 font-semibold">👨‍💼 Empleado:</span><br>
+                <span class="text-gray-900 dark:text-white">${empleadoNombre}</span>
+            `;
+        }
+    } else {
+        advertencia.classList.add('hidden');
+    }
+    
+    // Mostrar modal
+    document.getElementById('modalEliminarEquipo').classList.remove('hidden');
+}
+
+// Cerrar modal al hacer clic en cancelar
+document.getElementById('btnCancelarEliminar').addEventListener('click', function() {
+    document.getElementById('modalEliminarEquipo').classList.add('hidden');
+});
+
+// Cerrar modal al hacer clic fuera del contenido
+document.getElementById('modalEliminarEquipo').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.classList.add('hidden');
+    }
+});
+
+// Toggle dropdown de estado
+function toggleDropdownEstado(equipoId) {
+    const dropdown = document.getElementById('dropdown-estado-' + equipoId);
+    const allDropdowns = document.querySelectorAll('[id^="dropdown-estado-"]');
+    
+    // Cerrar todos los demás dropdowns
+    allDropdowns.forEach(d => {
+        if (d.id !== 'dropdown-estado-' + equipoId) {
+            d.classList.add('hidden');
+        }
+    });
+    
+    // Toggle el dropdown actual
+    dropdown.classList.toggle('hidden');
+}
+
+// Cerrar dropdowns al hacer clic fuera
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('[onclick^="toggleDropdownEstado"]') && !e.target.closest('[id^="dropdown-estado-"]')) {
+        document.querySelectorAll('[id^="dropdown-estado-"]').forEach(d => d.classList.add('hidden'));
+    }
+});
+
+// Ver historial completo
+async function verHistorial(equipoId, equipoNombre) {
+    try {
+        const response = await fetch(`/equipos/historial/${equipoId}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            alert('Error al cargar el historial: ' + data.message);
+            return;
+        }
+        
+        // Actualizar título del modal
+        document.getElementById('historialEquipoNombre').textContent = equipoNombre;
+        document.getElementById('historialEquipoCodigo').textContent = data.equipo.codigo;
+        document.getElementById('historialEquipoEstado').textContent = data.equipo.estado;
+        
+        // Renderizar asignaciones
+        const asignacionesHtml = data.asignaciones.length > 0 
+            ? data.asignaciones.map(a => `
+                <div class="border-l-4 ${a.estado === 'Activa' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 bg-gray-50 dark:bg-gray-700'} p-3 rounded">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="font-semibold text-gray-900 dark:text-white">${a.asignadoA}</span>
+                            <span class="ml-2 px-2 py-1 text-xs rounded ${a.tipoAsignado === 'Cliente' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'}">${a.tipoAsignado}</span>
+                        </div>
+                        <span class="px-2 py-1 text-xs rounded ${a.estado === 'Activa' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300'}">${a.estado}</span>
+                    </div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                        <div>📅 Asignado: ${new Date(a.fecha).toLocaleString('es-NI')}</div>
+                        ${a.fechaDevolucion ? `<div>↩️ Devuelto: ${new Date(a.fechaDevolucion).toLocaleString('es-NI')}</div>` : ''}
+                        ${a.observaciones ? `<div class="mt-1">💬 ${a.observaciones}</div>` : ''}
+                    </div>
+                </div>
+            `).join('')
+            : '<p class="text-gray-500 dark:text-gray-400 text-sm italic">No hay asignaciones registradas</p>';
+        
+        document.getElementById('historialAsignaciones').innerHTML = asignacionesHtml;
+        
+        // Renderizar cambios de estado
+        const estadosHtml = data.estados.length > 0
+            ? data.estados.map(e => `
+                <div class="border-l-4 border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="text-sm">
+                            <span class="text-gray-600 dark:text-gray-400">${e.estadoAnterior}</span>
+                            <svg class="w-4 h-4 inline mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                            <span class="font-semibold text-gray-900 dark:text-white">${e.estadoNuevo}</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                        <div>📅 ${new Date(e.fecha).toLocaleString('es-NI')}</div>
+                        <div>👤 ${e.usuario}</div>
+                        ${e.motivo ? `<div class="mt-1">💬 ${e.motivo}</div>` : ''}
+                    </div>
+                </div>
+            `).join('')
+            : '<p class="text-gray-500 dark:text-gray-400 text-sm italic">No hay cambios de estado registrados</p>';
+        
+        document.getElementById('historialEstados').innerHTML = estadosHtml;
+        
+        // Renderizar mantenimientos
+        const mantenimientosHtml = data.mantenimientos.length > 0
+            ? data.mantenimientos.map(m => `
+                <div class="border-l-4 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="font-semibold text-gray-900 dark:text-white">${m.tipoMantenimiento}</span>
+                            <span class="ml-2 px-2 py-1 text-xs rounded ${m.estado === 'Completado' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'}">${m.estado}</span>
+                        </div>
+                        ${m.costo ? `<span class="text-sm font-semibold text-gray-900 dark:text-white">C$ ${m.costo.toFixed(2)}</span>` : ''}
+                    </div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                        <div>📅 Reportado: ${new Date(m.fecha).toLocaleString('es-NI')}</div>
+                        ${m.fechaResolucion ? `<div>✅ Resuelto: ${new Date(m.fechaResolucion).toLocaleString('es-NI')}</div>` : ''}
+                        ${m.proveedor ? `<div>👤 ${m.proveedor}</div>` : ''}
+                        ${m.descripcion ? `<div class="mt-1">💬 ${m.descripcion}</div>` : ''}
+                    </div>
+                </div>
+            `).join('')
+            : '<p class="text-gray-500 dark:text-gray-400 text-sm italic">No hay mantenimientos registrados</p>';
+        
+        document.getElementById('historialMantenimientos').innerHTML = mantenimientosHtml;
+        
+        // Mostrar modal
+        document.getElementById('modalHistorial').classList.remove('hidden');
+        
+    } catch (error) {
+        alert('Error al cargar el historial: ' + error.message);
+    }
+}
+
+// Cerrar modal de historial
+document.getElementById('btnCerrarHistorial')?.addEventListener('click', function() {
+    document.getElementById('modalHistorial').classList.add('hidden');
+});
+
+document.getElementById('btnCerrarHistorial2')?.addEventListener('click', function() {
+    document.getElementById('modalHistorial').classList.add('hidden');
+});
+
+document.getElementById('modalHistorial')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.classList.add('hidden');
+    }
+});
+</script>
 

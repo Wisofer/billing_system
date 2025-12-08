@@ -5,6 +5,8 @@
     var categorias = ViewBag.Categorias as List<billing_system.Models.Entities.CategoriaEquipo> ?? new List<billing_system.Models.Entities.CategoriaEquipo>();
     var ubicaciones = ViewBag.Ubicaciones as List<billing_system.Models.Entities.Ubicacion> ?? new List<billing_system.Models.Entities.Ubicacion>();
     var proveedores = ViewBag.Proveedores as List<billing_system.Models.Entities.Proveedor> ?? new List<billing_system.Models.Entities.Proveedor>();
+    var clientes = ViewBag.Clientes as List<billing_system.Models.Entities.Cliente> ?? new List<billing_system.Models.Entities.Cliente>();
+    var asignacionActiva = ViewBag.AsignacionActiva as billing_system.Models.Entities.AsignacionEquipo;
     var estados = ViewBag.Estados as string[] ?? new string[0];
 }
 
@@ -154,6 +156,31 @@
                         }
                     </select>
                     <span asp-validation-for="Estado" class="text-red-500 text-xs"></span>
+                </div>
+
+                <div>
+                    <label for="ClienteId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Asignar a Cliente
+                        <span class="text-gray-500 text-xs font-normal">(Opcional)</span>
+                    </label>
+                    <select name="ClienteId" id="ClienteId"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                        <option value="">Sin asignar</option>
+                        @foreach (var cliente in clientes)
+                        {
+                            <option value="@cliente.Id" @(asignacionActiva?.ClienteId == cliente.Id ? "selected" : "")>@cliente.Codigo - @cliente.Nombre</option>
+                        }
+                    </select>
+                    @if (asignacionActiva != null)
+                    {
+                        <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                            ℹ️ Actualmente asignado. Cambiar la selección actualizará la asignación.
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Si seleccionas un cliente, el equipo será asignado automáticamente</p>
+                    }
                 </div>
             </div>
 

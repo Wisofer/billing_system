@@ -1,5 +1,6 @@
 @{
     var totalEquipos = ViewBag.TotalEquipos as int? ?? 0;
+    var totalDeshabilitados = ViewBag.TotalDeshabilitados as int? ?? 0;
     var disponibles = ViewBag.Disponibles as int? ?? 0;
     var enUso = ViewBag.EnUso as int? ?? 0;
     var danados = ViewBag.Danados as int? ?? 0;
@@ -12,12 +13,26 @@
     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Equipos</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Activos</p>
                 <p class="text-2xl font-semibold text-gray-900 dark:text-white">@totalEquipos</p>
             </div>
             <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900 rounded-lg flex items-center justify-center">
                 <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Deshabilitados</p>
+                <p class="text-2xl font-semibold text-gray-600 dark:text-gray-400">@totalDeshabilitados</p>
+            </div>
+            <div class="w-10 h-10 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
             </div>
         </div>

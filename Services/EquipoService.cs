@@ -27,14 +27,22 @@ public class EquipoService : IEquipoService
             .ToList();
     }
 
-    public PagedResult<Equipo> ObtenerPaginados(int pagina = 1, int tamanoPagina = 10, string? busqueda = null, string? estado = null, int? categoriaId = null, int? ubicacionId = null)
+    public PagedResult<Equipo> ObtenerPaginados(int pagina = 1, int tamanoPagina = 10, string? busqueda = null, string? estado = null, int? categoriaId = null, int? ubicacionId = null, bool? soloActivos = true)
     {
         var query = _context.Equipos
             .Include(e => e.CategoriaEquipo)
             .Include(e => e.Ubicacion)
             .Include(e => e.Proveedor)
-            .Where(e => e.Activo)
+            .Include(e => e.AsignacionesEquipo.Where(a => a.Estado == "Activa"))
+                .ThenInclude(a => a.Cliente)
             .AsQueryable();
+        
+        // Filtro por estado del sistema (activo/inactivo)
+        if (soloActivos.HasValue)
+        {
+            query = query.Where(e => e.Activo == soloActivos.Value);
+        }
+        // Si soloActivos es null, mostrar todos (activos + inactivos)
 
         // Aplicar filtros
         if (!string.IsNullOrWhiteSpace(busqueda))
@@ -93,7 +101,7 @@ public class EquipoService : IEquipoService
             .Include(e => e.MantenimientosReparaciones)
             .Include(e => e.HistorialEstados)
                 .ThenInclude(h => h.Usuario)
-            .FirstOrDefault(e => e.Id == id && e.Activo);
+            .FirstOrDefault(e => e.Id == id); // Removido filtro e.Activo para poder obtener equipos deshabilitados también
     }
 
     public Equipo? ObtenerPorCodigo(string codigo)
@@ -215,16 +223,50 @@ public class EquipoService : IEquipoService
         if (equipo == null)
             return false;
 
-        // Verificar si tiene asignaciones activas
-        var tieneAsignacionesActivas = _context.AsignacionesEquipo
-            .Any(a => a.EquipoId == id && a.Estado == SD.EstadoAsignacionActiva);
+        // ELIMINACIÓN EN CASCADA:
+        // 1. Eliminar todas las asignaciones (activas e inactivas)
+        var asignaciones = _context.AsignacionesEquipo
+            .Where(a => a.EquipoId == id)
+            .ToList();
+        
+        if (asignaciones.Any())
+        {
+            _context.AsignacionesEquipo.RemoveRange(asignaciones);
+        }
 
-        if (tieneAsignacionesActivas)
-            return false; // No se puede eliminar si tiene asignaciones activas
+        // 2. Eliminar historial de estados
+        var historialEstados = _context.HistorialEstadosEquipo
+            .Where(h => h.EquipoId == id)
+            .ToList();
+        
+        if (historialEstados.Any())
+        {
+            _context.HistorialEstadosEquipo.RemoveRange(historialEstados);
+        }
 
-        // Soft delete
-        equipo.Activo = false;
-        equipo.FechaActualizacion = DateTime.Now;
+        // 3. Eliminar movimientos de inventario relacionados (EquipoMovimiento)
+        var equipoMovimientos = _context.EquipoMovimientos
+            .Where(em => em.EquipoId == id)
+            .ToList();
+        
+        if (equipoMovimientos.Any())
+        {
+            _context.EquipoMovimientos.RemoveRange(equipoMovimientos);
+        }
+
+        // 4. Eliminar mantenimientos/reparaciones
+        var mantenimientos = _context.MantenimientosReparaciones
+            .Where(m => m.EquipoId == id)
+            .ToList();
+        
+        if (mantenimientos.Any())
+        {
+            _context.MantenimientosReparaciones.RemoveRange(mantenimientos);
+        }
+
+        // 5. Finalmente, eliminar el equipo FÍSICAMENTE (hard delete)
+        _context.Equipos.Remove(equipo);
+        
         _context.SaveChanges();
         return true;
     }
@@ -248,17 +290,22 @@ public class EquipoService : IEquipoService
 
     private void RegistrarCambioEstado(int equipoId, string estadoAnterior, string estadoNuevo, int usuarioId, string? motivo)
     {
-        var historial = new HistorialEstadoEquipo
+        // Solo registrar en historial si hay un usuario válido
+        if (usuarioId > 0)
         {
-            EquipoId = equipoId,
-            EstadoAnterior = estadoAnterior,
-            EstadoNuevo = estadoNuevo,
-            UsuarioId = usuarioId,
-            Motivo = motivo,
-            FechaCambio = DateTime.Now
-        };
+            var historial = new HistorialEstadoEquipo
+            {
+                EquipoId = equipoId,
+                EstadoAnterior = estadoAnterior,
+                EstadoNuevo = estadoNuevo,
+                UsuarioId = usuarioId,
+                Motivo = motivo,
+                FechaCambio = DateTime.Now
+            };
 
-        _context.HistorialEstadosEquipo.Add(historial);
+            _context.HistorialEstadosEquipo.Add(historial);
+        }
+        // Si no hay usuario válido (cambios automáticos del sistema), no registrar en historial
     }
 
     public bool ExisteCodigo(string codigo, int? idExcluir = null)

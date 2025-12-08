@@ -6,7 +6,7 @@ namespace billing_system.Services.IServices;
 public interface IEquipoService
 {
     List<Equipo> ObtenerTodos();
-    PagedResult<Equipo> ObtenerPaginados(int pagina = 1, int tamanoPagina = 10, string? busqueda = null, string? estado = null, int? categoriaId = null, int? ubicacionId = null);
+    PagedResult<Equipo> ObtenerPaginados(int pagina = 1, int tamanoPagina = 10, string? busqueda = null, string? estado = null, int? categoriaId = null, int? ubicacionId = null, bool? soloActivos = true);
     Equipo? ObtenerPorId(int id);
     Equipo? ObtenerPorCodigo(string codigo);
     Equipo? ObtenerPorNumeroSerie(string numeroSerie);
