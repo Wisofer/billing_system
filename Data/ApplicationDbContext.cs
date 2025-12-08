@@ -336,7 +336,7 @@ public class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
             
             entity.HasOne(e => e.Cliente)
-                .WithMany()
+                .WithMany(c => c.AsignacionesEquipo)
                 .HasForeignKey(e => e.ClienteId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
