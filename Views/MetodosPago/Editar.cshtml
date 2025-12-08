@@ -1,0 +1,136 @@
+@model billing_system.Models.Entities.MetodoPago
+@{
+    ViewData["Title"] = "Editar Método de Pago";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var bancos = ViewBag.Bancos as string[];
+    var tiposCuenta = ViewBag.TiposCuenta as string[];
+    var monedas = ViewBag.Monedas as string[];
+    var iconos = ViewBag.Iconos as string[];
+}
+
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Editar Método de Pago</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">Modifica los datos de la cuenta bancaria</p>
+    </div>
+
+    <form action="/metodos-pago/editar/@Model.Id" method="post" class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="Id" value="@Model.Id" />
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Nombre del Banco -->
+            <div class="md:col-span-2">
+                <label for="NombreBanco" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Nombre del Banco *
+                </label>
+                <select name="NombreBanco" id="NombreBanco" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" required>
+                    <option value="">Seleccionar banco...</option>
+                    @if (bancos != null)
+                    {
+                        @foreach (var banco in bancos)
+                        {
+                            <option value="@banco" @(Model.NombreBanco == banco ? "selected" : "")>@banco</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Icono -->
+            <div>
+                <label for="Icono" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Icono (Emoji)
+                </label>
+                <select name="Icono" id="Icono" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                    <option value="">Sin icono...</option>
+                    @if (iconos != null)
+                    {
+                        @foreach (var icono in iconos)
+                        {
+                            <option value="@icono" @(Model.Icono == icono ? "selected" : "")>@icono @icono</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Tipo de Cuenta -->
+            <div>
+                <label for="TipoCuenta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Tipo de Cuenta *
+                </label>
+                <select name="TipoCuenta" id="TipoCuenta" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" required>
+                    <option value="">Seleccionar tipo...</option>
+                    @if (tiposCuenta != null)
+                    {
+                        @foreach (var tipo in tiposCuenta)
+                        {
+                            <option value="@tipo" @(Model.TipoCuenta == tipo ? "selected" : "")>@tipo</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Moneda -->
+            <div>
+                <label for="Moneda" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Moneda
+                </label>
+                <select name="Moneda" id="Moneda" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                    <option value="">Seleccionar moneda...</option>
+                    @if (monedas != null)
+                    {
+                        @foreach (var moneda in monedas)
+                        {
+                            <option value="@moneda" @(Model.Moneda == moneda ? "selected" : "")>@moneda</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Número de Cuenta -->
+            <div>
+                <label for="NumeroCuenta" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Número de Cuenta
+                </label>
+                <input type="text" name="NumeroCuenta" id="NumeroCuenta" value="@Model.NumeroCuenta" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" placeholder="10020200333635">
+            </div>
+
+            <!-- Mensaje -->
+            <div class="md:col-span-2">
+                <label for="Mensaje" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Mensaje Adicional
+                </label>
+                <textarea name="Mensaje" id="Mensaje" rows="3" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" placeholder="Ej: Próximamente Disponible">@Model.Mensaje</textarea>
+            </div>
+
+            <!-- Orden -->
+            <div>
+                <label for="Orden" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Orden de Visualización
+                </label>
+                <input type="number" name="Orden" id="Orden" value="@Model.Orden" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" min="0">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Menor número aparece primero</p>
+            </div>
+
+            <!-- Activo -->
+            <div class="flex items-center">
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <input type="checkbox" name="Activo" value="true" @(Model.Activo ? "checked" : "") class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Visible en landing page</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-8 flex items-center justify-end space-x-4">
+            <a href="/metodos-pago" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                Cancelar
+            </a>
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                Actualizar Método de Pago
+            </button>
+        </div>
+    </form>
+</div>
+

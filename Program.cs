@@ -95,6 +95,10 @@ builder.Services.AddScoped<IMovimientoInventarioService, MovimientoInventarioSer
 builder.Services.AddScoped<IAsignacionEquipoService, AsignacionEquipoService>();
 builder.Services.AddScoped<IMantenimientoReparacionService, MantenimientoReparacionService>();
 
+// Servicios de Landing Page
+builder.Services.AddScoped<IMetodoPagoService, MetodoPagoService>();
+builder.Services.AddScoped<IServicioLandingPageService, ServicioLandingPageService>();
+
 // Registrar servicio en segundo plano para generación automática de facturas
 // Este servicio se ejecutará el día 1 de cada mes a las 2:00 AM
 builder.Services.AddHostedService<FacturaAutomaticaBackgroundService>();
@@ -152,6 +156,12 @@ using (var scope = app.Services.CreateScope())
 
         // Inicializar datos básicos de inventario
         InicializarInventario.InicializarDatosBasicos(dbContext, logger);
+
+        // Inicializar métodos de pago por defecto para landing page
+        InicializarMetodosPago.CrearMetodosPagoDefectoSiNoExisten(dbContext, logger);
+
+        // Inicializar servicios de landing page por defecto
+        InicializarServiciosLandingPage.CrearServiciosLandingPageDefectoSiNoExisten(dbContext, logger);
     }
     catch (Exception ex)
     {

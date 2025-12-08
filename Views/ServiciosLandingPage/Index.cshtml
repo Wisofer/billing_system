@@ -1,0 +1,204 @@
+@model List<billing_system.Models.Entities.ServicioLandingPage>
+@{
+    ViewData["Title"] = "Servicios - Landing Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Servicios de Internet</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Administra los servicios mostrados en la landing page</p>
+        </div>
+        <a href="/servicios-landing/crear" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Nuevo Servicio</span>
+        </a>
+    </div>
+
+    <!-- Notificaciones -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 p-4 mb-6">
+            <p class="text-green-800 dark:text-green-300">@TempData["Success"]</p>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 mb-6">
+            <p class="text-red-800 dark:text-red-300">@TempData["Error"]</p>
+        </div>
+    }
+
+    <!-- Tabla de Servicios -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Orden</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Servicio</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Velocidad</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Precio</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Etiqueta</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                            No hay servicios registrados.
+                            <a href="/servicios-landing/crear" class="text-blue-600 hover:text-blue-800 ml-2">Crear el primero</a>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var servicio in Model)
+                    {
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                <span class="font-mono">@servicio.Orden</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-start space-x-3">
+                                    @if (!string.IsNullOrWhiteSpace(servicio.Icono))
+                                    {
+                                        <span class="text-2xl flex-shrink-0">@servicio.Icono</span>
+                                    }
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white">@servicio.Titulo</p>
+                                        <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">@servicio.Descripcion</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                @if (!string.IsNullOrWhiteSpace(servicio.Velocidad))
+                                {
+                                    <span class="font-semibold text-blue-600 dark:text-blue-400">@servicio.Velocidad</span>
+                                }
+                                else
+                                {
+                                    <span class="text-gray-400 dark:text-gray-500">-</span>
+                                }
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
+                                C$ @servicio.Precio.ToString("N2")
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                @if (!string.IsNullOrWhiteSpace(servicio.Etiqueta))
+                                {
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full @servicio.ColorEtiqueta text-white">
+                                        @servicio.Etiqueta
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-gray-400 dark:text-gray-500">-</span>
+                                }
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center space-x-2">
+                                    @if (servicio.Activo)
+                                    {
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                            Activo
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400">
+                                            Inactivo
+                                        </span>
+                                    }
+                                    @if (servicio.Destacado)
+                                    {
+                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                                            ⭐ Destacado
+                                        </span>
+                                    }
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex items-center justify-end space-x-2">
+                                    <!-- Editar -->
+                                    <a href="/servicios-landing/editar/@servicio.Id" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300" title="Editar">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </a>
+
+                                    <!-- Toggle Activo -->
+                                    <form action="/servicios-landing/toggle-activo/@servicio.Id" method="post" class="inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="@(servicio.Activo ? "text-yellow-600 hover:text-yellow-900 dark:text-yellow-400" : "text-green-600 hover:text-green-900 dark:text-green-400")" title="@(servicio.Activo ? "Desactivar" : "Activar")">
+                                            @if (servicio.Activo)
+                                            {
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                                </svg>
+                                            }
+                                            else
+                                            {
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            }
+                                        </button>
+                                    </form>
+
+                                    <!-- Toggle Destacado -->
+                                    <form action="/servicios-landing/toggle-destacado/@servicio.Id" method="post" class="inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="@(servicio.Destacado ? "text-yellow-600 hover:text-yellow-900 dark:text-yellow-400" : "text-gray-600 hover:text-gray-900 dark:text-gray-400")" title="@(servicio.Destacado ? "Quitar destacado" : "Marcar como destacado")">
+                                            <svg class="w-5 h-5" fill="@(servicio.Destacado ? "currentColor" : "none")" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                            </svg>
+                                        </button>
+                                    </form>
+
+                                    <!-- Eliminar -->
+                                    <form action="/servicios-landing/eliminar/@servicio.Id" method="post" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar este servicio?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" title="Eliminar">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Info de API -->
+    <div class="mt-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-300 mb-3">📡 API para Landing Page</h3>
+        <p class="text-sm text-blue-800 dark:text-blue-400 mb-4">
+            Los servicios editados aquí se exponen automáticamente a través de la API pública para la landing page en React.
+        </p>
+        <div class="space-y-2 text-sm font-mono">
+            <div class="flex items-center space-x-2">
+                <span class="text-green-600 dark:text-green-400 font-semibold">GET</span>
+                <code class="bg-white dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-300">/api/landing/servicios</code>
+                <span class="text-gray-600 dark:text-gray-400">- Servicios de internet</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span class="text-green-600 dark:text-green-400 font-semibold">GET</span>
+                <code class="bg-white dark:bg-gray-800 px-2 py-1 rounded text-gray-700 dark:text-gray-300">/api/landing/info</code>
+                <span class="text-gray-600 dark:text-gray-400">- Servicios + Métodos de pago</span>
+            </div>
+        </div>
+    </div>
+</div>
+

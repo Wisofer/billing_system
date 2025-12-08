@@ -21,6 +21,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<PlantillaMensajeWhatsApp> PlantillasMensajeWhatsApp { get; set; }
     public DbSet<Configuracion> Configuraciones { get; set; }
     
+    // Landing Page
+    public DbSet<MetodoPago> MetodosPago { get; set; }
+    public DbSet<ServicioLandingPage> ServiciosLandingPage { get; set; }
+    
     // Inventario
     public DbSet<Equipo> Equipos { get; set; }
     public DbSet<CategoriaEquipo> CategoriasEquipo { get; set; }
@@ -212,6 +216,37 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Descripcion).HasMaxLength(500);
             entity.Property(e => e.UsuarioActualizacion).HasMaxLength(200);
             entity.HasIndex(e => e.Clave).IsUnique(); // Clave única para evitar duplicados
+        });
+
+        // Configuración de MetodoPago (Landing Page)
+        modelBuilder.Entity<MetodoPago>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.NombreBanco).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Icono).HasMaxLength(10);
+            entity.Property(e => e.TipoCuenta).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Moneda).HasMaxLength(10);
+            entity.Property(e => e.NumeroCuenta).HasMaxLength(100);
+            entity.Property(e => e.Mensaje).HasMaxLength(500);
+            entity.Property(e => e.Orden).HasDefaultValue(0);
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+        });
+
+        // Configuración de ServicioLandingPage (Landing Page)
+        modelBuilder.Entity<ServicioLandingPage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Titulo).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Descripcion).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Precio).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Velocidad).HasMaxLength(50);
+            entity.Property(e => e.Etiqueta).HasMaxLength(100);
+            entity.Property(e => e.ColorEtiqueta).HasMaxLength(50);
+            entity.Property(e => e.Icono).HasMaxLength(10);
+            entity.Property(e => e.Caracteristicas).HasColumnType("text");
+            entity.Property(e => e.Orden).HasDefaultValue(0);
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.Property(e => e.Destacado).HasDefaultValue(false);
         });
 
         // Configuración de Equipo

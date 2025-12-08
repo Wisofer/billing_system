@@ -19466,6 +19466,11 @@
   "RootNamespace": "billing_system",
   "Documents": [
     {
+      "FilePath": "/home/william/Documentos/billing_system/Views/MetodosPago/Index.cshtml",
+      "TargetPath": "Views\\MetodosPago\\Index.cshtml",
+      "FileKind": "mvc"
+    },
+    {
       "FilePath": "/home/william/Documentos/billing_system/Views/Facturas/_Notificaciones.cshtml",
       "TargetPath": "Views\\Facturas\\_Notificaciones.cshtml",
       "FileKind": "mvc"
@@ -19473,6 +19478,11 @@
     {
       "FilePath": "/home/william/Documentos/billing_system/Views/Facturas/_Header.cshtml",
       "TargetPath": "Views\\Facturas\\_Header.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "/home/william/Documentos/billing_system/Views/ServiciosLandingPage/Index.cshtml",
+      "TargetPath": "Views\\ServiciosLandingPage\\Index.cshtml",
       "FileKind": "mvc"
     },
     {
@@ -19506,6 +19516,11 @@
       "FileKind": "mvc"
     },
     {
+      "FilePath": "/home/william/Documentos/billing_system/Views/MetodosPago/Crear.cshtml",
+      "TargetPath": "Views\\MetodosPago\\Crear.cshtml",
+      "FileKind": "mvc"
+    },
+    {
       "FilePath": "/home/william/Documentos/billing_system/Views/Ubicaciones/Index.cshtml",
       "TargetPath": "Views\\Ubicaciones\\Index.cshtml",
       "FileKind": "mvc"
@@ -19518,6 +19533,11 @@
     {
       "FilePath": "/home/william/Documentos/billing_system/Views/Equipos/_Notificaciones.cshtml",
       "TargetPath": "Views\\Equipos\\_Notificaciones.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "/home/william/Documentos/billing_system/Views/MetodosPago/Editar.cshtml",
+      "TargetPath": "Views\\MetodosPago\\Editar.cshtml",
       "FileKind": "mvc"
     },
     {
@@ -19636,6 +19656,11 @@
       "FileKind": "mvc"
     },
     {
+      "FilePath": "/home/william/Documentos/billing_system/Views/ServiciosLandingPage/Crear.cshtml",
+      "TargetPath": "Views\\ServiciosLandingPage\\Crear.cshtml",
+      "FileKind": "mvc"
+    },
+    {
       "FilePath": "/home/william/Documentos/billing_system/Views/Servicios/_Notificaciones.cshtml",
       "TargetPath": "Views\\Servicios\\_Notificaciones.cshtml",
       "FileKind": "mvc"
@@ -19663,6 +19688,11 @@
     {
       "FilePath": "/home/william/Documentos/billing_system/Views/CategoriasEquipo/Editar.cshtml",
       "TargetPath": "Views\\CategoriasEquipo\\Editar.cshtml",
+      "FileKind": "mvc"
+    },
+    {
+      "FilePath": "/home/william/Documentos/billing_system/Views/ServiciosLandingPage/Editar.cshtml",
+      "TargetPath": "Views\\ServiciosLandingPage\\Editar.cshtml",
       "FileKind": "mvc"
     },
     {
