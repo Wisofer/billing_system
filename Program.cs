@@ -17,6 +17,24 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configurar CORS para permitir acceso desde React (Landing Page)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("LandingPagePolicy", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:5173",           // React Dev (Vite)
+                "http://localhost:3000",           // React Dev (Create React App)
+                "https://emsinetsolut.com",        // Producción
+                "https://www.emsinetsolut.com",    // Producción www
+                "https://landing.emsinetsolut.com" // Subdomain si lo usas
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
 // Agregar servicios al contenedor
 builder.Services.AddControllersWithViews();
 
@@ -202,6 +220,9 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseRouting();
+
+// Habilitar CORS para la landing page (DEBE ir después de UseRouting y antes de UseAuthentication)
+app.UseCors("LandingPagePolicy");
 
 // Habilitar sesiones
 app.UseSession();
