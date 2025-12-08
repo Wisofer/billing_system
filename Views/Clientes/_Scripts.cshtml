@@ -159,5 +159,167 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Loader para importación de Excel
+document.addEventListener('DOMContentLoaded', function() {
+    const formImportarExcel = document.getElementById('formImportarExcel');
+    const btnImportarExcel = document.getElementById('btnImportarExcel');
+    const loaderImportarExcel = document.getElementById('loaderImportarExcel');
+    const barraProgresoImportar = document.getElementById('barraProgresoImportar');
+    const progresoImportarTexto = document.getElementById('progresoImportarTexto');
+    const progresoImportarPorcentaje = document.getElementById('progresoImportarPorcentaje');
+    const mensajeImportarProgreso = document.getElementById('mensajeImportarProgreso');
+    
+    // Función para contar filas en Excel usando FileReader
+    async function contarFilasExcel(archivo) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    
+                    // Intentar leer el archivo como ZIP (los .xlsx son archivos ZIP)
+                    // Buscar el archivo xl/worksheets/sheet1.xml dentro del ZIP
+                    // Esto requiere descomprimir el ZIP, lo cual es complejo sin librerías
+                    
+                    // Método alternativo: estimación inteligente basada en el tamaño
+                    // Un archivo Excel .xlsx tiene overhead de ~10-20KB
+                    // Cada fila de datos ocupa aproximadamente 300-600 bytes (depende de los datos)
+                    const tamañoBytes = archivo.size;
+                    const overheadEstimado = 15000; // ~15KB de overhead del Excel
+                    const bytesPorFila = 450; // Promedio de bytes por fila
+                    const filasEstimadas = Math.max(1, Math.floor((tamañoBytes - overheadEstimado) / bytesPorFila) - 1); // -1 por encabezado
+                    
+                    // Para archivos muy pequeños, usar una estimación mínima
+                    if (filasEstimadas < 1) {
+                        resolve(10); // Mínimo 10 filas estimadas
+                    } else {
+                        resolve(filasEstimadas);
+                    }
+                } catch (error) {
+                    console.error('Error al contar filas:', error);
+                    // Si falla, usar estimación conservadora
+                    const tamañoBytes = archivo.size;
+                    const estimacionConservadora = Math.max(10, Math.floor(tamañoBytes / 500));
+                    resolve(estimacionConservadora);
+                }
+            };
+            reader.onerror = function() {
+                // Si falla la lectura, usar estimación basada en tamaño
+                const tamañoBytes = archivo.size;
+                const estimacion = Math.max(10, Math.floor(tamañoBytes / 500));
+                resolve(estimacion);
+            };
+            reader.readAsArrayBuffer(archivo);
+        });
+    }
+    
+    if (formImportarExcel && btnImportarExcel && loaderImportarExcel) {
+        formImportarExcel.addEventListener('submit', async function(e) {
+            // Validar que haya un archivo seleccionado
+            const archivoInput = document.getElementById('archivoExcel');
+            if (!archivoInput || !archivoInput.files || archivoInput.files.length === 0) {
+                e.preventDefault();
+                alert('Por favor selecciona un archivo Excel.');
+                return;
+            }
+            
+            const archivo = archivoInput.files[0];
+            
+            // Deshabilitar el botón
+            btnImportarExcel.disabled = true;
+            btnImportarExcel.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Cambiar el contenido del botón
+            const contenidoOriginal = btnImportarExcel.innerHTML;
+            btnImportarExcel.innerHTML = `
+                <svg class="w-4 h-4 animate-spin inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Importando...</span>
+            `;
+            
+            // Mostrar el loader
+            loaderImportarExcel.classList.remove('hidden');
+            
+            // Inicializar la barra de progreso
+            let filasProcesadas = 0;
+            let totalFilas = 0;
+            
+            // Contar filas del Excel
+            try {
+                totalFilas = await contarFilasExcel(archivo);
+                if (progresoImportarTexto) {
+                    progresoImportarTexto.textContent = `0 / ${totalFilas}`;
+                }
+                if (mensajeImportarProgreso) {
+                    mensajeImportarProgreso.textContent = `Iniciando importación de ${totalFilas} cliente(s)...`;
+                }
+            } catch (error) {
+                console.error('Error al contar filas:', error);
+                // Usar estimación por defecto
+                totalFilas = 100;
+                if (progresoImportarTexto) {
+                    progresoImportarTexto.textContent = `0 / ${totalFilas}`;
+                }
+            }
+            
+            // Calcular velocidad de procesamiento (filas por segundo)
+            // Estimación: 5-20 filas por segundo dependiendo del tamaño
+            const velocidadBase = totalFilas > 100 ? 15 : 10; // Más rápido para archivos grandes
+            const intervaloMs = Math.max(50, Math.min(200, (totalFilas / velocidadBase) * 10)); // Ajustar velocidad
+            
+            // Simular progreso real: 1, 2, 3, 4... hasta totalFilas
+            const intervaloProgreso = setInterval(function() {
+                if (filasProcesadas < totalFilas) {
+                    filasProcesadas++;
+                    
+                    // Calcular porcentaje
+                    const porcentaje = Math.min(95, (filasProcesadas / totalFilas) * 100);
+                    
+                    // Actualizar barra de progreso
+                    if (barraProgresoImportar) {
+                        barraProgresoImportar.style.width = porcentaje + '%';
+                    }
+                    
+                    // Actualizar porcentaje
+                    if (progresoImportarPorcentaje) {
+                        progresoImportarPorcentaje.textContent = Math.round(porcentaje) + '%';
+                    }
+                    
+                    // Actualizar contador: 1 / 289, 2 / 289, etc.
+                    if (progresoImportarTexto) {
+                        progresoImportarTexto.textContent = `${filasProcesadas} / ${totalFilas}`;
+                    }
+                    
+                    // Actualizar mensaje
+                    if (mensajeImportarProgreso) {
+                        mensajeImportarProgreso.textContent = `Procesando cliente ${filasProcesadas} de ${totalFilas}...`;
+                    }
+                } else {
+                    // Si llegamos al total estimado, mantener en 95% hasta que termine realmente
+                    const porcentaje = 95;
+                    if (barraProgresoImportar) {
+                        barraProgresoImportar.style.width = porcentaje + '%';
+                    }
+                    if (progresoImportarPorcentaje) {
+                        progresoImportarPorcentaje.textContent = porcentaje + '%';
+                    }
+                    if (mensajeImportarProgreso) {
+                        mensajeImportarProgreso.textContent = `Finalizando importación...`;
+                    }
+                }
+            }, intervaloMs); // Velocidad ajustada según el total de filas
+            
+            // Limpiar intervalo cuando la página recargue
+            window.addEventListener('beforeunload', function() {
+                clearInterval(intervaloProgreso);
+            });
+            
+            // El formulario se enviará normalmente
+            // El loader se ocultará cuando la página recargue
+        });
+    }
+});
 </script>
 

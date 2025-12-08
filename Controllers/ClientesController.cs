@@ -518,10 +518,13 @@ public class ClientesController : Controller
                     {
                         try
                         {
-                            var nombre = worksheet.Cells[row, 1].Value?.ToString()?.Trim() ?? "";
-                            var email = worksheet.Cells[row, 2].Value?.ToString()?.Trim() ?? "";
-                            var telefono = worksheet.Cells[row, 3].Value?.ToString()?.Trim() ?? "";
-                            var cedula = worksheet.Cells[row, 4].Value?.ToString()?.Trim() ?? "";
+                            // Orden correcto según el Excel: Código, Nombre, Email, Teléfono, Cédula, Servicios, Total Facturas, Estado, Fecha Creación
+                            var codigoExcel = worksheet.Cells[row, 1].Value?.ToString()?.Trim() ?? "";
+                            var nombre = worksheet.Cells[row, 2].Value?.ToString()?.Trim() ?? "";
+                            var email = worksheet.Cells[row, 3].Value?.ToString()?.Trim() ?? "";
+                            var telefono = worksheet.Cells[row, 4].Value?.ToString()?.Trim() ?? "";
+                            var cedula = worksheet.Cells[row, 5].Value?.ToString()?.Trim() ?? "";
+                            var totalFacturasStr = worksheet.Cells[row, 7].Value?.ToString()?.Trim() ?? "";
 
                             if (string.IsNullOrWhiteSpace(nombre))
                             {
@@ -549,8 +552,38 @@ public class ClientesController : Controller
                                 continue;
                             }
 
-                            // Generar código único
-                            var codigo = CodigoHelper.GenerarCodigoClienteUnico(c => _clienteService.ExisteCodigo(c));
+                            // Manejar código: usar el del Excel si viene, o generar uno nuevo
+                            string codigo;
+                            if (!string.IsNullOrWhiteSpace(codigoExcel))
+                            {
+                                // Si viene código del Excel, validar que no exista
+                                if (_clienteService.ExisteCodigo(codigoExcel))
+                                {
+                                    errores.Add($"Fila {row}: El código '{codigoExcel}' ya existe en el sistema. Se omite esta fila.");
+                                    continue;
+                                }
+                                // Usar el código del Excel
+                                codigo = codigoExcel;
+                            }
+                            else
+                            {
+                                // Si no viene código, generar uno automáticamente
+                                codigo = CodigoHelper.GenerarCodigoClienteUnico(c => _clienteService.ExisteCodigo(c));
+                            }
+
+                            // Parsear TotalFacturas
+                            int totalFacturas = 0;
+                            if (!string.IsNullOrWhiteSpace(totalFacturasStr))
+                            {
+                                if (int.TryParse(totalFacturasStr, out int parsedTotal))
+                                {
+                                    totalFacturas = parsedTotal;
+                                }
+                                else
+                                {
+                                    errores.Add($"Fila {row}: El valor de 'Total Facturas' ('{totalFacturasStr}') no es un número válido. Se usará 0.");
+                                }
+                            }
 
                             var cliente = new Cliente
                             {
@@ -558,7 +591,8 @@ public class ClientesController : Controller
                                 Nombre = nombre,
                                 Email = string.IsNullOrWhiteSpace(email) ? null : email,
                                 Telefono = string.IsNullOrWhiteSpace(telefono) ? null : telefono,
-                                Cedula = string.IsNullOrWhiteSpace(cedula) ? null : cedula
+                                Cedula = string.IsNullOrWhiteSpace(cedula) ? null : cedula,
+                                TotalFacturas = totalFacturas
                             };
 
                             _clienteService.Crear(cliente);

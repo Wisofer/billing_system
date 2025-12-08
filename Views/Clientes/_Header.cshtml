@@ -16,7 +16,7 @@
             </svg>
             <span>Descargar Excel</span>
         </a>
-        <form action="/clientes/importar" method="post" enctype="multipart/form-data" class="flex items-center space-x-2">
+        <form action="/clientes/importar" method="post" enctype="multipart/form-data" class="flex items-center space-x-2" id="formImportarExcel">
             @Html.AntiForgeryToken()
             <label class="cursor-pointer">
                 <input type="file" name="archivoExcel" accept=".xlsx,.xls" required 
@@ -28,7 +28,7 @@
                     <span id="nombreArchivo">Importar Excel</span>
                 </span>
             </label>
-            <button type="submit" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium @(esAdministrador ? "" : "opacity-50 cursor-not-allowed")" @(esAdministrador ? "" : "disabled")>
+            <button type="submit" id="btnImportarExcel" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium @(esAdministrador ? "" : "opacity-50 cursor-not-allowed")" @(esAdministrador ? "" : "disabled")>
                 Importar
             </button>
         </form>
