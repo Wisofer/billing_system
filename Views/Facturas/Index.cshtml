@@ -386,5 +386,59 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // ========================================
+    // EXPORTAR A EXCEL
+    // ========================================
+    const btnExportarExcel = document.getElementById('btnExportarExcel');
+    if (btnExportarExcel) {
+        btnExportarExcel.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Obtener parámetros de la URL actual para aplicar los mismos filtros
+            const urlParams = new URLSearchParams(window.location.search);
+            const params = new URLSearchParams();
+            
+            // Copiar solo los parámetros relevantes (sin paginación)
+            if (urlParams.has('estado') && urlParams.get('estado') !== 'Todos') {
+                params.append('estado', urlParams.get('estado'));
+            }
+            if (urlParams.has('mes')) {
+                params.append('mes', urlParams.get('mes'));
+            }
+            if (urlParams.has('año')) {
+                params.append('año', urlParams.get('año'));
+            }
+            if (urlParams.has('busquedaCliente')) {
+                params.append('busquedaCliente', urlParams.get('busquedaCliente'));
+            }
+            if (urlParams.has('categoria')) {
+                params.append('categoria', urlParams.get('categoria'));
+            }
+            
+            // Construir URL de exportación
+            const exportUrl = '/facturas/exportar-excel' + (params.toString() ? '?' + params.toString() : '');
+            
+            // Abrir en una nueva ventana para descargar el archivo
+            window.location.href = exportUrl;
+            
+            // Mostrar mensaje de éxito
+            setTimeout(() => {
+                const successMsg = document.createElement('div');
+                successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2';
+                successMsg.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Exportando facturas a Excel...</span>
+                `;
+                document.body.appendChild(successMsg);
+                
+                setTimeout(() => {
+                    successMsg.remove();
+                }, 3000);
+            }, 500);
+        });
+    }
 });
 </script>

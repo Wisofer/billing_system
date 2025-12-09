@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using OfficeOpenXml;
 
 namespace billing_system.Controllers.Web;
 
@@ -683,5 +684,223 @@ public class FacturasController : Controller
             nombreSanitizado = "Factura.pdf";
 
         return nombreSanitizado;
+    }
+
+    [Authorize(Policy = "FacturasPagos")]
+    [HttpGet("/facturas/exportar-excel")]
+    public IActionResult ExportarExcel(string? estado, int? mes, int? año, string? busquedaCliente, string? categoria)
+    {
+        try
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            // Obtener facturas con filtros (igual que en Index)
+            var query = _facturaService.ObtenerTodas().AsQueryable();
+
+            // Aplicar filtros si existen
+            if (!string.IsNullOrWhiteSpace(estado) && estado != "Todos")
+            {
+                query = query.Where(f => f.Estado == estado);
+            }
+
+            if (mes.HasValue && año.HasValue)
+            {
+                query = query.Where(f => f.MesFacturacion.Month == mes.Value && f.MesFacturacion.Year == año.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(busquedaCliente))
+            {
+                var busquedaLower = busquedaCliente.ToLower();
+                query = query.Where(f => 
+                    f.Cliente.Nombre.ToLower().Contains(busquedaLower) ||
+                    f.Cliente.Codigo.ToLower().Contains(busquedaLower) ||
+                    (f.Cliente.Cedula != null && f.Cliente.Cedula.ToLower().Contains(busquedaLower))
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(categoria) && categoria != "Todas")
+            {
+                query = query.Where(f => f.Categoria == categoria);
+            }
+
+            var facturas = query
+                .OrderByDescending(f => f.FechaCreacion)
+                .ToList();
+
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Facturas");
+
+                // Encabezados
+                worksheet.Cells[1, 1].Value = "# Factura";
+                worksheet.Cells[1, 2].Value = "Cliente";
+                worksheet.Cells[1, 3].Value = "Código Cliente";
+                worksheet.Cells[1, 4].Value = "Cédula";
+                worksheet.Cells[1, 5].Value = "Teléfono";
+                worksheet.Cells[1, 6].Value = "Categoría";
+                worksheet.Cells[1, 7].Value = "Servicio Principal";
+                worksheet.Cells[1, 8].Value = "Monto (C$)";
+                worksheet.Cells[1, 9].Value = "Estado";
+                worksheet.Cells[1, 10].Value = "Mes Facturación";
+                worksheet.Cells[1, 11].Value = "Fecha Creación";
+
+                // Formatear encabezados
+                using (var range = worksheet.Cells[1, 1, 1, 11])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(59, 130, 246)); // Azul
+                    range.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                    range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    range.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                }
+
+                // Datos
+                int row = 2;
+                foreach (var factura in facturas)
+                {
+                    worksheet.Cells[row, 1].Value = factura.Numero;
+                    worksheet.Cells[row, 2].Value = factura.Cliente?.Nombre ?? "N/A";
+                    worksheet.Cells[row, 3].Value = factura.Cliente?.Codigo ?? "N/A";
+                    worksheet.Cells[row, 4].Value = factura.Cliente?.Cedula ?? "-";
+                    worksheet.Cells[row, 5].Value = factura.Cliente?.Telefono ?? "-";
+                    worksheet.Cells[row, 6].Value = factura.Categoria;
+                    worksheet.Cells[row, 7].Value = factura.Servicio?.Nombre ?? "N/A";
+                    worksheet.Cells[row, 8].Value = factura.Monto;
+                    worksheet.Cells[row, 9].Value = factura.Estado;
+                    worksheet.Cells[row, 10].Value = factura.MesFacturacion.ToString("MMMM yyyy");
+                    worksheet.Cells[row, 11].Value = factura.FechaCreacion.ToString("dd/MM/yyyy HH:mm");
+
+                    // Formatear monto como moneda
+                    worksheet.Cells[row, 8].Style.Numberformat.Format = "#,##0.00";
+
+                    // Colorear según estado
+                    var estadoCell = worksheet.Cells[row, 9];
+                    switch (factura.Estado)
+                    {
+                        case "Pagada":
+                            estadoCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            estadoCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(220, 252, 231)); // Verde claro
+                            estadoCell.Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(22, 101, 52)); // Verde oscuro
+                            break;
+                        case "Pendiente":
+                            estadoCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            estadoCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(254, 249, 195)); // Amarillo claro
+                            estadoCell.Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(133, 77, 14)); // Amarillo oscuro
+                            break;
+                        case "Cancelada":
+                            estadoCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            estadoCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(254, 226, 226)); // Rojo claro
+                            estadoCell.Style.Font.Color.SetColor(System.Drawing.Color.FromArgb(153, 27, 27)); // Rojo oscuro
+                            break;
+                    }
+
+                    row++;
+                }
+
+                // Ajustar ancho de columnas
+                worksheet.Column(1).Width = 15;  // # Factura
+                worksheet.Column(2).Width = 30;  // Cliente
+                worksheet.Column(3).Width = 15;  // Código Cliente
+                worksheet.Column(4).Width = 15;  // Cédula
+                worksheet.Column(5).Width = 15;  // Teléfono
+                worksheet.Column(6).Width = 12;  // Categoría
+                worksheet.Column(7).Width = 30;  // Servicio Principal
+                worksheet.Column(8).Width = 15;  // Monto
+                worksheet.Column(9).Width = 12;  // Estado
+                worksheet.Column(10).Width = 18; // Mes Facturación
+                worksheet.Column(11).Width = 18; // Fecha Creación
+
+                // Aplicar bordes a todas las celdas con datos
+                if (row > 2)
+                {
+                    using (var range = worksheet.Cells[1, 1, row - 1, 11])
+                    {
+                        range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Top.Color.SetColor(System.Drawing.Color.LightGray);
+                        range.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.LightGray);
+                        range.Style.Border.Left.Color.SetColor(System.Drawing.Color.LightGray);
+                        range.Style.Border.Right.Color.SetColor(System.Drawing.Color.LightGray);
+                    }
+
+                    // Alinear contenido
+                    using (var range = worksheet.Cells[2, 1, row - 1, 11])
+                    {
+                        range.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                    }
+
+                    // Centrar números
+                    using (var range = worksheet.Cells[2, 8, row - 1, 8]) // Monto
+                    {
+                        range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
+                    }
+
+                    // Centrar estados
+                    using (var range = worksheet.Cells[2, 9, row - 1, 9]) // Estado
+                    {
+                        range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    }
+                }
+
+                // Agregar totales al final
+                if (row > 2)
+                {
+                    row++; // Fila vacía
+                    worksheet.Cells[row, 7].Value = "TOTAL:";
+                    worksheet.Cells[row, 7].Style.Font.Bold = true;
+                    worksheet.Cells[row, 7].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
+                    
+                    worksheet.Cells[row, 8].Formula = $"SUM(H2:H{row - 2})";
+                    worksheet.Cells[row, 8].Style.Font.Bold = true;
+                    worksheet.Cells[row, 8].Style.Numberformat.Format = "#,##0.00";
+                    worksheet.Cells[row, 8].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    worksheet.Cells[row, 8].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(240, 240, 240));
+
+                    // Resumen de estados
+                    row += 2;
+                    worksheet.Cells[row, 7].Value = "Resumen:";
+                    worksheet.Cells[row, 7].Style.Font.Bold = true;
+                    
+                    row++;
+                    worksheet.Cells[row, 7].Value = "Pagadas:";
+                    worksheet.Cells[row, 8].Value = facturas.Count(f => f.Estado == "Pagada");
+                    
+                    row++;
+                    worksheet.Cells[row, 7].Value = "Pendientes:";
+                    worksheet.Cells[row, 8].Value = facturas.Count(f => f.Estado == "Pendiente");
+                    
+                    row++;
+                    worksheet.Cells[row, 7].Value = "Canceladas:";
+                    worksheet.Cells[row, 8].Value = facturas.Count(f => f.Estado == "Cancelada");
+                }
+
+                // Congelar primera fila
+                worksheet.View.FreezePanes(2, 1);
+
+                // Generar nombre del archivo con fecha y filtros aplicados
+                var nombreArchivo = "Facturas";
+                if (mes.HasValue && año.HasValue)
+                {
+                    nombreArchivo += $"_{año}_{mes:D2}";
+                }
+                if (!string.IsNullOrWhiteSpace(estado) && estado != "Todos")
+                {
+                    nombreArchivo += $"_{estado}";
+                }
+                nombreArchivo += $"_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+                return File(package.GetAsByteArray(), contentType, nombreArchivo);
+            }
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error al exportar facturas: {ex.Message}";
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

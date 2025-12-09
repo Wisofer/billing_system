@@ -6,6 +6,7 @@ using billing_system.Utils;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using OfficeOpenXml;
 
 namespace billing_system.Controllers.Web;
 
@@ -568,5 +569,261 @@ public class PagosController : Controller
         }
 
         return Redirect("/pagos");
+    }
+
+    [Authorize(Policy = "Pagos")]
+    [HttpGet("/pagos/exportar-excel")]
+    public IActionResult ExportarExcel(string? tipoPago, string? banco, DateTime? fecha)
+    {
+        try
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            // Obtener pagos con filtros (igual que en Index)
+            var query = _pagoService.ObtenerTodos().AsQueryable();
+
+            // Aplicar filtros si existen
+            if (!string.IsNullOrWhiteSpace(tipoPago) && tipoPago != "Todos")
+            {
+                query = query.Where(p => p.TipoPago == tipoPago);
+            }
+
+            if (!string.IsNullOrWhiteSpace(banco) && banco != "Todos")
+            {
+                query = query.Where(p => p.Banco == banco);
+            }
+
+            if (fecha.HasValue)
+            {
+                query = query.Where(p => p.FechaPago.Date == fecha.Value.Date);
+            }
+
+            var pagos = query
+                .OrderByDescending(p => p.FechaPago)
+                .ToList();
+
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Pagos");
+
+                // Encabezados
+                worksheet.Cells[1, 1].Value = "ID Pago";
+                worksheet.Cells[1, 2].Value = "Fecha";
+                worksheet.Cells[1, 3].Value = "Cliente";
+                worksheet.Cells[1, 4].Value = "Factura(s)";
+                worksheet.Cells[1, 5].Value = "Tipo Pago";
+                worksheet.Cells[1, 6].Value = "Banco";
+                worksheet.Cells[1, 7].Value = "Tipo Cuenta";
+                worksheet.Cells[1, 8].Value = "Moneda";
+                worksheet.Cells[1, 9].Value = "Monto";
+                worksheet.Cells[1, 10].Value = "Córdobas Físico";
+                worksheet.Cells[1, 11].Value = "Dólares Físico";
+                worksheet.Cells[1, 12].Value = "Córdobas Electrónico";
+                worksheet.Cells[1, 13].Value = "Dólares Electrónico";
+                worksheet.Cells[1, 14].Value = "Monto Recibido";
+                worksheet.Cells[1, 15].Value = "Vuelto";
+                worksheet.Cells[1, 16].Value = "Tipo Cambio";
+                worksheet.Cells[1, 17].Value = "Observaciones";
+
+                // Formatear encabezados
+                using (var range = worksheet.Cells[1, 1, 1, 17])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(16, 185, 129)); // Verde esmeralda
+                    range.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                    range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    range.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                }
+
+                // Datos
+                int row = 2;
+                foreach (var pago in pagos)
+                {
+                    worksheet.Cells[row, 1].Value = pago.Id;
+                    worksheet.Cells[row, 2].Value = pago.FechaPago.ToString("dd/MM/yyyy HH:mm");
+
+                    // Cliente (obtener desde la factura principal o desde PagoFacturas)
+                    string nombreCliente = "N/A";
+                    string facturasNumeros = "";
+
+                    if (pago.Factura != null)
+                    {
+                        nombreCliente = pago.Factura.Cliente?.Nombre ?? "N/A";
+                        facturasNumeros = pago.Factura.Numero;
+                    }
+                    else if (pago.PagoFacturas != null && pago.PagoFacturas.Any())
+                    {
+                        var primeraFactura = pago.PagoFacturas.FirstOrDefault()?.Factura;
+                        nombreCliente = primeraFactura?.Cliente?.Nombre ?? "N/A";
+                        facturasNumeros = string.Join(", ", pago.PagoFacturas.Select(pf => pf.Factura?.Numero ?? "N/A"));
+                    }
+
+                    worksheet.Cells[row, 3].Value = nombreCliente;
+                    worksheet.Cells[row, 4].Value = facturasNumeros;
+                    worksheet.Cells[row, 5].Value = pago.TipoPago;
+                    worksheet.Cells[row, 6].Value = pago.Banco ?? "-";
+                    worksheet.Cells[row, 7].Value = pago.TipoCuenta ?? "-";
+                    worksheet.Cells[row, 8].Value = pago.Moneda;
+                    worksheet.Cells[row, 9].Value = pago.Monto;
+                    worksheet.Cells[row, 10].Value = pago.MontoCordobasFisico ?? 0;
+                    worksheet.Cells[row, 11].Value = pago.MontoDolaresFisico ?? 0;
+                    worksheet.Cells[row, 12].Value = pago.MontoCordobasElectronico ?? 0;
+                    worksheet.Cells[row, 13].Value = pago.MontoDolaresElectronico ?? 0;
+                    worksheet.Cells[row, 14].Value = pago.MontoRecibidoFisico ?? 0;
+                    worksheet.Cells[row, 15].Value = pago.VueltoFisico ?? 0;
+                    worksheet.Cells[row, 16].Value = pago.TipoCambio ?? 0;
+                    worksheet.Cells[row, 17].Value = pago.Observaciones ?? "-";
+
+                    // Formatear montos como moneda
+                    for (int col = 9; col <= 16; col++)
+                    {
+                        worksheet.Cells[row, col].Style.Numberformat.Format = "#,##0.00";
+                    }
+
+                    // Colorear según tipo de pago
+                    var tipoCell = worksheet.Cells[row, 5];
+                    switch (pago.TipoPago)
+                    {
+                        case "Fisico":
+                            tipoCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            tipoCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(254, 249, 195)); // Amarillo
+                            break;
+                        case "Electronico":
+                            tipoCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            tipoCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(219, 234, 254)); // Azul claro
+                            break;
+                        case "Mixto":
+                            tipoCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            tipoCell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(243, 232, 255)); // Morado claro
+                            break;
+                    }
+
+                    row++;
+                }
+
+                // Ajustar ancho de columnas
+                worksheet.Column(1).Width = 10;  // ID Pago
+                worksheet.Column(2).Width = 18;  // Fecha
+                worksheet.Column(3).Width = 30;  // Cliente
+                worksheet.Column(4).Width = 20;  // Factura(s)
+                worksheet.Column(5).Width = 15;  // Tipo Pago
+                worksheet.Column(6).Width = 15;  // Banco
+                worksheet.Column(7).Width = 18;  // Tipo Cuenta
+                worksheet.Column(8).Width = 12;  // Moneda
+                worksheet.Column(9).Width = 15;  // Monto
+                worksheet.Column(10).Width = 16; // Córdobas Físico
+                worksheet.Column(11).Width = 16; // Dólares Físico
+                worksheet.Column(12).Width = 18; // Córdobas Electrónico
+                worksheet.Column(13).Width = 18; // Dólares Electrónico
+                worksheet.Column(14).Width = 16; // Monto Recibido
+                worksheet.Column(15).Width = 12; // Vuelto
+                worksheet.Column(16).Width = 13; // Tipo Cambio
+                worksheet.Column(17).Width = 30; // Observaciones
+
+                // Aplicar bordes a todas las celdas con datos
+                if (row > 2)
+                {
+                    using (var range = worksheet.Cells[1, 1, row - 1, 17])
+                    {
+                        range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Top.Color.SetColor(System.Drawing.Color.LightGray);
+                        range.Style.Border.Bottom.Color.SetColor(System.Drawing.Color.LightGray);
+                        range.Style.Border.Left.Color.SetColor(System.Drawing.Color.LightGray);
+                        range.Style.Border.Right.Color.SetColor(System.Drawing.Color.LightGray);
+                    }
+
+                    // Alinear contenido
+                    using (var range = worksheet.Cells[2, 1, row - 1, 17])
+                    {
+                        range.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+                    }
+
+                    // Centrar ID
+                    using (var range = worksheet.Cells[2, 1, row - 1, 1])
+                    {
+                        range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    }
+
+                    // Alinear números a la derecha
+                    for (int col = 9; col <= 16; col++)
+                    {
+                        using (var range = worksheet.Cells[2, col, row - 1, col])
+                        {
+                            range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
+                        }
+                    }
+
+                    // Centrar Tipo Pago
+                    using (var range = worksheet.Cells[2, 5, row - 1, 5])
+                    {
+                        range.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    }
+                }
+
+                // Agregar totales al final
+                if (row > 2)
+                {
+                    row++; // Fila vacía
+                    worksheet.Cells[row, 8].Value = "TOTAL:";
+                    worksheet.Cells[row, 8].Style.Font.Bold = true;
+                    worksheet.Cells[row, 8].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
+                    
+                    worksheet.Cells[row, 9].Formula = $"SUM(I2:I{row - 2})";
+                    worksheet.Cells[row, 9].Style.Font.Bold = true;
+                    worksheet.Cells[row, 9].Style.Numberformat.Format = "#,##0.00";
+                    worksheet.Cells[row, 9].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    worksheet.Cells[row, 9].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(240, 240, 240));
+
+                    // Resumen por tipo de pago
+                    row += 2;
+                    worksheet.Cells[row, 8].Value = "Resumen:";
+                    worksheet.Cells[row, 8].Style.Font.Bold = true;
+                    
+                    row++;
+                    worksheet.Cells[row, 8].Value = "Pagos Físicos:";
+                    worksheet.Cells[row, 9].Value = pagos.Count(p => p.TipoPago == "Fisico");
+                    
+                    row++;
+                    worksheet.Cells[row, 8].Value = "Pagos Electrónicos:";
+                    worksheet.Cells[row, 9].Value = pagos.Count(p => p.TipoPago == "Electronico");
+                    
+                    row++;
+                    worksheet.Cells[row, 8].Value = "Pagos Mixtos:";
+                    worksheet.Cells[row, 9].Value = pagos.Count(p => p.TipoPago == "Mixto");
+                }
+
+                // Congelar primera fila
+                worksheet.View.FreezePanes(2, 1);
+
+                // Generar nombre del archivo con fecha y filtros aplicados
+                var nombreArchivo = "Pagos";
+                if (fecha.HasValue)
+                {
+                    nombreArchivo += $"_{fecha.Value:yyyyMMdd}";
+                }
+                if (!string.IsNullOrWhiteSpace(tipoPago) && tipoPago != "Todos")
+                {
+                    nombreArchivo += $"_{tipoPago}";
+                }
+                if (!string.IsNullOrWhiteSpace(banco) && banco != "Todos")
+                {
+                    nombreArchivo += $"_{banco}";
+                }
+                nombreArchivo += $"_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+                return File(package.GetAsByteArray(), contentType, nombreArchivo);
+            }
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error al exportar pagos: {ex.Message}";
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

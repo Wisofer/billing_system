@@ -72,6 +72,15 @@ setTimeout(function() {
             </svg>
             <span>Registrar Pago</span>
         </a>
+        <a href="#" 
+           id="btnExportarExcel"
+           class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium flex items-center space-x-2"
+           title="Exportar pagos a Excel">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+            </svg>
+            <span>Exportar Excel</span>
+        </a>
         @if (esAdministrador)
         {
             <button type="button" id="btnEliminarSeleccionadas" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
@@ -640,5 +649,53 @@ setTimeout(function() {
             actualizarBotonEliminar();
             actualizarSelectAll();
         })();
+
+        // ========================================
+        // EXPORTAR A EXCEL
+        // ========================================
+        const btnExportarExcel = document.getElementById('btnExportarExcel');
+        if (btnExportarExcel) {
+            btnExportarExcel.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Obtener parámetros de la URL actual para aplicar los mismos filtros
+                const urlParams = new URLSearchParams(window.location.search);
+                const params = new URLSearchParams();
+                
+                // Copiar solo los parámetros relevantes (sin paginación)
+                if (urlParams.has('tipoPago') && urlParams.get('tipoPago') !== 'Todos') {
+                    params.append('tipoPago', urlParams.get('tipoPago'));
+                }
+                if (urlParams.has('banco') && urlParams.get('banco') !== 'Todos') {
+                    params.append('banco', urlParams.get('banco'));
+                }
+                if (urlParams.has('fecha')) {
+                    params.append('fecha', urlParams.get('fecha'));
+                }
+                
+                // Construir URL de exportación
+                const exportUrl = '/pagos/exportar-excel' + (params.toString() ? '?' + params.toString() : '');
+                
+                // Abrir en una nueva ventana para descargar el archivo
+                window.location.href = exportUrl;
+                
+                // Mostrar mensaje de éxito
+                setTimeout(() => {
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2';
+                    successMsg.innerHTML = `
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Exportando pagos a Excel...</span>
+                    `;
+                    document.body.appendChild(successMsg);
+                    
+                    setTimeout(() => {
+                        successMsg.remove();
+                    }, 3000);
+                }, 500);
+            });
+        }
     </script>
 }
