@@ -102,8 +102,8 @@
             <!-- Activo -->
             <div class="flex items-center">
                 <label class="flex items-center space-x-3 cursor-pointer">
-                    <input type="hidden" name="Activo" value="false" />
-                    <input type="checkbox" name="Activo" value="true" @(Model.Activo ? "checked" : "") class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <input type="hidden" id="ActivoHidden" name="Activo" value="@(Model.Activo ? "true" : "false")" />
+                    <input type="checkbox" id="ActivoCheckbox" @(Model.Activo ? "checked" : "") class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Visible en landing page</span>
                 </label>
             </div>
@@ -111,8 +111,8 @@
             <!-- Destacado -->
             <div class="flex items-center">
                 <label class="flex items-center space-x-3 cursor-pointer">
-                    <input type="hidden" name="Destacado" value="false" />
-                    <input type="checkbox" name="Destacado" value="true" @(Model.Destacado ? "checked" : "") class="w-5 h-5 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500">
+                    <input type="hidden" id="DestacadoHidden" name="Destacado" value="@(Model.Destacado ? "true" : "false")" />
+                    <input type="checkbox" id="DestacadoCheckbox" @(Model.Destacado ? "checked" : "") class="w-5 h-5 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500">
                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Marcar como destacado</span>
                 </label>
             </div>
@@ -129,4 +129,26 @@
         </div>
     </form>
 </div>
+
+<script>
+    // Sincronizar checkbox Activo con hidden field
+    const activoCheckbox = document.getElementById('ActivoCheckbox');
+    const activoHidden = document.getElementById('ActivoHidden');
+    
+    if (activoCheckbox && activoHidden) {
+        activoCheckbox.addEventListener('change', function() {
+            activoHidden.value = this.checked ? 'true' : 'false';
+        });
+    }
+
+    // Sincronizar checkbox Destacado con hidden field
+    const destacadoCheckbox = document.getElementById('DestacadoCheckbox');
+    const destacadoHidden = document.getElementById('DestacadoHidden');
+    
+    if (destacadoCheckbox && destacadoHidden) {
+        destacadoCheckbox.addEventListener('change', function() {
+            destacadoHidden.value = this.checked ? 'true' : 'false';
+        });
+    }
+</script>
 
