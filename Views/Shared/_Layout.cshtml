@@ -23,7 +23,7 @@
     <style>
         /* Sidebar Colapsable */
         #sidebar.sidebar-collapsed {
-            width: 5rem !important; /* 80px */
+            width: 4rem !important; /* 64px */
         }
         
         #sidebar.sidebar-collapsed .sidebar-text {
@@ -66,7 +66,7 @@
         
         /* Ajustar margen del contenido principal cuando está colapsado */
         #mainContent.sidebar-collapsed-margin {
-            margin-left: 5rem !important;
+            margin-left: 4rem !important;
         }
         
         /* Tooltip para iconos cuando está colapsado */
@@ -185,7 +185,7 @@
                 if (isDesktop && sidebarState === 'open') {
                     // Leer estado colapsado para usar el ancho correcto
                     const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-                    const sidebarWidth = sidebarCollapsed ? '5rem' : '16rem';
+                    const sidebarWidth = sidebarCollapsed ? '4rem' : '14rem';
                     
                     // Crear y aplicar estilo inmediatamente
                     const style = document.createElement('style');
@@ -194,7 +194,7 @@
                     style.textContent = `
                         #sidebar{transform:translateX(0)!important;transition:none!important;width:${sidebarWidth}!important;}
                         #mainContent{margin-left:${sidebarWidth}!important;transition:none!important;}
-                        ${sidebarCollapsed ? '#mainContent.sidebar-collapsed-margin{margin-left:5rem!important;}' : ''}
+                        ${sidebarCollapsed ? '#mainContent.sidebar-collapsed-margin{margin-left:4rem!important;}' : ''}
                     `;
                     (document.head || document.getElementsByTagName('head')[0]).appendChild(style);
                     
@@ -242,24 +242,22 @@
         <!-- Overlay móvil -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-40 z-40 hidden lg:hidden transition-opacity" onclick="closeSidebar()"></div>
 
-        <!-- Sidebar Mejorado -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 sidebar-expanded bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-xl flex flex-col transform transition-all duration-300 ease-in-out" style="transform: translateX(-100%);">
-            <!-- Logo Mejorado -->
-            <div class="h-20 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
-                <a href="/" class="flex items-center space-x-3 group sidebar-logo-link">
+        <!-- Sidebar Compacto -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-56 sidebar-expanded bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg flex flex-col transform transition-all duration-300 ease-in-out" style="transform: translateX(-100%);">
+            <!-- Logo Compacto -->
+            <div class="h-14 flex items-center px-3 border-b border-gray-200 dark:border-gray-700">
+                <a href="/" class="flex items-center space-x-2 group sidebar-logo-link">
                     <div class="relative flex-shrink-0">
-                        <div class="absolute inset-0 bg-blue-500 rounded-lg blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                        <img src="~/images/logo.png" alt="Logo" class="w-10 h-10 object-contain relative z-10 transform group-hover:scale-110 transition-transform duration-200" />
+                        <img src="~/images/logo.png" alt="Logo" class="w-8 h-8 object-contain relative z-10 transform group-hover:scale-105 transition-transform duration-200" />
                     </div>
                     <div class="sidebar-text">
-                        <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">EMSINET</span>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Sistema de Facturación</p>
+                        <span class="text-base font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">EMSINET</span>
                     </div>
                 </a>
             </div>
 
-            <!-- Navegación Mejorada -->
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <!-- Navegación Compacta -->
+            <nav class="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
                 @{
                     var rolUsuario = SecurityHelper.GetUserRole(User);
                     var esAdmin = SecurityHelper.IsAdministrator(User);
@@ -270,136 +268,125 @@
                 <!-- 1. Inicio (Dashboard) - Solo Administrador -->
                 @if (esAdmin)
                 {
-                    <a href="/" data-tooltip="Inicio" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
-                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors flex-shrink-0">
-                            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="/" data-tooltip="Inicio" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-150 group sidebar-item">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/20 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 transition-colors flex-shrink-0">
+                            <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Inicio</span>
+                        <span class="text-sm font-medium sidebar-text whitespace-nowrap">Inicio</span>
                     </a>
                 }
 
                 <!-- 2. Clientes - Solo Administrador -->
                 @if (esAdmin)
                 {
-                    <a href="/clientes" data-tooltip="Clientes" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
-                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/30 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/50 transition-colors flex-shrink-0">
-                            <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="/clientes" data-tooltip="Clientes" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-gray-700 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-150 group sidebar-item">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/20 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/40 transition-colors flex-shrink-0">
+                            <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Clientes</span>
+                        <span class="text-sm font-medium sidebar-text whitespace-nowrap">Clientes</span>
                     </a>
                 }
 
                 <!-- 3. Servicios - Solo Administrador -->
                 @if (esAdmin)
                 {
-                    <a href="/servicios" data-tooltip="Servicios" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
-                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/30 group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors flex-shrink-0">
-                            <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="/servicios" data-tooltip="Servicios" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-gray-700 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-150 group sidebar-item">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 dark:bg-green-900/20 group-hover:bg-green-100 dark:group-hover:bg-green-900/40 transition-colors flex-shrink-0">
+                            <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Servicios</span>
+                        <span class="text-sm font-medium sidebar-text whitespace-nowrap">Servicios</span>
                     </a>
                 }
 
                 <!-- 4. Inventario - Solo Administrador -->
                 @if (esAdmin)
                 {
-                    <a href="/equipos" data-tooltip="Inventario" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
-                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-900/30 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/50 transition-colors flex-shrink-0">
-                            <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="/equipos" data-tooltip="Inventario" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600 dark:hover:text-teal-400 transition-colors duration-150 group sidebar-item">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-900/20 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/40 transition-colors flex-shrink-0">
+                            <svg class="w-4 h-4 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Inventario</span>
+                        <span class="text-sm font-medium sidebar-text whitespace-nowrap">Inventario</span>
                     </a>
                 }
 
                 <!-- 5. Facturas - Administrador y Normal -->
                 @if (esAdmin || esNormal)
                 {
-                    <a href="/facturas" data-tooltip="Facturas" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
-                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/30 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 transition-colors flex-shrink-0">
-                            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="/facturas" data-tooltip="Facturas" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-150 group sidebar-item">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-900/20 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/40 transition-colors flex-shrink-0">
+                            <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Facturas</span>
+                        <span class="text-sm font-medium sidebar-text whitespace-nowrap">Facturas</span>
                     </a>
                 }
 
                 <!-- 6. Pagos - Administrador, Normal y Caja -->
                 @if (esAdmin || esNormal || esCaja)
                 {
-                    <a href="/pagos" data-tooltip="Pagos" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
-                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-900/30 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50 transition-colors flex-shrink-0">
-                            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="/pagos" data-tooltip="Pagos" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-gray-700 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-150 group sidebar-item">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-900/20 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/40 transition-colors flex-shrink-0">
+                            <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Pagos</span>
+                        <span class="text-sm font-medium sidebar-text whitespace-nowrap">Pagos</span>
                     </a>
                 }
 
                 <!-- 7. Configuraciones - Solo Administrador -->
                 @if (esAdmin)
                 {
-                    <a href="/configuraciones" data-tooltip="Configuraciones" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
-                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/30 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors flex-shrink-0">
-                            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="/configuraciones" data-tooltip="Configuraciones" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-150 group sidebar-item">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/20 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/40 transition-colors flex-shrink-0">
+                            <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Configuraciones</span>
+                        <span class="text-sm font-medium sidebar-text whitespace-nowrap">Configuraciones</span>
                     </a>
 
                     <!-- 8. Landing Page - Solo Administrador -->
-                    <a href="/landing-admin" data-tooltip="Landing Page" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-gray-700 dark:hover:to-gray-800 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-200 group relative overflow-hidden sidebar-item">
-                        <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                        <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-lg bg-gradient-to-br from-teal-50 to-purple-50 dark:from-teal-900/30 dark:to-purple-900/30 group-hover:from-teal-100 group-hover:to-purple-100 dark:group-hover:from-teal-900/50 dark:group-hover:to-purple-900/50 transition-colors flex-shrink-0">
-                            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="/landing-admin" data-tooltip="Landing Page" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-gray-700 hover:text-teal-600 dark:hover:text-teal-400 transition-colors duration-150 group sidebar-item">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-gradient-to-br from-teal-50 to-purple-50 dark:from-teal-900/20 dark:to-purple-900/20 group-hover:from-teal-100 group-hover:to-purple-100 dark:group-hover:from-teal-900/40 dark:group-hover:to-purple-900/40 transition-colors flex-shrink-0">
+                            <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9c-5 0-9 4-9 9m9-9c0 5-4 9-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9" />
                             </svg>
                         </div>
-                        <span class="text-sm font-semibold relative z-10 sidebar-text whitespace-nowrap">Landing Page</span>
+                        <span class="text-sm font-medium sidebar-text whitespace-nowrap">Landing Page</span>
                     </a>
                 }
             </nav>
 
-            <!-- Usuario Mejorado -->
+            <!-- Usuario Compacto -->
             @if (estaAutenticado)
             {
-                <div class="border-t border-gray-200 dark:border-gray-700 p-4 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 sidebar-user-section">
-                    <div class="flex items-center space-x-3 mb-4 p-3 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 sidebar-user-info">
-                        <div class="relative flex-shrink-0">
-                            <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full blur opacity-20"></div>
-                            <div class="relative w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-700 flex items-center justify-center shadow-lg">
-                                <span class="text-white font-bold text-lg">@(nombreUsuario.Length > 0 ? nombreUsuario[0].ToString().ToUpper() : "U")</span>
-                            </div>
+                <div class="border-t border-gray-200 dark:border-gray-700 p-3 sidebar-user-section">
+                    <div class="flex items-center space-x-2 mb-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 sidebar-user-info">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                            <span class="text-white font-semibold text-sm">@(nombreUsuario.Length > 0 ? nombreUsuario[0].ToString().ToUpper() : "U")</span>
                         </div>
                         <div class="flex-1 min-w-0 sidebar-text">
-                            <p class="text-sm font-bold text-gray-900 dark:text-white truncate">@nombreUsuario</p>
-                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">@rolUsuario</p>
+                            <p class="text-xs font-semibold text-gray-900 dark:text-white truncate">@nombreUsuario</p>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase">@rolUsuario</p>
                         </div>
                     </div>
                     <form action="/logout" method="post">
-                        <button type="submit" class="w-full flex items-center justify-center space-x-2 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 dark:from-red-600 dark:to-red-700 dark:hover:from-red-700 dark:hover:to-red-800 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] sidebar-logout-btn">
-                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button type="submit" class="w-full flex items-center justify-center space-x-2 px-3 py-2 text-xs font-medium text-white bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 rounded-lg transition-colors sidebar-logout-btn">
+                            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                             </svg>
-                            <span class="sidebar-text whitespace-nowrap">Cerrar Sesión</span>
+                            <span class="sidebar-text whitespace-nowrap">Salir</span>
                         </button>
                     </form>
                 </div>
@@ -408,31 +395,28 @@
 
         <!-- Contenido Principal -->
         <div id="mainContent" class="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
-            <!-- Header Mejorado -->
-            <header class="h-16 bg-gradient-to-r from-white via-blue-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-6 shadow-sm">
-                <div class="flex items-center space-x-4">
+            <!-- Header Compacto -->
+            <header class="h-12 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4">
+                <div class="flex items-center space-x-3">
                     <button type="button"
                             onclick="toggleSidebar()"
                             id="hamburgerBtn"
-                            class="inline-flex items-center justify-center w-10 h-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 hover:bg-blue-50 dark:hover:bg-gray-700 hover:border-blue-400 dark:hover:border-blue-500 shadow-sm hover:shadow-md transition-all duration-150">
-                        <svg class="w-5 h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <svg class="w-4 h-4 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
-                    <div>
-                        <h1 class="text-lg font-semibold text-gray-900 dark:text-white leading-tight">@ViewData["Title"]</h1>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Panel de administración EMSINET</p>
-                    </div>
+                    <h1 class="text-sm font-semibold text-gray-900 dark:text-white">@ViewData["Title"]</h1>
                 </div>
                 @if (estaAutenticado)
                 {
-                    <div class="hidden sm:flex items-center space-x-3">
-                        <div class="h-8 px-3 inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                            <span class="w-6 h-6 mr-2 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white">
+                    <div class="hidden sm:flex items-center space-x-2">
+                        <div class="h-7 px-2.5 inline-flex items-center rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
+                            <span class="w-5 h-5 mr-1.5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white">
                                 @(nombreUsuario.Length > 0 ? nombreUsuario[0].ToString().ToUpper() : "U")
                             </span>
-                            <span class="text-xs font-medium text-gray-800 dark:text-gray-100 truncate max-w-[140px]">@nombreUsuario</span>
-                            <span class="ml-2 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                            <span class="text-xs font-medium text-gray-800 dark:text-gray-100 truncate max-w-[120px]">@nombreUsuario</span>
+                            <span class="ml-1.5 px-1.5 py-0.5 text-[9px] font-semibold rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 uppercase">
                                 @rolUsuario
                             </span>
                         </div>
@@ -442,14 +426,14 @@
 
             <!-- Main Content -->
             <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
-                <div class="p-6">
+                <div class="p-4">
                     @RenderBody()
                 </div>
             </main>
 
-            <!-- Footer Minimalista -->
-            <footer class="h-12 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex items-center justify-center">
-                <p class="text-xs text-gray-400 dark:text-gray-500">
+            <!-- Footer Compacto -->
+            <footer class="h-10 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                <p class="text-[10px] text-gray-400 dark:text-gray-500">
                     POWERED BY <a href="https://www.cowib.es/" target="_blank" rel="noopener noreferrer" class="font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">COWIB</a>
                 </p>
             </footer>
@@ -489,7 +473,7 @@
                 
                 sidebarOpen = isOpen;
                 const isCollapsed = sidebar.classList.contains('sidebar-collapsed');
-                const sidebarWidth = isCollapsed ? '5rem' : '16rem';
+                const sidebarWidth = isCollapsed ? '4rem' : '14rem';
                 
                 if (isOpen) {
                     sidebar.style.transform = 'translateX(0)';
@@ -533,7 +517,7 @@
                         sidebarCollapsed = false;
                         sidebar.classList.remove('sidebar-collapsed');
                         sidebar.classList.add('sidebar-expanded');
-                        sidebar.style.width = '16rem';
+                        sidebar.style.width = '14rem';
                         saveCollapsedState(false);
                         
                         sidebarOpen = true;
@@ -594,21 +578,21 @@
                 if (sidebarCollapsed) {
                     sidebar.classList.remove('sidebar-expanded');
                     sidebar.classList.add('sidebar-collapsed');
-                    sidebar.style.width = '5rem';
+                    sidebar.style.width = '4rem';
                     if (main) {
                         main.classList.add('sidebar-collapsed-margin');
                         if (sidebarOpen && window.innerWidth >= 1024) {
-                            main.style.marginLeft = '5rem';
+                            main.style.marginLeft = '4rem';
                         }
                     }
                 } else {
                     sidebar.classList.remove('sidebar-collapsed');
                     sidebar.classList.add('sidebar-expanded');
-                    sidebar.style.width = '16rem';
+                    sidebar.style.width = '14rem';
                     if (main) {
                         main.classList.remove('sidebar-collapsed-margin');
                         if (sidebarOpen && window.innerWidth >= 1024) {
-                            main.style.marginLeft = '16rem';
+                            main.style.marginLeft = '14rem';
                         }
                     }
                 }
@@ -627,21 +611,21 @@
                 if (sidebarCollapsed) {
                     sidebar.classList.remove('sidebar-expanded');
                     sidebar.classList.add('sidebar-collapsed');
-                    sidebar.style.width = '5rem';
+                    sidebar.style.width = '4rem';
                     if (main) {
                         main.classList.add('sidebar-collapsed-margin');
                         if (sidebarOpen && window.innerWidth >= 1024) {
-                            main.style.marginLeft = '5rem';
+                            main.style.marginLeft = '4rem';
                         }
                     }
                 } else {
                     sidebar.classList.remove('sidebar-collapsed');
                     sidebar.classList.add('sidebar-expanded');
-                    sidebar.style.width = '16rem';
+                    sidebar.style.width = '14rem';
                     if (main) {
                         main.classList.remove('sidebar-collapsed-margin');
                         if (sidebarOpen && window.innerWidth >= 1024) {
-                            main.style.marginLeft = '16rem';
+                            main.style.marginLeft = '14rem';
                         }
                     }
                 }
@@ -786,11 +770,11 @@
                 if (sidebarCollapsed) {
                     sidebar.classList.remove('sidebar-expanded');
                     sidebar.classList.add('sidebar-collapsed');
-                    sidebar.style.width = '5rem';
+                    sidebar.style.width = '4rem';
                 } else {
                     sidebar.classList.remove('sidebar-collapsed');
                     sidebar.classList.add('sidebar-expanded');
-                    sidebar.style.width = '16rem';
+                    sidebar.style.width = '14rem';
                 }
                 
                 // En desktop: usar el estado guardado si existe, sino abrir por defecto
@@ -806,7 +790,7 @@
                 }
                 
                 // Usar el estado colapsado que acabamos de aplicar
-                const sidebarWidth = sidebarCollapsed ? '5rem' : '16rem';
+                const sidebarWidth = sidebarCollapsed ? '4rem' : '14rem';
                 
                 // Aplicar sin transición inicialmente para evitar flash
                 if (shouldBeOpen) {
