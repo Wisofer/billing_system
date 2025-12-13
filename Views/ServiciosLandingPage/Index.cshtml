@@ -43,6 +43,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Velocidad</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Precio</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Etiqueta</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Mensaje</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Estado</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
                 </tr>
@@ -51,7 +52,7 @@
                 @if (Model == null || !Model.Any())
                 {
                     <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                        <td colspan="8" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                             No hay servicios registrados.
                             <a href="/servicios-landing/crear" class="text-blue-600 hover:text-blue-800 ml-2">Crear el primero</a>
                         </td>
@@ -96,6 +97,16 @@
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full @servicio.ColorEtiqueta text-white">
                                         @servicio.Etiqueta
                                     </span>
+                                }
+                                else
+                                {
+                                    <span class="text-gray-400 dark:text-gray-500">-</span>
+                                }
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300 max-w-xs">
+                                @if (!string.IsNullOrWhiteSpace(servicio.Mensaje))
+                                {
+                                    <p class="text-xs line-clamp-2" title="@servicio.Mensaje">@servicio.Mensaje</p>
                                 }
                                 else
                                 {

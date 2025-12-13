@@ -244,6 +244,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.ColorEtiqueta).HasMaxLength(50);
             entity.Property(e => e.Icono).HasMaxLength(10);
             entity.Property(e => e.Caracteristicas).HasColumnType("text");
+            entity.Property(e => e.Mensaje).HasMaxLength(500);
             entity.Property(e => e.Orden).HasDefaultValue(0);
             entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Destacado).HasDefaultValue(false);

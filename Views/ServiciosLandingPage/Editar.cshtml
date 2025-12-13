@@ -99,6 +99,15 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Formato: ["característica 1", "característica 2"]</p>
             </div>
 
+            <!-- Mensaje -->
+            <div class="md:col-span-2">
+                <label for="Mensaje" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Mensaje (Opcional)
+                </label>
+                <textarea name="Mensaje" id="Mensaje" rows="3" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" placeholder="El precio puede variar según su ubicación. Contáctenos para una cotización personalizada.">@Model.Mensaje</textarea>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Este mensaje se mostrará en un modal al hacer clic en el servicio en la landing page</p>
+            </div>
+
             <!-- Activo -->
             <div class="flex items-center">
                 <label class="flex items-center space-x-3 cursor-pointer">

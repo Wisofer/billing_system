@@ -41,6 +41,7 @@ public class LandingPageController : ControllerBase
                     colorEtiqueta = s.ColorEtiqueta,
                     icono = s.Icono,
                     caracteristicas = s.Caracteristicas,
+                    mensaje = s.Mensaje,
                     orden = s.Orden,
                     destacado = s.Destacado,
                     activo = s.Activo
@@ -108,6 +109,7 @@ public class LandingPageController : ControllerBase
                     colorEtiqueta = s.ColorEtiqueta,
                     icono = s.Icono,
                     caracteristicas = s.Caracteristicas,
+                    mensaje = s.Mensaje,
                     orden = s.Orden,
                     destacado = s.Destacado,
                     activo = s.Activo

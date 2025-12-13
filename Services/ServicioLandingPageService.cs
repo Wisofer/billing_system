@@ -1,16 +1,61 @@
 using billing_system.Data;
 using billing_system.Models.Entities;
 using billing_system.Services.IServices;
+using Microsoft.EntityFrameworkCore;
 
 namespace billing_system.Services;
 
 public class ServicioLandingPageService : IServicioLandingPageService
 {
     private readonly ApplicationDbContext _context;
+    private static bool _columnaMensajeVerificada = false;
 
     public ServicioLandingPageService(ApplicationDbContext context)
     {
         _context = context;
+        VerificarYAgregarColumnaMensaje();
+    }
+
+    private void VerificarYAgregarColumnaMensaje()
+    {
+        if (_columnaMensajeVerificada) return;
+
+        try
+        {
+            // Verificar si la columna existe
+            var connection = _context.Database.GetDbConnection();
+            if (connection.State != System.Data.ConnectionState.Open)
+            {
+                connection.Open();
+            }
+
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = @"
+                    SELECT COUNT(*) 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'ServiciosLandingPage' 
+                    AND column_name = 'Mensaje';
+                ";
+                var existe = Convert.ToInt32(command.ExecuteScalar()) > 0;
+
+                if (!existe)
+                {
+                    // Agregar la columna
+                    _context.Database.ExecuteSqlRaw(@"
+                        ALTER TABLE ""ServiciosLandingPage"" 
+                        ADD COLUMN ""Mensaje"" character varying(500) NULL;
+                    ");
+                }
+            }
+
+            _columnaMensajeVerificada = true;
+        }
+        catch
+        {
+            // Si falla, intentar de nuevo en la próxima vez
+            _columnaMensajeVerificada = false;
+        }
     }
 
     public List<ServicioLandingPage> ObtenerTodos()
@@ -68,6 +113,7 @@ public class ServicioLandingPageService : IServicioLandingPageService
             existente.ColorEtiqueta = servicio.ColorEtiqueta;
             existente.Icono = servicio.Icono;
             existente.Caracteristicas = servicio.Caracteristicas;
+            existente.Mensaje = servicio.Mensaje;
             existente.Orden = servicio.Orden;
             existente.Activo = servicio.Activo;
             existente.Destacado = servicio.Destacado;

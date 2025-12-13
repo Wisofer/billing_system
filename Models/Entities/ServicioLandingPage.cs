@@ -49,6 +49,12 @@ public class ServicioLandingPage
     public string? Caracteristicas { get; set; }
     
     /// <summary>
+    /// Mensaje sobre el precio (ej: "El precio puede variar según su ubicación")
+    /// Se mostrará en un modal al hacer clic en el servicio
+    /// </summary>
+    public string? Mensaje { get; set; }
+    
+    /// <summary>
     /// Orden de visualización en la landing page
     /// </summary>
     public int Orden { get; set; } = 0;

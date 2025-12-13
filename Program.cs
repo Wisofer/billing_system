@@ -134,6 +134,24 @@ using (var scope = app.Services.CreateScope())
         // Aplicar migraciones
         dbContext.Database.Migrate();
         
+        // Agregar columna Mensaje si no existe (workaround para migración pendiente)
+        try
+        {
+            dbContext.Database.ExecuteSqlRaw(@"
+                ALTER TABLE ""ServiciosLandingPage"" 
+                ADD COLUMN IF NOT EXISTS ""Mensaje"" character varying(500) NULL;
+            ");
+            logger.LogInformation("Columna 'Mensaje' verificada/agregada en ServiciosLandingPage");
+        }
+        catch (Exception ex)
+        {
+            // Si la columna ya existe, ignorar el error
+            if (!ex.Message.Contains("already exists") && !ex.Message.Contains("duplicate"))
+            {
+                logger.LogWarning($"Advertencia al verificar columna Mensaje: {ex.Message}");
+            }
+        }
+        
         // Inicializar servicios si no existen
         if (!dbContext.Servicios.Any())
         {
