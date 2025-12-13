@@ -6,7 +6,7 @@ namespace billing_system.Services.IServices;
 public interface IClienteService
 {
     List<Cliente> ObtenerTodos();
-    PagedResult<Cliente> ObtenerPaginados(int pagina = 1, int tamanoPagina = 10, string? busqueda = null);
+    PagedResult<Cliente> ObtenerPaginados(int pagina = 1, int tamanoPagina = 10, string? busqueda = null, string? estado = null, string? tipoServicio = null, string? conFacturas = null);
     Cliente? ObtenerPorId(int id);
     Cliente? ObtenerPorCodigo(string codigo);
     List<Cliente> Buscar(string termino);

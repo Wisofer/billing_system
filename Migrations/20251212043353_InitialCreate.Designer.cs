@@ -12,8 +12,8 @@ using billing_system.Data;
 namespace billing_system.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251208032856_InitialCreatePostgreSQL")]
-    partial class InitialCreatePostgreSQL
+    [Migration("20251212043353_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,9 +41,6 @@ namespace billing_system.Migrations
                     b.Property<int?>("ClienteId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ClienteId1")
-                        .HasColumnType("integer");
-
                     b.Property<string>("EmpleadoNombre")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
@@ -59,16 +56,16 @@ namespace billing_system.Migrations
                         .HasDefaultValue("Activa");
 
                     b.Property<DateTime>("FechaAsignacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("FechaDevolucionEsperada")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("FechaDevolucionReal")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
@@ -77,8 +74,6 @@ namespace billing_system.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClienteId");
-
-                    b.HasIndex("ClienteId1");
 
                     b.HasIndex("EquipoId");
 
@@ -101,7 +96,7 @@ namespace billing_system.Migrations
                         .HasColumnType("character varying(500)");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -141,7 +136,7 @@ namespace billing_system.Migrations
                         .HasColumnType("character varying(200)");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -190,13 +185,13 @@ namespace billing_system.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("FechaFin")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("FechaInicio")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("ServicioId")
                         .HasColumnType("integer");
@@ -228,10 +223,10 @@ namespace billing_system.Migrations
                         .HasColumnType("character varying(500)");
 
                     b.Property<DateTime?>("FechaActualizacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("UsuarioActualizacion")
                         .HasMaxLength(200)
@@ -281,13 +276,13 @@ namespace billing_system.Migrations
                         .HasDefaultValue("Disponible");
 
                     b.Property<DateTime?>("FechaActualizacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("FechaAdquisicion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Marca")
                         .HasMaxLength(100)
@@ -338,7 +333,7 @@ namespace billing_system.Migrations
 
                     b.HasIndex("NumeroSerie")
                         .IsUnique()
-                        .HasFilter("[NumeroSerie] IS NOT NULL AND [NumeroSerie] != ''");
+                        .HasFilter("\"NumeroSerie\" IS NOT NULL AND \"NumeroSerie\" != ''");
 
                     b.HasIndex("ProveedorId");
 
@@ -416,10 +411,10 @@ namespace billing_system.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("MesFacturacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<decimal>("Monto")
                         .HasColumnType("decimal(18,2)");
@@ -494,7 +489,7 @@ namespace billing_system.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("FechaCambio")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Motivo")
                         .HasMaxLength(500)
@@ -538,16 +533,16 @@ namespace billing_system.Migrations
                         .HasDefaultValue("Programado");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("FechaFin")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("FechaInicio")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("FechaProgramada")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
@@ -577,6 +572,62 @@ namespace billing_system.Migrations
                     b.ToTable("MantenimientosReparaciones");
                 });
 
+            modelBuilder.Entity("billing_system.Models.Entities.MetodoPago", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Icono")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Mensaje")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Moneda")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("NombreBanco")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NumeroCuenta")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("Orden")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("TipoCuenta")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MetodosPago");
+                });
+
             modelBuilder.Entity("billing_system.Models.Entities.MovimientoInventario", b =>
                 {
                     b.Property<int>("Id")
@@ -589,10 +640,10 @@ namespace billing_system.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("Fecha")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
@@ -639,7 +690,7 @@ namespace billing_system.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("FechaPago")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Moneda")
                         .IsRequired()
@@ -744,10 +795,10 @@ namespace billing_system.Migrations
                         .HasDefaultValue(false);
 
                     b.Property<DateTime?>("FechaActualizacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Mensaje")
                         .IsRequired()
@@ -787,7 +838,7 @@ namespace billing_system.Migrations
                         .HasColumnType("character varying(200)");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -830,7 +881,7 @@ namespace billing_system.Migrations
                         .HasColumnType("character varying(500)");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -843,6 +894,72 @@ namespace billing_system.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Servicios");
+                });
+
+            modelBuilder.Entity("billing_system.Models.Entities.ServicioLandingPage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Caracteristicas")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ColorEtiqueta")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("Destacado")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Etiqueta")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Icono")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int>("Orden")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<decimal>("Precio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Velocidad")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ServiciosLandingPage");
                 });
 
             modelBuilder.Entity("billing_system.Models.Entities.Ubicacion", b =>
@@ -861,7 +978,7 @@ namespace billing_system.Migrations
                         .HasColumnType("character varying(500)");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -925,13 +1042,9 @@ namespace billing_system.Migrations
             modelBuilder.Entity("billing_system.Models.Entities.AsignacionEquipo", b =>
                 {
                     b.HasOne("billing_system.Models.Entities.Cliente", "Cliente")
-                        .WithMany()
+                        .WithMany("AsignacionesEquipo")
                         .HasForeignKey("ClienteId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("billing_system.Models.Entities.Cliente", null)
-                        .WithMany("AsignacionesEquipo")
-                        .HasForeignKey("ClienteId1");
 
                     b.HasOne("billing_system.Models.Entities.Equipo", "Equipo")
                         .WithMany("AsignacionesEquipo")

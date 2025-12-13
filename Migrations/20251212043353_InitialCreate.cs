@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace billing_system.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreatePostgreSQL : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,7 +21,7 @@ namespace billing_system.Migrations
                     Nombre = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Descripcion = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     Activo = table.Column<bool>(type: "boolean", nullable: false),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -37,13 +37,35 @@ namespace billing_system.Migrations
                     Clave = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Valor = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     Descripcion = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    FechaActualizacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     UsuarioActualizacion = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Configuraciones", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MetodosPago",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    NombreBanco = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Icono = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    TipoCuenta = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Moneda = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    NumeroCuenta = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Mensaje = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Orden = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    Activo = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    FechaActualizacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MetodosPago", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -56,8 +78,8 @@ namespace billing_system.Migrations
                     Mensaje = table.Column<string>(type: "text", nullable: false),
                     Activa = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     EsDefault = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    FechaActualizacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -77,7 +99,7 @@ namespace billing_system.Migrations
                     Direccion = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     Observaciones = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     Activo = table.Column<bool>(type: "boolean", nullable: false),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -95,11 +117,36 @@ namespace billing_system.Migrations
                     Precio = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     Categoria = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValue: "Internet"),
                     Activo = table.Column<bool>(type: "boolean", nullable: false),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Servicios", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ServiciosLandingPage",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Titulo = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Descripcion = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Precio = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    Velocidad = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Etiqueta = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ColorEtiqueta = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Icono = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    Caracteristicas = table.Column<string>(type: "text", nullable: true),
+                    Orden = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    Activo = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    Destacado = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    FechaActualizacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ServiciosLandingPage", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -112,7 +159,7 @@ namespace billing_system.Migrations
                     Direccion = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     Tipo = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValue: "Almacen"),
                     Activo = table.Column<bool>(type: "boolean", nullable: false),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -148,7 +195,7 @@ namespace billing_system.Migrations
                     Cedula = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     Email = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     Activo = table.Column<bool>(type: "boolean", nullable: false),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     TotalFacturas = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     ServicioId = table.Column<int>(type: "integer", nullable: true)
                 },
@@ -181,12 +228,12 @@ namespace billing_system.Migrations
                     Stock = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     StockMinimo = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     PrecioCompra = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
-                    FechaAdquisicion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    FechaAdquisicion = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     ProveedorId = table.Column<int>(type: "integer", nullable: true),
                     Observaciones = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     Activo = table.Column<bool>(type: "boolean", nullable: false),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FechaActualizacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    FechaActualizacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -221,9 +268,9 @@ namespace billing_system.Migrations
                     ServicioId = table.Column<int>(type: "integer", nullable: false),
                     Cantidad = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
                     Activo = table.Column<bool>(type: "boolean", nullable: false),
-                    FechaInicio = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FechaFin = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaInicio = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    FechaFin = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -254,8 +301,8 @@ namespace billing_system.Migrations
                     Categoria = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValue: "Internet"),
                     Monto = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     Estado = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    MesFacturacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    MesFacturacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     ArchivoPDF = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
@@ -285,13 +332,12 @@ namespace billing_system.Migrations
                     Cantidad = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
                     ClienteId = table.Column<int>(type: "integer", nullable: true),
                     EmpleadoNombre = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    FechaAsignacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FechaDevolucionEsperada = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    FechaDevolucionReal = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    FechaAsignacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    FechaDevolucionEsperada = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    FechaDevolucionReal = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     Estado = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValue: "Activa"),
                     Observaciones = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ClienteId1 = table.Column<int>(type: "integer", nullable: true)
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -302,11 +348,6 @@ namespace billing_system.Migrations
                         principalTable: "Clientes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_AsignacionesEquipo_Clientes_ClienteId1",
-                        column: x => x.ClienteId1,
-                        principalTable: "Clientes",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_AsignacionesEquipo_Equipos_EquipoId",
                         column: x => x.EquipoId,
@@ -324,7 +365,7 @@ namespace billing_system.Migrations
                     EquipoId = table.Column<int>(type: "integer", nullable: false),
                     EstadoAnterior = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     EstadoNuevo = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    FechaCambio = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FechaCambio = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UsuarioId = table.Column<int>(type: "integer", nullable: false),
                     Motivo = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     Observaciones = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
@@ -354,16 +395,16 @@ namespace billing_system.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     EquipoId = table.Column<int>(type: "integer", nullable: false),
                     Tipo = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    FechaProgramada = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    FechaInicio = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    FechaFin = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    FechaProgramada = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    FechaInicio = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    FechaFin = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     ProveedorTecnico = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     Costo = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
                     ProblemaReportado = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     SolucionAplicada = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     Estado = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValue: "Programado"),
                     Observaciones = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -384,10 +425,10 @@ namespace billing_system.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Tipo = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Subtipo = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Fecha = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Fecha = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UsuarioId = table.Column<int>(type: "integer", nullable: false),
                     Observaciones = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    FechaCreacion = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FechaCreacion = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     EquipoId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
@@ -455,7 +496,7 @@ namespace billing_system.Migrations
                     VueltoFisico = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
                     MontoCordobasElectronico = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
                     MontoDolaresElectronico = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
-                    FechaPago = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FechaPago = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Observaciones = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     ClienteId = table.Column<int>(type: "integer", nullable: true)
                 },
@@ -548,11 +589,6 @@ namespace billing_system.Migrations
                 name: "IX_AsignacionesEquipo_ClienteId",
                 table: "AsignacionesEquipo",
                 column: "ClienteId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AsignacionesEquipo_ClienteId1",
-                table: "AsignacionesEquipo",
-                column: "ClienteId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AsignacionesEquipo_EquipoId",
@@ -744,10 +780,16 @@ namespace billing_system.Migrations
                 name: "MantenimientosReparaciones");
 
             migrationBuilder.DropTable(
+                name: "MetodosPago");
+
+            migrationBuilder.DropTable(
                 name: "PagoFacturas");
 
             migrationBuilder.DropTable(
                 name: "PlantillasMensajeWhatsApp");
+
+            migrationBuilder.DropTable(
+                name: "ServiciosLandingPage");
 
             migrationBuilder.DropTable(
                 name: "MovimientosInventario");

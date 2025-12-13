@@ -1,0 +1,70 @@
+@{
+    var estado = ViewBag.Estado as string ?? "Todos";
+    var tipoServicio = ViewBag.TipoServicio as string ?? "Todos";
+    var conFacturas = ViewBag.ConFacturas as string ?? "Todos";
+    var busqueda = ViewBag.Busqueda as string ?? "";
+    var tamanoPagina = ViewBag.TamanoPagina as int? ?? 25;
+}
+
+<div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 mb-6">
+    <form method="get" action="/clientes" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <input type="hidden" name="pagina" value="1" />
+        
+        <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Estado</label>
+            <select name="estado" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="Todos" @(estado == "Todos" ? "selected" : "")>Todos los estados</option>
+                <option value="Activo" @(estado == "Activo" ? "selected" : "")>Activo</option>
+                <option value="Inactivo" @(estado == "Inactivo" ? "selected" : "")>Inactivo</option>
+            </select>
+        </div>
+        
+        <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Tipo de Servicio</label>
+            <select name="tipoServicio" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="Todos" @(tipoServicio == "Todos" ? "selected" : "")>Todos los servicios</option>
+                <option value="Internet" @(tipoServicio == "Internet" ? "selected" : "")>Internet</option>
+                <option value="Streaming" @(tipoServicio == "Streaming" ? "selected" : "")>Streaming</option>
+                <option value="Ambos" @(tipoServicio == "Ambos" ? "selected" : "")>Ambos</option>
+                <option value="Ninguno" @(tipoServicio == "Ninguno" ? "selected" : "")>Sin servicios</option>
+            </select>
+        </div>
+        
+        <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Facturas</label>
+            <select name="conFacturas" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="Todos" @(conFacturas == "Todos" ? "selected" : "")>Todos</option>
+                <option value="ConFacturas" @(conFacturas == "ConFacturas" ? "selected" : "")>Con facturas</option>
+                <option value="SinFacturas" @(conFacturas == "SinFacturas" ? "selected" : "")>Sin facturas</option>
+            </select>
+        </div>
+        
+        <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Buscar</label>
+            <input type="text" name="busqueda" value="@busqueda" placeholder="Nombre, código, cédula..." 
+                   class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        
+        <div>
+            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Tamaño página</label>
+            <select name="tamanoPagina" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="10" @(tamanoPagina == 10 ? "selected" : "")>10</option>
+                <option value="25" @(tamanoPagina == 25 ? "selected" : "")>25</option>
+                <option value="50" @(tamanoPagina == 50 ? "selected" : "")>50</option>
+            </select>
+        </div>
+        
+        <div class="flex items-end space-x-2">
+            <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                Filtrar
+            </button>
+        </div>
+        
+        <div class="md:col-span-6 flex items-center justify-end space-x-2">
+            <a href="/clientes" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                Limpiar Filtros
+            </a>
+        </div>
+    </form>
+</div>
+

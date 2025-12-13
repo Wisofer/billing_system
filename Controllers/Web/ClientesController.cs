@@ -29,14 +29,14 @@ public class ClientesController : Controller
     }
 
     [HttpGet("/clientes")]
-    public IActionResult Index(string? busqueda, int pagina = 1, int tamanoPagina = 25)
+    public IActionResult Index(string? busqueda, string? estado, string? tipoServicio, string? conFacturas, int pagina = 1, int tamanoPagina = 25)
     {
         // Validar parámetros de paginación
         if (pagina < 1) pagina = 1;
         if (tamanoPagina < 5) tamanoPagina = 5;
         if (tamanoPagina > 50) tamanoPagina = 50;
 
-        var resultado = _clienteService.ObtenerPaginados(pagina, tamanoPagina, busqueda);
+        var resultado = _clienteService.ObtenerPaginados(pagina, tamanoPagina, busqueda, estado, tipoServicio, conFacturas);
         var esAdministrador = SecurityHelper.IsAdministrator(User);
         
         // Estadísticas desde la base de datos (optimizado)
@@ -45,6 +45,9 @@ public class ClientesController : Controller
         var nuevosEsteMes = _clienteService.ObtenerNuevosEsteMes();
 
         ViewBag.Busqueda = busqueda;
+        ViewBag.Estado = estado ?? "Todos";
+        ViewBag.TipoServicio = tipoServicio ?? "Todos";
+        ViewBag.ConFacturas = conFacturas ?? "Todos";
         ViewBag.Pagina = pagina;
         ViewBag.TamanoPagina = tamanoPagina;
         ViewBag.TotalItems = resultado.TotalItems;

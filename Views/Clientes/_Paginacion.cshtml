@@ -4,6 +4,18 @@
     var totalItems = ViewBag.TotalItems as int? ?? 0;
     var totalPages = ViewBag.TotalPages as int? ?? 1;
     var busqueda = ViewBag.Busqueda as string ?? "";
+    var estado = ViewBag.Estado as string ?? "Todos";
+    var tipoServicio = ViewBag.TipoServicio as string ?? "Todos";
+    var conFacturas = ViewBag.ConFacturas as string ?? "Todos";
+    
+    // Construir query string con todos los filtros
+    var queryParams = new System.Text.StringBuilder();
+    queryParams.Append($"pagina={{0}}&tamanoPagina={tamanoPagina}");
+    if (!string.IsNullOrEmpty(busqueda)) queryParams.Append($"&busqueda={Uri.EscapeDataString(busqueda)}");
+    if (estado != "Todos") queryParams.Append($"&estado={Uri.EscapeDataString(estado)}");
+    if (tipoServicio != "Todos") queryParams.Append($"&tipoServicio={Uri.EscapeDataString(tipoServicio)}");
+    if (conFacturas != "Todos") queryParams.Append($"&conFacturas={Uri.EscapeDataString(conFacturas)}");
+    var queryStringTemplate = queryParams.ToString();
 }
 
 @if (totalItems > 0 && totalPages > 1)
@@ -19,7 +31,7 @@
             <div class="flex items-center space-x-2">
                 @if (pagina > 1)
                 {
-                    <a href="/clientes?pagina=@(pagina - 1)&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
+                    <a href="/clientes?@string.Format(queryStringTemplate, pagina - 1)" 
                        class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -44,7 +56,7 @@
                         
                         if (inicio > 1)
                         {
-                            <a href="/clientes?pagina=1&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
+                            <a href="/clientes?@string.Format(queryStringTemplate, 1)" 
                                class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">1</a>
                             if (inicio > 2) { <span class="px-2 text-gray-500 dark:text-gray-400">...</span> }
                         }
@@ -57,7 +69,7 @@
                             }
                             else
                             {
-                                <a href="/clientes?pagina=@i&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
+                                <a href="/clientes?@string.Format(queryStringTemplate, i)" 
                                    class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">@i</a>
                             }
                         }
@@ -65,7 +77,7 @@
                         if (fin < totalPages)
                         {
                             if (fin < totalPages - 1) { <span class="px-2 text-gray-500 dark:text-gray-400">...</span> }
-                            <a href="/clientes?pagina=@totalPages&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
+                            <a href="/clientes?@string.Format(queryStringTemplate, totalPages)" 
                                class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">@totalPages</a>
                         }
                     }
@@ -73,7 +85,7 @@
 
                 @if (pagina < totalPages)
                 {
-                    <a href="/clientes?pagina=@(pagina + 1)&tamanoPagina=@tamanoPagina@(!string.IsNullOrEmpty(busqueda) ? "&busqueda=" + Uri.EscapeDataString(busqueda) : "")" 
+                    <a href="/clientes?@string.Format(queryStringTemplate, pagina + 1)" 
                        class="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         Siguiente
                         <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">

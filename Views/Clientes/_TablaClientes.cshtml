@@ -3,6 +3,9 @@
 @{
     var esAdministrador = ViewBag.EsAdministrador as bool? ?? false;
     var busqueda = ViewBag.Busqueda as string ?? "";
+    var estado = ViewBag.Estado as string ?? "Todos";
+    var tipoServicio = ViewBag.TipoServicio as string ?? "Todos";
+    var conFacturas = ViewBag.ConFacturas as string ?? "Todos";
     var tamanoPaginaActual = ViewBag.TamanoPagina as int? ?? 25;
 }
 
@@ -15,26 +18,6 @@
                 </svg>
                 Lista de Clientes
             </h3>
-            <form method="get" action="/clientes" class="flex items-center space-x-2">
-                <input type="hidden" name="pagina" value="1" />
-                
-                <label class="text-xs text-gray-500 dark:text-gray-400">
-                    Tamaño:
-                    <select name="tamanoPagina" class="ml-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:border-transparent">
-                        <option value="10" @(tamanoPaginaActual == 10 ? "selected" : "")>10</option>
-                        <option value="25" @(tamanoPaginaActual == 25 ? "selected" : "")>25</option>
-                        <option value="50" @(tamanoPaginaActual == 50 ? "selected" : "")>50</option>
-                    </select>
-                </label>
-
-                <input type="text" name="busqueda" value="@busqueda" placeholder="Buscar..." 
-                       class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64">
-                <button type="submit" class="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </button>
-            </form>
         </div>
     </div>
 
@@ -142,9 +125,18 @@
                 {
                     <tr>
                         <td colspan="8" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                            @if (!string.IsNullOrWhiteSpace(busqueda))
+                            @{
+                                var tieneFiltros = !string.IsNullOrWhiteSpace(busqueda) || 
+                                                   (estado != "Todos") || 
+                                                   (tipoServicio != "Todos") || 
+                                                   (conFacturas != "Todos");
+                            }
+                            @if (tieneFiltros)
                             {
-                                <p>No se encontraron clientes con el término "@busqueda"</p>
+                                <p>No se encontraron clientes con los filtros aplicados.</p>
+                                <p class="mt-2">
+                                    <a href="/clientes" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline">Limpiar filtros</a>
+                                </p>
                             }
                             else
                             {

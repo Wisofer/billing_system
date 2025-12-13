@@ -23,31 +23,79 @@ public class ClienteService : IClienteService
             .ToList();
     }
 
-    public PagedResult<Cliente> ObtenerPaginados(int pagina = 1, int tamanoPagina = 10, string? busqueda = null)
+    public PagedResult<Cliente> ObtenerPaginados(int pagina = 1, int tamanoPagina = 10, string? busqueda = null, string? estado = null, string? tipoServicio = null, string? conFacturas = null)
     {
-        var query = _context.Clientes.AsQueryable();
+        // Cargar todos los clientes con sus relaciones para poder normalizar y filtrar
+        var clientes = _context.Clientes
+            .Include(c => c.ClienteServicios)
+                .ThenInclude(cs => cs.Servicio)
+            .ToList();
+
+        // Aplicar filtro de estado (Activo/Inactivo)
+        if (!string.IsNullOrWhiteSpace(estado) && estado != "Todos")
+        {
+            bool esActivo = estado == "Activo";
+            clientes = clientes.Where(c => c.Activo == esActivo).ToList();
+        }
+
+        // Aplicar filtro de tipo de servicio
+        if (!string.IsNullOrWhiteSpace(tipoServicio) && tipoServicio != "Todos")
+        {
+            clientes = tipoServicio switch
+            {
+                "Internet" => clientes.Where(c => 
+                    c.ClienteServicios.Any(cs => cs.Activo && cs.Servicio != null && cs.Servicio.Categoria == SD.CategoriaInternet) &&
+                    !c.ClienteServicios.Any(cs => cs.Activo && cs.Servicio != null && cs.Servicio.Categoria == SD.CategoriaStreaming)
+                ).ToList(),
+                "Streaming" => clientes.Where(c => 
+                    c.ClienteServicios.Any(cs => cs.Activo && cs.Servicio != null && cs.Servicio.Categoria == SD.CategoriaStreaming) &&
+                    !c.ClienteServicios.Any(cs => cs.Activo && cs.Servicio != null && cs.Servicio.Categoria == SD.CategoriaInternet)
+                ).ToList(),
+                "Ambos" => clientes.Where(c => 
+                    c.ClienteServicios.Any(cs => cs.Activo && cs.Servicio != null && cs.Servicio.Categoria == SD.CategoriaInternet) &&
+                    c.ClienteServicios.Any(cs => cs.Activo && cs.Servicio != null && cs.Servicio.Categoria == SD.CategoriaStreaming)
+                ).ToList(),
+                "Ninguno" => clientes.Where(c => 
+                    !c.ClienteServicios.Any(cs => cs.Activo)
+                ).ToList(),
+                _ => clientes
+            };
+        }
+
+        // Aplicar filtro de facturas
+        if (!string.IsNullOrWhiteSpace(conFacturas) && conFacturas != "Todos")
+        {
+            clientes = conFacturas switch
+            {
+                "ConFacturas" => clientes.Where(c => c.TotalFacturas > 0).ToList(),
+                "SinFacturas" => clientes.Where(c => c.TotalFacturas == 0).ToList(),
+                _ => clientes
+            };
+        }
 
         // Aplicar búsqueda si existe
         if (!string.IsNullOrWhiteSpace(busqueda))
         {
-            var termino = busqueda.ToLower();
+            // Normalizar el término de búsqueda (quitar acentos, ñ, etc.)
+            var terminoNormalizado = Helpers.NormalizarTexto(busqueda);
             
             // Intentar parsear como número para buscar en TotalFacturas
             bool esNumero = int.TryParse(busqueda.Trim(), out int numeroFacturas);
             
-            query = query.Where(c => 
-                c.Nombre.ToLower().Contains(termino) ||
-                c.Codigo.ToLower().Contains(termino) ||
-                (c.Cedula != null && c.Cedula.ToLower().Contains(termino)) ||
-                (c.Telefono != null && c.Telefono.Contains(termino)) ||
-                (esNumero && c.TotalFacturas == numeroFacturas));
+            // Filtrar aplicando normalización
+            clientes = clientes.Where(c => 
+                Helpers.NormalizarTexto(c.Nombre).Contains(terminoNormalizado) ||
+                Helpers.NormalizarTexto(c.Codigo).Contains(terminoNormalizado) ||
+                (c.Cedula != null && Helpers.NormalizarTexto(c.Cedula).Contains(terminoNormalizado)) ||
+                (c.Telefono != null && c.Telefono.Contains(busqueda)) ||
+                (esNumero && c.TotalFacturas == numeroFacturas)
+            ).ToList();
         }
 
-        var totalItems = query.Count();
+        var totalItems = clientes.Count;
 
-        var items = query
-            .Include(c => c.ClienteServicios)
-                .ThenInclude(cs => cs.Servicio)
+        // Aplicar ordenamiento y paginación
+        var items = clientes
             .OrderByDescending(c => c.FechaCreacion)
             .Skip((pagina - 1) * tamanoPagina)
             .Take(tamanoPagina)
@@ -98,11 +146,17 @@ public class ClienteService : IClienteService
         if (string.IsNullOrWhiteSpace(termino))
             return ObtenerTodos();
 
-        termino = termino.ToLower();
-        return _context.Clientes
-            .Where(c => c.Nombre.ToLower().Contains(termino) ||
-                       c.Codigo.ToLower().Contains(termino) ||
-                       (c.Cedula != null && c.Cedula.ToLower().Contains(termino)) ||
+        // Normalizar el término de búsqueda (quitar acentos, ñ, etc.)
+        var terminoNormalizado = Helpers.NormalizarTexto(termino);
+        
+        // Cargar todos los clientes en memoria para normalizar y comparar
+        var clientes = _context.Clientes.ToList();
+        
+        // Filtrar aplicando normalización
+        return clientes
+            .Where(c => Helpers.NormalizarTexto(c.Nombre).Contains(terminoNormalizado) ||
+                       Helpers.NormalizarTexto(c.Codigo).Contains(terminoNormalizado) ||
+                       (c.Cedula != null && Helpers.NormalizarTexto(c.Cedula).Contains(terminoNormalizado)) ||
                        (c.Telefono != null && c.Telefono.Contains(termino)))
             .OrderByDescending(c => c.FechaCreacion)
             .ToList();

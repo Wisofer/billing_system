@@ -82,10 +82,19 @@ public class FacturasController : Controller
 
         if (!string.IsNullOrWhiteSpace(busquedaCliente))
         {
-            var termino = busquedaCliente.ToLower();
-            query = query.Where(f => 
-                f.Cliente.Nombre.ToLower().Contains(termino) ||
-                f.Cliente.Codigo.ToLower().Contains(termino));
+            // Normalizar el término de búsqueda (quitar acentos, ñ, etc.)
+            var terminoNormalizado = Helpers.NormalizarTexto(busquedaCliente);
+            
+            // Cargar facturas en memoria para normalizar y comparar
+            var facturasFiltradas = query.ToList();
+            
+            // Filtrar aplicando normalización
+            facturasFiltradas = facturasFiltradas.Where(f => 
+                Helpers.NormalizarTexto(f.Cliente.Nombre).Contains(terminoNormalizado) ||
+                Helpers.NormalizarTexto(f.Cliente.Codigo).Contains(terminoNormalizado)
+            ).ToList();
+            
+            query = facturasFiltradas.AsQueryable();
         }
 
         var totalItems = query.Count();
@@ -573,12 +582,20 @@ public class FacturasController : Controller
 
             if (!string.IsNullOrWhiteSpace(busquedaCliente))
             {
-                var termino = busquedaCliente.ToLower();
+                // Normalizar el término de búsqueda (quitar acentos, ñ, etc.)
+                var terminoNormalizado = Helpers.NormalizarTexto(busquedaCliente);
+                
                 // Materializar la consulta para poder acceder a las propiedades de navegación
                 var facturas = query.ToList();
+                
+                // Filtrar aplicando normalización
                 facturas = facturas.Where(f => 
-                    (f.Cliente?.Nombre?.ToLower().Contains(termino) ?? false) ||
-                    (f.Cliente?.Codigo?.ToLower().Contains(termino) ?? false)).ToList();
+                    (f.Cliente != null && (
+                        Helpers.NormalizarTexto(f.Cliente.Nombre).Contains(terminoNormalizado) ||
+                        Helpers.NormalizarTexto(f.Cliente.Codigo).Contains(terminoNormalizado)
+                    ))
+                ).ToList();
+                
                 var facturasIds = facturas.OrderBy(f => f.Numero).Select(f => f.Id).Distinct().ToList();
                 return Json(new { ids = facturasIds, total = facturasIds.Count });
             }
@@ -710,12 +727,20 @@ public class FacturasController : Controller
 
             if (!string.IsNullOrWhiteSpace(busquedaCliente))
             {
-                var busquedaLower = busquedaCliente.ToLower();
-                query = query.Where(f => 
-                    f.Cliente.Nombre.ToLower().Contains(busquedaLower) ||
-                    f.Cliente.Codigo.ToLower().Contains(busquedaLower) ||
-                    (f.Cliente.Cedula != null && f.Cliente.Cedula.ToLower().Contains(busquedaLower))
-                );
+                // Normalizar el término de búsqueda (quitar acentos, ñ, etc.)
+                var terminoNormalizado = Helpers.NormalizarTexto(busquedaCliente);
+                
+                // Cargar facturas en memoria para normalizar y comparar
+                var facturasFiltradas = query.ToList();
+                
+                // Filtrar aplicando normalización
+                facturasFiltradas = facturasFiltradas.Where(f => 
+                    Helpers.NormalizarTexto(f.Cliente.Nombre).Contains(terminoNormalizado) ||
+                    Helpers.NormalizarTexto(f.Cliente.Codigo).Contains(terminoNormalizado) ||
+                    (f.Cliente.Cedula != null && Helpers.NormalizarTexto(f.Cliente.Cedula).Contains(terminoNormalizado))
+                ).ToList();
+                
+                query = facturasFiltradas.AsQueryable();
             }
 
             if (!string.IsNullOrWhiteSpace(categoria) && categoria != "Todas")
