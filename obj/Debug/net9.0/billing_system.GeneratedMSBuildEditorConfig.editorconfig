@@ -88,6 +88,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29uZmlndXJhY2lvbmVzL0luZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/william/Documentos/billing_system/Views/Contactos/Detalle.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udGFjdG9zL0RldGFsbGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Contactos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29udGFjdG9zL0luZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/william/Documentos/billing_system/Views/Egresos/Crear.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRWdyZXNvcy9DcmVhci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

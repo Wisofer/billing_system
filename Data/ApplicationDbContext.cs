@@ -38,6 +38,9 @@ public class ApplicationDbContext : DbContext
     
     // Egresos/Gastos
     public DbSet<Egreso> Egresos { get; set; }
+    
+    // Contactos Landing Page
+    public DbSet<Contacto> Contactos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -439,6 +442,19 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.UsuarioId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configuración de Contacto (Landing Page)
+        modelBuilder.Entity<Contacto>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Nombre).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Correo).IsRequired().HasMaxLength(150);
+            entity.Property(e => e.Telefono).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.Mensaje).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.Estado).HasMaxLength(20).HasDefaultValue("Nuevo");
+            entity.HasIndex(e => e.FechaEnvio);
+            entity.HasIndex(e => e.Estado);
         });
     }
 }

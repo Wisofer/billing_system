@@ -120,6 +120,9 @@ builder.Services.AddScoped<IServicioLandingPageService, ServicioLandingPageServi
 // Servicios de Egresos/Gastos
 builder.Services.AddScoped<IEgresoService, EgresoService>();
 
+// Servicios de Contacto (Landing Page)
+builder.Services.AddScoped<IContactoService, ContactoService>();
+
 // Registrar servicio en segundo plano para generación automática de facturas
 // Este servicio se ejecutará el día 1 de cada mes a las 2:00 AM
 builder.Services.AddHostedService<FacturaAutomaticaBackgroundService>();
@@ -191,6 +194,37 @@ using (var scope = app.Services.CreateScope())
             if (!ex.Message.Contains("already exists") && !ex.Message.Contains("duplicate"))
             {
                 logger.LogWarning($"Advertencia al crear tabla Egresos: {ex.Message}");
+            }
+        }
+        
+        // Crear tabla Contactos si no existe
+        try
+        {
+            dbContext.Database.ExecuteSqlRaw(@"
+                CREATE TABLE IF NOT EXISTS ""Contactos"" (
+                    ""Id"" SERIAL PRIMARY KEY,
+                    ""Nombre"" character varying(100) NOT NULL,
+                    ""Correo"" character varying(150) NOT NULL,
+                    ""Telefono"" character varying(20) NOT NULL,
+                    ""Mensaje"" character varying(1000) NOT NULL,
+                    ""FechaEnvio"" timestamp without time zone NOT NULL,
+                    ""Estado"" character varying(20) NOT NULL DEFAULT 'Nuevo',
+                    ""FechaLeido"" timestamp without time zone,
+                    ""FechaRespondido"" timestamp without time zone
+                );
+            ");
+            
+            // Crear índices si no existen
+            dbContext.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Contactos_FechaEnvio"" ON ""Contactos"" (""FechaEnvio"");");
+            dbContext.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Contactos_Estado"" ON ""Contactos"" (""Estado"");");
+            
+            logger.LogInformation("Tabla 'Contactos' verificada/creada correctamente");
+        }
+        catch (Exception ex)
+        {
+            if (!ex.Message.Contains("already exists") && !ex.Message.Contains("duplicate"))
+            {
+                logger.LogWarning($"Advertencia al crear tabla Contactos: {ex.Message}");
             }
         }
         
