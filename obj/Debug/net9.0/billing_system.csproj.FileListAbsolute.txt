@@ -156,3 +156,11 @@
 /home/william/Documentos/billing_system/obj/Debug/net9.0/billing_system.pdb
 /home/william/Documentos/billing_system/obj/Debug/net9.0/billing_system.genruntimeconfig.cache
 /home/william/Documentos/billing_system/obj/Debug/net9.0/ref/billing_system.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/Microsoft.IdentityModel.Abstractions.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/Microsoft.IdentityModel.Logging.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/Microsoft.IdentityModel.Tokens.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/System.IdentityModel.Tokens.Jwt.dll

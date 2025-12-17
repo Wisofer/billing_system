@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using billing_system.Services.IServices;
 
 namespace billing_system.Controllers.Api.Movil
 {
     [Route("api/movil/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class ServiciosController : ControllerBase
     {
         private readonly IServicioService _servicioService;

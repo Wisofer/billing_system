@@ -4,9 +4,12 @@ using billing_system.Services;
 using billing_system.Services.IServices;
 using billing_system.Utils;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using QuestPDF.Infrastructure;
+using System.Text;
 
 // Inicializar QuestPDF antes de cualquier uso
 QuestPDF.Settings.License = LicenseType.Community;
@@ -63,8 +66,25 @@ builder.Services.AddSession(options =>
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
-// Configurar Authentication con Cookies (estándar en .NET para MVC)
-builder.Services.AddAuthentication("Cookies")
+// Configuración JWT para API Móvil
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "EmsInetSolutSuperSecretKeyForJwtAuthentication2024!@#$%";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "EmsInetSolut";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "EmsInetMovilApp";
+
+builder.Services.AddSingleton(new JwtSettings
+{
+    Key = jwtKey,
+    Issuer = jwtIssuer,
+    Audience = jwtAudience,
+    ExpirationHours = 24 * 7 // 7 días
+});
+
+// Configurar Authentication con Cookies (Web) + JWT (Móvil)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = "Cookies"; // Por defecto usa cookies (sistema web)
+    options.DefaultChallengeScheme = "Cookies";
+})
     .AddCookie("Cookies", options =>
     {
         options.LoginPath = "/login";
@@ -75,6 +95,20 @@ builder.Services.AddAuthentication("Cookies")
         options.Cookie.HttpOnly = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         options.Cookie.SameSite = SameSiteMode.Lax;
+    })
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ClockSkew = TimeSpan.Zero // Sin tolerancia de tiempo
+        };
     });
 
 // Configurar Authorization

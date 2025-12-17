@@ -8,6 +8,7 @@ namespace billing_system.Controllers.Api.Movil
 {
     [Route("api/movil/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class PagosController : ControllerBase
     {
         private readonly IPagoService _pagoService;

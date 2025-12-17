@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using billing_system.Services.IServices;
 using billing_system.Services;
 using billing_system.Models.Entities;
@@ -8,6 +9,7 @@ namespace billing_system.Controllers.Api.Movil
 {
     [Route("api/movil/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class FacturasController : ControllerBase
     {
         private readonly IFacturaService _facturaService;
