@@ -66,25 +66,30 @@ public class PagoService : IPagoService
         if (monedaOrigen == monedaDestino)
             return monto;
 
-        var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+        // TipoCambioCompra: cuando cliente paga en $ (negocio "compra" dólares)
+        // TipoCambioVenta: para mostrar equivalentes en $
+        var tipoCambioCompra = _configuracionService.ObtenerValorDecimal("TipoCambioCompra") ?? SD.TipoCambioCompra;
+        var tipoCambioVenta = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
 
         if (monedaOrigen == SD.MonedaCordoba && monedaDestino == SD.MonedaDolar)
-            return monto / tipoCambio;
+            return monto / tipoCambioVenta; // Mostrar equivalente → usar Venta
 
         if (monedaOrigen == SD.MonedaDolar && monedaDestino == SD.MonedaCordoba)
-            return monto * tipoCambio;
+            return monto * tipoCambioCompra; // Cliente paga en $ → usar Compra
 
         return monto;
     }
 
     /// <summary>
     /// Calcula el monto total del pago considerando pagos mixtos y múltiples monedas
+    /// Usa TipoCambioCompra cuando el cliente paga en dólares
     /// </summary>
     public decimal CalcularMontoTotal(Pago pago)
     {
         decimal total = 0;
-        var tipoCambioDefault = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
-        var tipoCambio = pago.TipoCambio ?? tipoCambioDefault;
+        // Usar TipoCambioCompra para pagos en dólares (negocio "compra" los dólares del cliente)
+        var tipoCambioCompraDefault = _configuracionService.ObtenerValorDecimal("TipoCambioCompra") ?? SD.TipoCambioCompra;
+        var tipoCambio = pago.TipoCambio ?? tipoCambioCompraDefault;
 
         if (pago.TipoPago == SD.TipoPagoMixto)
         {
@@ -153,7 +158,8 @@ public class PagoService : IPagoService
     public Pago Crear(Pago pago, List<int>? facturaIds = null, List<decimal>? montosAplicados = null)
     {
         pago.FechaPago = DateTime.Now;
-        var tipoCambioDefault = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+        // Usar TipoCambioCompra para pagos en dólares (cliente paga en $)
+        var tipoCambioDefault = _configuracionService.ObtenerValorDecimal("TipoCambioCompra") ?? SD.TipoCambioCompra;
         pago.TipoCambio = pago.TipoCambio ?? tipoCambioDefault;
         
         // Calcular el monto total según el tipo de pago y monedas
@@ -337,8 +343,9 @@ public class PagoService : IPagoService
         {
             if (pago.MontoRecibidoFisico.HasValue)
             {
+                // Usar TipoCambioCompra para pagos en dólares del cliente
                 var montoFisico = (pago.MontoCordobasFisico ?? 0) + 
-                                 ((pago.MontoDolaresFisico ?? 0) * (pago.TipoCambio ?? _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar));
+                                 ((pago.MontoDolaresFisico ?? 0) * (pago.TipoCambio ?? _configuracionService.ObtenerValorDecimal("TipoCambioCompra") ?? SD.TipoCambioCompra));
                 existente.VueltoFisico = CalcularVuelto(pago.MontoRecibidoFisico.Value, montoFisico);
             }
             else if (pago.MontoRecibido.HasValue && pago.TipoPago == SD.TipoPagoFisico)

@@ -197,24 +197,39 @@ namespace billing_system.Controllers.Api.Movil
         }
 
         /// <summary>
-        /// Obtener tipo de cambio actual - GET /api/movil/pagos/tipo-cambio
+        /// Obtener tipo de cambio actual (Compra y Venta) - GET /api/movil/pagos/tipo-cambio
         /// </summary>
         [HttpGet("tipo-cambio")]
         public IActionResult GetTipoCambio()
         {
             try
             {
-                var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+                var tipoCambioVenta = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+                var tipoCambioCompra = _configuracionService.ObtenerValorDecimal("TipoCambioCompra") ?? SD.TipoCambioCompra;
+                var configVenta = _configuracionService.ObtenerPorClave("TipoCambioDolar");
+                var configCompra = _configuracionService.ObtenerPorClave("TipoCambioCompra");
 
                 return Ok(new
                 {
                     success = true,
                     data = new
                     {
-                        tipoCambio = tipoCambio,
+                        // Valores principales
+                        compra = tipoCambioCompra,
+                        venta = tipoCambioVenta,
+                        // Compatibilidad con versiones anteriores
+                        tipoCambio = tipoCambioVenta,
+                        // Metadatos
                         monedaBase = "USD",
                         monedaDestino = "NIO",
-                        fechaActualizacion = DateTime.Now
+                        simboloBase = "$",
+                        simboloDestino = "C$",
+                        ultimaActualizacion = configVenta?.FechaActualizacion ?? configCompra?.FechaActualizacion,
+                        descripcion = new
+                        {
+                            compra = "Usar cuando el cliente paga en dólares",
+                            venta = "Usar para mostrar equivalentes y cálculos generales"
+                        }
                     }
                 });
             }

@@ -23,7 +23,8 @@ public static class SD
     public const string MonedaAmbos = "Ambos";
 
     // Tipo de Cambio
-    public const decimal TipoCambioDolar = 36.80m; // C$36.80 = $1
+    public const decimal TipoCambioDolar = 36.80m; // C$36.80 = $1 (Venta)
+    public const decimal TipoCambioCompra = 36.32m; // C$36.32 = $1 (Compra - cuando cliente paga en $)
 
     // Bancos
     public const string BancoBanpro = "Banpro";

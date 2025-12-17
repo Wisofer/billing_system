@@ -5,7 +5,7 @@
     ViewData["Title"] = "Registrar Pago";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var todosLosClientes = ViewBag.TodosLosClientes as List<billing_system.Models.Entities.Cliente> ?? new List<billing_system.Models.Entities.Cliente>();
-    var tipoCambio = ViewBag.TipoCambio as decimal? ?? SD.TipoCambioDolar;
+    var tipoCambio = ViewBag.TipoCambio as decimal? ?? SD.TipoCambioCompra; // Usar Compra para pagos en $
     var bancos = ViewBag.Bancos as string[] ?? new[] { SD.BancoBanpro, SD.BancoLafise, SD.BancoBAC, SD.BancoFicohsa, SD.BancoBDF };
     var tiposCuenta = ViewBag.TiposCuenta as string[] ?? new[] { SD.TipoCuentaDolar, SD.TipoCuentaCordoba, SD.TipoCuentaBilletera };
     var clientesJson = JsonSerializer.Serialize(todosLosClientes.Select(c => new { id = c.Id, codigo = c.Codigo, nombre = c.Nombre }));

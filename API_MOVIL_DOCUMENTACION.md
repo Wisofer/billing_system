@@ -341,7 +341,7 @@ GET /api/movil/pagos/buscar?q={termino}&limite=20
 
 **Busca por:** nombre cliente, código cliente, número factura
 
-### Tipo de Cambio Actual
+### Tipo de Cambio Actual (Compra y Venta)
 ```
 GET /api/movil/pagos/tipo-cambio
 ```
@@ -351,12 +351,29 @@ GET /api/movil/pagos/tipo-cambio
 {
   "success": true,
   "data": {
-    "tipoCambio": 36.50,
+    "compra": 36.32,
+    "venta": 36.80,
+    "tipoCambio": 36.80,
     "monedaBase": "USD",
     "monedaDestino": "NIO",
-    "fechaActualizacion": "2024-12-17T12:00:00"
+    "simboloBase": "$",
+    "simboloDestino": "C$",
+    "ultimaActualizacion": "2024-12-17T12:00:00",
+    "descripcion": {
+      "compra": "Usar cuando el cliente paga en dólares",
+      "venta": "Usar para mostrar equivalentes y cálculos generales"
+    }
   }
 }
+```
+
+**Uso en Flutter:**
+```dart
+// Cuando cliente paga en dólares → usar COMPRA
+double montoEnCordobas = montoDolares * tipoCambio.compra;
+
+// Para mostrar equivalente en dólares → usar VENTA  
+double equivalenteUSD = montoCordobas / tipoCambio.venta;
 ```
 
 ---

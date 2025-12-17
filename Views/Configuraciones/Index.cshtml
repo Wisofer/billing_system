@@ -16,8 +16,13 @@
         activa = p.Activa, 
         esDefault = p.EsDefault 
     }));
-    var tipoCambio = ViewBag.TipoCambio as decimal? ?? 36.80m;
-    var configuracionTipoCambio = ViewBag.ConfiguracionTipoCambio as Configuracion;
+    var tipoCambioVenta = ViewBag.TipoCambioVenta as decimal? ?? 36.80m;
+    var tipoCambioCompra = ViewBag.TipoCambioCompra as decimal? ?? 36.32m;
+    var configuracionTipoCambioVenta = ViewBag.ConfiguracionTipoCambioVenta as Configuracion;
+    var configuracionTipoCambioCompra = ViewBag.ConfiguracionTipoCambioCompra as Configuracion;
+    // Compatibilidad
+    var tipoCambio = tipoCambioVenta;
+    var configuracionTipoCambio = configuracionTipoCambioVenta;
 }
 
 <div class="mb-6">
@@ -233,38 +238,57 @@
     </div>
     
     <div class="space-y-4">
+        <!-- Valores de Compra y Venta -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <label class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 block">Valor Actual</label>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    C$ @tipoCambio.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) = $1
+            <!-- Tipo de Cambio Compra -->
+            <div class="p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-green-600 dark:text-green-400 text-lg">💵</span>
+                    <label class="text-sm font-medium text-green-700 dark:text-green-300">Compra</label>
+                </div>
+                <p class="text-2xl font-bold text-green-800 dark:text-green-200">
+                    C$ @tipoCambioCompra.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)
                 </p>
+                <p class="text-xs text-green-600 dark:text-green-400 mt-1">Cuando el cliente paga en dólares</p>
             </div>
-            @if (configuracionTipoCambio != null && configuracionTipoCambio.FechaActualizacion.HasValue)
-            {
-                <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <label class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1 block">Última Actualización</label>
-                    <p class="text-base font-semibold text-gray-900 dark:text-white">
-                        @configuracionTipoCambio.FechaActualizacion.Value.ToString("dd/MM/yyyy HH:mm")
+            
+            <!-- Tipo de Cambio Venta -->
+            <div class="p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-blue-600 dark:text-blue-400 text-lg">💰</span>
+                    <label class="text-sm font-medium text-blue-700 dark:text-blue-300">Venta</label>
+                </div>
+                <p class="text-2xl font-bold text-blue-800 dark:text-blue-200">
+                    C$ @tipoCambioVenta.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)
+                </p>
+                <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">Para mostrar equivalentes en dólares</p>
+            </div>
+        </div>
+
+        <!-- Última actualización -->
+        @if (configuracionTipoCambioVenta != null && configuracionTipoCambioVenta.FechaActualizacion.HasValue)
+        {
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        <strong>Última actualización:</strong> @configuracionTipoCambioVenta.FechaActualizacion.Value.ToString("dd/MM/yyyy HH:mm")
                     </p>
-                    @if (!string.IsNullOrEmpty(configuracionTipoCambio.UsuarioActualizacion))
+                    @if (!string.IsNullOrEmpty(configuracionTipoCambioVenta.UsuarioActualizacion))
                     {
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            Por: @configuracionTipoCambio.UsuarioActualizacion
+                        <p class="text-xs text-gray-500 dark:text-gray-500">
+                            Por: @configuracionTipoCambioVenta.UsuarioActualizacion
                         </p>
                     }
                 </div>
-            }
-        </div>
-        
-        @if (configuracionTipoCambio != null && !string.IsNullOrEmpty(configuracionTipoCambio.Descripcion))
-        {
-            <div class="p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <p class="text-sm text-blue-800 dark:text-blue-200">
-                    <strong>Descripción:</strong> @configuracionTipoCambio.Descripcion
-                </p>
             </div>
         }
+        
+        <div class="p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                <strong>💡 Nota:</strong> El tipo de cambio de <strong>Compra</strong> se usa cuando el cliente paga en dólares. 
+                El de <strong>Venta</strong> se usa para mostrar equivalentes y cálculos generales.
+            </p>
+        </div>
     </div>
 </div>
 
@@ -475,7 +499,7 @@
 
 <!-- Modal Editar Tipo de Cambio -->
 <div id="modalEditarTipoCambio" class="hidden fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-50 flex items-center justify-center">
-    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-200 dark:border-gray-700">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg border border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Editar Tipo de Cambio</h3>
             <button onclick="cerrarModalEditarTipoCambio()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
@@ -486,26 +510,49 @@
         </div>
         <form id="formEditarTipoCambio" onsubmit="actualizarTipoCambio(event)">
             <div class="space-y-4">
-                <div class="p-4 bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <div class="p-4 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                     <p class="text-sm text-yellow-800 dark:text-yellow-200">
-                        <strong>⚠️ Importante:</strong> Este valor se utilizará para todos los cálculos de conversión entre dólares y córdobas en los pagos.
+                        <strong>⚠️ Importante:</strong> Estos valores se usan para cálculos de conversión en pagos.
                     </p>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Cambio (C$ por $1) *</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400">C$</span>
-                        <input type="number" name="valor" id="editarValorTipoCambio" step="0.01" min="0.01" max="100" required 
-                               value="@tipoCambio.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
-                               class="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-                               placeholder="36.80">
-                        <span class="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400">= $1</span>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Tipo de Cambio Compra -->
+                    <div class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                        <label class="block text-sm font-medium text-green-700 dark:text-green-300 mb-2">
+                            💵 Compra (C$ por $1)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-green-600 dark:text-green-400 font-medium">C$</span>
+                            <input type="number" name="valorCompra" id="editarValorCompra" step="0.01" min="0.01" max="100" 
+                                   value="@tipoCambioCompra.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
+                                   class="w-full pl-10 pr-3 py-2 border border-green-300 dark:border-green-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                   placeholder="36.32">
+                        </div>
+                        <p class="text-xs text-green-600 dark:text-green-400 mt-2">Cliente paga en $</p>
                     </div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ingresa el valor del tipo de cambio (ejemplo: 36.80)</p>
+                    
+                    <!-- Tipo de Cambio Venta -->
+                    <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                        <label class="block text-sm font-medium text-blue-700 dark:text-blue-300 mb-2">
+                            💰 Venta (C$ por $1)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-blue-600 dark:text-blue-400 font-medium">C$</span>
+                            <input type="number" name="valorVenta" id="editarValorVenta" step="0.01" min="0.01" max="100" 
+                                   value="@tipoCambioVenta.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
+                                   class="w-full pl-10 pr-3 py-2 border border-blue-300 dark:border-blue-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="36.80">
+                        </div>
+                        <p class="text-xs text-blue-600 dark:text-blue-400 mt-2">Equivalentes en $</p>
+                    </div>
                 </div>
-                <div class="p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <p class="text-xs text-blue-800 dark:text-blue-200">
-                        <strong>Valor actual:</strong> C$ @tipoCambio.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) = $1
+
+                <div class="p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+                    <p class="text-xs text-gray-600 dark:text-gray-400">
+                        <strong>Valores actuales:</strong> 
+                        Compra C$ @tipoCambioCompra.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) | 
+                        Venta C$ @tipoCambioVenta.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)
                     </p>
                 </div>
             </div>
@@ -844,20 +891,31 @@
     async function actualizarTipoCambio(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
-        const valorInput = formData.get('valor');
+        const valorCompraInput = formData.get('valorCompra');
+        const valorVentaInput = formData.get('valorVenta');
         
-        // Normalizar el valor: asegurar que use punto como separador decimal
-        let valor = valorInput.toString().trim().replace(',', '.');
-        const valorDecimal = parseFloat(valor);
+        // Normalizar los valores: asegurar que usen punto como separador decimal
+        let valorCompra = valorCompraInput ? valorCompraInput.toString().trim().replace(',', '.') : '';
+        let valorVenta = valorVentaInput ? valorVentaInput.toString().trim().replace(',', '.') : '';
         
-        if (isNaN(valorDecimal) || valorDecimal <= 0 || valorDecimal > 100) {
-            alert('El tipo de cambio debe ser un valor válido entre 0.01 y 100.');
+        // Validar al menos un valor
+        const compraDecimal = parseFloat(valorCompra);
+        const ventaDecimal = parseFloat(valorVenta);
+        
+        if ((valorCompra && (isNaN(compraDecimal) || compraDecimal <= 0 || compraDecimal > 100)) ||
+            (valorVenta && (isNaN(ventaDecimal) || ventaDecimal <= 0 || ventaDecimal > 100))) {
+            alert('Los tipos de cambio deben ser valores válidos entre 0.01 y 100.');
             return;
         }
 
-        // Enviar como string para evitar problemas de cultura en el servidor
+        if (!valorCompra && !valorVenta) {
+            alert('Debe ingresar al menos un valor de tipo de cambio.');
+            return;
+        }
+
         const data = {
-            valor: valor
+            valorCompra: valorCompra,
+            valorVenta: valorVenta
         };
 
         try {
@@ -876,9 +934,19 @@
 
             const result = await response.json();
             if (result.success) {
+                try {
+                    const audioSuccess = new Audio('/sounds/success.mp3');
+                    audioSuccess.volume = 0.6;
+                    audioSuccess.play().catch(() => {});
+                } catch (e) { console.error(e); }
                 alert(result.message);
                 location.reload();
             } else {
+                try {
+                    const audioError = new Audio('/sounds/error.mp3');
+                    audioError.volume = 0.6;
+                    audioError.play().catch(() => {});
+                } catch (e) { console.error(e); }
                 alert(result.message);
             }
         } catch (error) {

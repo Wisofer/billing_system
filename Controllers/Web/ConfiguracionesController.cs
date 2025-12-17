@@ -38,9 +38,11 @@ public class ConfiguracionesController : Controller
         var usuarios = _usuarioService.ObtenerTodos();
         var plantillas = _context.PlantillasMensajeWhatsApp.OrderByDescending(p => p.EsDefault).ThenBy(p => p.Nombre).ToList();
 
-        // Obtener tipo de cambio actual
-        var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
-        var configuracionTipoCambio = _configuracionService.ObtenerPorClave("TipoCambioDolar");
+        // Obtener tipos de cambio (Compra y Venta)
+        var tipoCambioVenta = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+        var tipoCambioCompra = _configuracionService.ObtenerValorDecimal("TipoCambioCompra") ?? SD.TipoCambioCompra;
+        var configuracionTipoCambioVenta = _configuracionService.ObtenerPorClave("TipoCambioDolar");
+        var configuracionTipoCambioCompra = _configuracionService.ObtenerPorClave("TipoCambioCompra");
 
         ViewBag.EsAdministrador = esAdministrador;
         ViewBag.RolUsuario = rolUsuario;
@@ -48,8 +50,13 @@ public class ConfiguracionesController : Controller
         ViewBag.Usuarios = usuarios;
         ViewBag.TemaActual = temaActual;
         ViewBag.Plantillas = plantillas;
-        ViewBag.TipoCambio = tipoCambio;
-        ViewBag.ConfiguracionTipoCambio = configuracionTipoCambio;
+        ViewBag.TipoCambioVenta = tipoCambioVenta;
+        ViewBag.TipoCambioCompra = tipoCambioCompra;
+        ViewBag.ConfiguracionTipoCambioVenta = configuracionTipoCambioVenta;
+        ViewBag.ConfiguracionTipoCambioCompra = configuracionTipoCambioCompra;
+        // Mantener compatibilidad
+        ViewBag.TipoCambio = tipoCambioVenta;
+        ViewBag.ConfiguracionTipoCambio = configuracionTipoCambioVenta;
 
         return View();
     }
@@ -279,37 +286,50 @@ public class ConfiguracionesController : Controller
     // ========== CRUD de Tipo de Cambio ==========
     
     [HttpPost("/configuraciones/tipo-cambio/actualizar")]
-    public IActionResult ActualizarTipoCambio([FromForm] string valor)
+    public IActionResult ActualizarTipoCambio([FromForm] string valorCompra, [FromForm] string valorVenta)
     {
         try
         {
-            // Parsear el valor manualmente usando InvariantCulture para evitar problemas de cultura
-            if (string.IsNullOrWhiteSpace(valor))
-            {
-                return Json(new { success = false, message = "El valor del tipo de cambio es requerido." });
-            }
-
-            // Normalizar: reemplazar coma por punto
-            valor = valor.Replace(',', '.');
-            
-            if (!decimal.TryParse(valor, NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var valorDecimal))
-            {
-                return Json(new { success = false, message = "El valor del tipo de cambio no es válido." });
-            }
-
-            if (valorDecimal <= 0 || valorDecimal > 100)
-            {
-                return Json(new { success = false, message = "El tipo de cambio debe ser un valor válido entre 0.01 y 100." });
-            }
-
             var nombreUsuario = User.Identity?.Name ?? "Sistema";
-            _configuracionService.ActualizarValor("TipoCambioDolar", valorDecimal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), nombreUsuario);
+            var mensajes = new List<string>();
 
-            return Json(new { success = true, message = $"Tipo de cambio actualizado a C$ {valorDecimal:F2} = $1" });
+            // Actualizar Tipo de Cambio Compra
+            if (!string.IsNullOrWhiteSpace(valorCompra))
+            {
+                valorCompra = valorCompra.Replace(',', '.');
+                if (decimal.TryParse(valorCompra, NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var compraDecimal))
+                {
+                    if (compraDecimal > 0 && compraDecimal <= 100)
+                    {
+                        _configuracionService.ActualizarValor("TipoCambioCompra", compraDecimal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), nombreUsuario);
+                        mensajes.Add($"Compra: C$ {compraDecimal:F2}");
+                    }
+                }
+            }
+
+            // Actualizar Tipo de Cambio Venta
+            if (!string.IsNullOrWhiteSpace(valorVenta))
+            {
+                valorVenta = valorVenta.Replace(',', '.');
+                if (decimal.TryParse(valorVenta, NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var ventaDecimal))
+                {
+                    if (ventaDecimal > 0 && ventaDecimal <= 100)
+                    {
+                        _configuracionService.ActualizarValor("TipoCambioDolar", ventaDecimal.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), nombreUsuario);
+                        mensajes.Add($"Venta: C$ {ventaDecimal:F2}");
+                    }
+                }
+            }
+
+            if (mensajes.Count == 0)
+            {
+                return Json(new { success = false, message = "No se actualizó ningún valor. Verifica los datos ingresados." });
+            }
+
+            return Json(new { success = true, message = $"Tipo de cambio actualizado - {string.Join(", ", mensajes)}" });
         }
         catch (Exception ex)
         {
-            // Log del error para debugging
             return Json(new { success = false, message = $"Error al actualizar el tipo de cambio: {ex.Message}" });
         }
     }

@@ -99,8 +99,12 @@ public class PagosController : Controller
             : _clienteService.Buscar(clienteBusqueda);
 
         ViewBag.Facturas = new List<Factura>();
-        var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
-        ViewBag.TipoCambio = tipoCambio;
+        // Tipos de cambio: Compra (cliente paga en $) y Venta (mostrar equivalentes)
+        var tipoCambioCompra = _configuracionService.ObtenerValorDecimal("TipoCambioCompra") ?? SD.TipoCambioCompra;
+        var tipoCambioVenta = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+        ViewBag.TipoCambio = tipoCambioCompra; // Usar Compra para pagos
+        ViewBag.TipoCambioCompra = tipoCambioCompra;
+        ViewBag.TipoCambioVenta = tipoCambioVenta;
         ViewBag.Bancos = new[] { SD.BancoBanpro, SD.BancoLafise, SD.BancoBAC, SD.BancoFicohsa, SD.BancoBDF };
         ViewBag.TiposCuenta = new[] { SD.TipoCuentaDolar, SD.TipoCuentaCordoba, SD.TipoCuentaBilletera };
 
@@ -195,10 +199,10 @@ public class PagosController : Controller
             
             if (montoRecibidoCordobasFisico.HasValue || montoRecibidoDolaresFisico.HasValue)
             {
-                // Obtener tipo de cambio para convertir dólares a córdobas
-                var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+                // Usar TipoCambioCompra para pagos en dólares del cliente
+                var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioCompra") ?? SD.TipoCambioCompra;
                 
-                // Calcular el total recibido en córdobas: córdobas + (dólares * tipo de cambio)
+                // Calcular el total recibido en córdobas: córdobas + (dólares * tipo de cambio compra)
                 var totalRecibido = (montoRecibidoCordobasFisico ?? 0) + ((montoRecibidoDolaresFisico ?? 0) * tipoCambio);
                 pago.MontoRecibidoFisico = totalRecibido;
                 
@@ -454,8 +458,11 @@ public class PagosController : Controller
             
             logger?.LogWarning($"Errores de validación: {string.Join(", ", errors)}");
             
-            var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
-            ViewBag.TipoCambio = tipoCambio;
+            var tipoCambioCompra = _configuracionService.ObtenerValorDecimal("TipoCambioCompra") ?? SD.TipoCambioCompra;
+            var tipoCambioVenta = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+            ViewBag.TipoCambio = tipoCambioCompra;
+            ViewBag.TipoCambioCompra = tipoCambioCompra;
+            ViewBag.TipoCambioVenta = tipoCambioVenta;
             ViewBag.Bancos = new[] { SD.BancoBanpro, SD.BancoLafise, SD.BancoBAC, SD.BancoFicohsa, SD.BancoBDF };
             ViewBag.TiposCuenta = new[] { SD.TipoCuentaDolar, SD.TipoCuentaCordoba, SD.TipoCuentaBilletera };
             ViewBag.ClienteBusqueda = "";
@@ -492,8 +499,11 @@ public class PagosController : Controller
         {
             logger?.LogError(ex, "Error al crear pago");
             TempData["Error"] = $"Error al registrar pago: {ex.Message}";
-            var tipoCambio = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
-            ViewBag.TipoCambio = tipoCambio;
+            var tipoCambioCompra = _configuracionService.ObtenerValorDecimal("TipoCambioCompra") ?? SD.TipoCambioCompra;
+            var tipoCambioVenta = _configuracionService.ObtenerValorDecimal("TipoCambioDolar") ?? SD.TipoCambioDolar;
+            ViewBag.TipoCambio = tipoCambioCompra;
+            ViewBag.TipoCambioCompra = tipoCambioCompra;
+            ViewBag.TipoCambioVenta = tipoCambioVenta;
             ViewBag.Bancos = new[] { SD.BancoBanpro, SD.BancoLafise, SD.BancoBAC, SD.BancoFicohsa, SD.BancoBDF };
             ViewBag.TiposCuenta = new[] { SD.TipoCuentaDolar, SD.TipoCuentaCordoba, SD.TipoCuentaBilletera };
             ViewBag.ClienteBusqueda = "";
