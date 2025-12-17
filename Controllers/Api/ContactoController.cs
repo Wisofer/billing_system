@@ -47,7 +47,8 @@ namespace billing_system.Controllers.Api
                     Nombre = request.Nombre.Trim(),
                     Correo = request.Correo.Trim().ToLower(),
                     Telefono = request.Telefono.Trim(),
-                    Mensaje = request.Mensaje.Trim()
+                    Mensaje = request.Mensaje.Trim(),
+                    Ubicacion = string.IsNullOrWhiteSpace(request.Ubicacion) ? null : request.Ubicacion.Trim()
                 };
 
                 await _contactoService.Crear(contacto);
@@ -86,6 +87,7 @@ namespace billing_system.Controllers.Api
         public string Correo { get; set; } = string.Empty;
         public string Telefono { get; set; } = string.Empty;
         public string Mensaje { get; set; } = string.Empty;
+        public string? Ubicacion { get; set; }  // Lugar de donde contacta (Managua, Matagalpa, etc.)
     }
 }
 

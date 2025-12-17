@@ -148,6 +148,7 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Estado</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nombre</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Contacto</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ubicación</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Mensaje</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fecha</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acciones</th>
@@ -179,6 +180,19 @@
                                             <span>@contacto.Telefono</span>
                                         </div>
                                     </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    @if (!string.IsNullOrEmpty(contacto.Ubicacion))
+                                    {
+                                        <div class="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+                                            <span>📍</span>
+                                            <span>@contacto.Ubicacion</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-gray-400 dark:text-gray-500 text-sm">—</span>
+                                    }
                                 </td>
                                 <td class="px-4 py-4">
                                     <div class="text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate" title="@contacto.Mensaje">

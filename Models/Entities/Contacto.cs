@@ -31,6 +31,9 @@ namespace billing_system.Models.Entities
         public DateTime? FechaLeido { get; set; }
         
         public DateTime? FechaRespondido { get; set; }
+
+        [StringLength(100)]
+        public string? Ubicacion { get; set; }  // Lugar de donde contacta (Managua, Matagalpa, etc.)
     }
 }
 

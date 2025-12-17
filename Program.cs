@@ -252,6 +252,13 @@ using (var scope = app.Services.CreateScope())
             dbContext.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Contactos_FechaEnvio"" ON ""Contactos"" (""FechaEnvio"");");
             dbContext.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Contactos_Estado"" ON ""Contactos"" (""Estado"");");
             
+            // Agregar columna Ubicacion si no existe
+            try
+            {
+                dbContext.Database.ExecuteSqlRaw(@"ALTER TABLE ""Contactos"" ADD COLUMN IF NOT EXISTS ""Ubicacion"" character varying(100);");
+            }
+            catch (Exception) { /* La columna ya existe */ }
+            
             logger.LogInformation("Tabla 'Contactos' verificada/creada correctamente");
         }
         catch (Exception ex)
