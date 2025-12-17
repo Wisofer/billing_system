@@ -88,6 +88,18 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQ29uZmlndXJhY2lvbmVzL0luZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/home/william/Documentos/billing_system/Views/Egresos/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRWdyZXNvcy9DcmVhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Egresos/Editar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRWdyZXNvcy9FZGl0YXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/home/william/Documentos/billing_system/Views/Egresos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRWdyZXNvcy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/home/william/Documentos/billing_system/Views/Equipos/Crear.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvRXF1aXBvcy9DcmVhci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

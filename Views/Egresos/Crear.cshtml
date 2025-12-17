@@ -1,0 +1,157 @@
+@model billing_system.Models.Entities.Egreso
+@{
+    ViewData["Title"] = "Nuevo Egreso";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var categorias = ViewBag.Categorias as List<string> ?? new List<string>();
+    var metodosPago = ViewBag.MetodosPago as List<string> ?? new List<string>();
+    var nuevoCodigo = ViewBag.NuevoCodigo as string ?? "EGR-0001";
+}
+
+<!-- Encabezado -->
+<div class="mb-6 max-w-3xl mx-auto">
+    <div class="flex items-center space-x-3 mb-2">
+        <a href="/egresos" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                <span class="text-xl mr-2">💸</span>
+                Nuevo Egreso
+            </h1>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">Registra un nuevo gasto operativo</p>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-3xl mx-auto">
+    <form method="post" action="/egresos/crear" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+        @Html.AntiForgeryToken()
+
+        <!-- Código (solo lectura) -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Código
+            </label>
+            <input type="text" value="@nuevoCodigo" readonly
+                   class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 font-mono font-semibold" />
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">El código se genera automáticamente</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Fecha -->
+            <div>
+                <label for="Fecha" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Fecha <span class="text-red-500">*</span>
+                </label>
+                <input type="date" name="Fecha" id="Fecha" value="@DateTime.Now.ToString("yyyy-MM-dd")" required
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white" />
+            </div>
+
+            <!-- Monto -->
+            <div>
+                <label for="Monto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Monto (C$) <span class="text-red-500">*</span>
+                </label>
+                <input type="number" name="Monto" id="Monto" step="0.01" min="0.01" required placeholder="0.00"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white" />
+                @if (ViewData.ModelState["Monto"]?.Errors.Any() == true)
+                {
+                    <p class="text-red-500 text-xs mt-1">@ViewData.ModelState["Monto"]?.Errors.First().ErrorMessage</p>
+                }
+            </div>
+        </div>
+
+        <!-- Descripción -->
+        <div class="mt-6">
+            <label for="Descripcion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Descripción <span class="text-red-500">*</span>
+            </label>
+            <input type="text" name="Descripcion" id="Descripcion" required placeholder="Ej: Pago mensual de internet a proveedor" maxlength="500"
+                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white" />
+            @if (ViewData.ModelState["Descripcion"]?.Errors.Any() == true)
+            {
+                <p class="text-red-500 text-xs mt-1">@ViewData.ModelState["Descripcion"]?.Errors.First().ErrorMessage</p>
+            }
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <!-- Categoría -->
+            <div>
+                <label for="Categoria" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Categoría <span class="text-red-500">*</span>
+                </label>
+                <select name="Categoria" id="Categoria" required
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                    <option value="">Seleccione una categoría</option>
+                    @foreach (var cat in categorias)
+                    {
+                        <option value="@cat">@cat</option>
+                    }
+                </select>
+                @if (ViewData.ModelState["Categoria"]?.Errors.Any() == true)
+                {
+                    <p class="text-red-500 text-xs mt-1">@ViewData.ModelState["Categoria"]?.Errors.First().ErrorMessage</p>
+                }
+            </div>
+
+            <!-- Método de Pago -->
+            <div>
+                <label for="MetodoPago" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Método de Pago
+                </label>
+                <select name="MetodoPago" id="MetodoPago"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                    @foreach (var mp in metodosPago)
+                    {
+                        <option value="@mp">@mp</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <!-- Proveedor -->
+            <div>
+                <label for="Proveedor" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Proveedor / Beneficiario
+                </label>
+                <input type="text" name="Proveedor" id="Proveedor" placeholder="Ej: Claro Nicaragua" maxlength="200"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white" />
+            </div>
+
+            <!-- Número de Factura -->
+            <div>
+                <label for="NumeroFactura" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    N° Factura / Recibo
+                </label>
+                <input type="text" name="NumeroFactura" id="NumeroFactura" placeholder="Ej: FACT-12345" maxlength="100"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white" />
+            </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="mt-6">
+            <label for="Observaciones" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Observaciones
+            </label>
+            <textarea name="Observaciones" id="Observaciones" rows="3" placeholder="Notas adicionales sobre este gasto..."
+                      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white resize-none"></textarea>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <a href="/egresos" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-white font-medium rounded-lg transition-colors">
+                Cancelar
+            </a>
+            <button type="submit" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Registrar Egreso
+            </button>
+        </div>
+    </form>
+</div>
+

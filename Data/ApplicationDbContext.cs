@@ -35,6 +35,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<AsignacionEquipo> AsignacionesEquipo { get; set; }
     public DbSet<MantenimientoReparacion> MantenimientosReparaciones { get; set; }
     public DbSet<HistorialEstadoEquipo> HistorialEstadosEquipo { get; set; }
+    
+    // Egresos/Gastos
+    public DbSet<Egreso> Egresos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -413,6 +416,29 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.UsuarioId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configuración de Egreso
+        modelBuilder.Entity<Egreso>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Codigo).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.Descripcion).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Categoria).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Monto).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.NumeroFactura).HasMaxLength(100);
+            entity.Property(e => e.Proveedor).HasMaxLength(200);
+            entity.Property(e => e.MetodoPago).HasMaxLength(50).HasDefaultValue("Efectivo");
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+            entity.Property(e => e.Activo).HasDefaultValue(true);
+            entity.HasIndex(e => e.Codigo).IsUnique();
+            entity.HasIndex(e => e.Fecha);
+            entity.HasIndex(e => e.Categoria);
+            
+            entity.HasOne(e => e.Usuario)
+                .WithMany()
+                .HasForeignKey(e => e.UsuarioId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

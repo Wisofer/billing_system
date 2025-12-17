@@ -1,0 +1,294 @@
+@model billing_system.Models.ViewModels.PagedResult<billing_system.Models.Entities.Egreso>
+@using billing_system.Models.Entities
+@{
+    ViewData["Title"] = "Egresos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var busqueda = ViewBag.Busqueda as string;
+    var categoria = ViewBag.Categoria as string;
+    var fechaInicio = ViewBag.FechaInicio as string;
+    var fechaFin = ViewBag.FechaFin as string;
+    var tamanoPagina = (int)(ViewBag.TamanoPagina ?? 15);
+    var categorias = ViewBag.Categorias as List<string> ?? new List<string>();
+    var totalEgresos = (decimal)(ViewBag.TotalEgresos ?? 0m);
+    var egresosMesActual = (decimal)(ViewBag.EgresosMesActual ?? 0m);
+    var cantidadEgresos = (int)(ViewBag.CantidadEgresos ?? 0);
+    var egresosPorCategoria = ViewBag.EgresosPorCategoria as Dictionary<string, decimal> ?? new Dictionary<string, decimal>();
+}
+
+<!-- Notificaciones -->
+@if (TempData["Exito"] != null)
+{
+    <div id="notificacion-exito" class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-pulse">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span>@TempData["Exito"]</span>
+        <button onclick="this.parentElement.remove()" class="ml-4 hover:text-green-200">✕</button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div id="notificacion-error" class="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        <span>@TempData["Error"]</span>
+        <button onclick="this.parentElement.remove()" class="ml-4 hover:text-red-200">✕</button>
+    </div>
+}
+
+<!-- Encabezado -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+            <span class="text-2xl mr-3">💸</span>
+            Egresos / Gastos
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Gestiona los gastos operativos del negocio</p>
+    </div>
+    <div class="mt-4 md:mt-0 flex space-x-3">
+        <a href="/egresos/exportar-excel?busqueda=@busqueda&categoria=@categoria&fechaInicio=@fechaInicio&fechaFin=@fechaFin" 
+           class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Exportar Excel
+        </a>
+        <a href="/egresos/crear" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Nuevo Egreso
+        </a>
+    </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <!-- Total Egresos -->
+    <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 border-2 border-red-200 dark:border-red-700 rounded-xl p-5 shadow-lg">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-red-700 dark:text-red-300 uppercase tracking-wide">Total Egresos</p>
+                <p class="text-2xl font-bold text-red-700 dark:text-red-200 mt-1">C$ @totalEgresos.ToString("N2")</p>
+            </div>
+            <div class="w-12 h-12 bg-red-500 dark:bg-red-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Egresos Mes Actual -->
+    <div class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900 dark:to-amber-800 border-2 border-amber-200 dark:border-amber-700 rounded-xl p-5 shadow-lg">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide">Este Mes</p>
+                <p class="text-2xl font-bold text-amber-700 dark:text-amber-200 mt-1">C$ @egresosMesActual.ToString("N2")</p>
+            </div>
+            <div class="w-12 h-12 bg-amber-500 dark:bg-amber-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cantidad de Egresos -->
+    <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-5 shadow-lg">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">Total Registros</p>
+                <p class="text-2xl font-bold text-purple-700 dark:text-purple-200 mt-1">@cantidadEgresos</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-500 dark:bg-purple-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
+    <form method="get" action="/egresos" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <!-- Búsqueda -->
+        <div class="md:col-span-2">
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Búsqueda</label>
+            <input type="text" name="busqueda" value="@busqueda" placeholder="Código, descripción, proveedor..."
+                   class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white" />
+        </div>
+
+        <!-- Categoría -->
+        <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
+            <select name="categoria" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white">
+                <option value="">Todas</option>
+                @foreach (var cat in categorias)
+                {
+                    <option value="@cat" selected="@(categoria == cat)">@cat</option>
+                }
+            </select>
+        </div>
+
+        <!-- Fecha Inicio -->
+        <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Desde</label>
+            <input type="date" name="fechaInicio" value="@fechaInicio"
+                   class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white" />
+        </div>
+
+        <!-- Fecha Fin -->
+        <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Hasta</label>
+            <input type="date" name="fechaFin" value="@fechaFin"
+                   class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white" />
+        </div>
+
+        <!-- Botones -->
+        <div class="flex items-end space-x-2">
+            <button type="submit" class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors text-sm">
+                Filtrar
+            </button>
+            <a href="/egresos" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-white font-medium rounded-lg transition-colors text-sm">
+                Limpiar
+            </a>
+        </div>
+
+        <input type="hidden" name="tamanoPagina" value="@tamanoPagina" />
+    </form>
+</div>
+
+<!-- Tabla de Egresos -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Código</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Descripción</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Categoría</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Proveedor</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Monto</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                @if (Model.Items.Any())
+                {
+                    @foreach (var egreso in Model.Items)
+                    {
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <td class="px-4 py-3">
+                                <span class="font-mono text-sm font-semibold text-red-600 dark:text-red-400">@egreso.Codigo</span>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                @egreso.Fecha.ToString("dd/MM/yyyy")
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white max-w-xs truncate" title="@egreso.Descripcion">
+                                    @egreso.Descripcion
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(egreso.NumeroFactura))
+                                {
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">Fact: @egreso.NumeroFactura</div>
+                                }
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-200">
+                                    @egreso.Categoria
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                @(egreso.Proveedor ?? "-")
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <span class="font-semibold text-red-600 dark:text-red-400">C$ @egreso.Monto.ToString("N2")</span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <a href="/egresos/editar/@egreso.Id" class="p-2 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Editar">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </a>
+                                    <form method="post" action="/egresos/eliminar/@egreso.Id" class="inline" onsubmit="return confirm('¿Está seguro de eliminar este egreso?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Eliminar">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                            <svg class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p class="text-lg font-medium">No se encontraron egresos</p>
+                            <p class="text-sm mt-1">Intenta ajustar los filtros o registra un nuevo egreso</p>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-t border-gray-200 dark:border-gray-600">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div class="text-sm text-gray-700 dark:text-gray-300 mb-2 md:mb-0">
+                    Mostrando <span class="font-semibold">@((Model.CurrentPage - 1) * Model.PageSize + 1)</span> a 
+                    <span class="font-semibold">@Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalItems)</span> de 
+                    <span class="font-semibold">@Model.TotalItems</span> egresos
+                </div>
+                <div class="flex space-x-1">
+                    @if (Model.CurrentPage > 1)
+                    {
+                        <a href="/egresos?pagina=@(Model.CurrentPage - 1)&tamanoPagina=@tamanoPagina&busqueda=@busqueda&categoria=@categoria&fechaInicio=@fechaInicio&fechaFin=@fechaFin"
+                           class="px-3 py-1 text-sm bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 text-gray-700 dark:text-white transition-colors">
+                            ← Anterior
+                        </a>
+                    }
+                    @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                    {
+                        <a href="/egresos?pagina=@i&tamanoPagina=@tamanoPagina&busqueda=@busqueda&categoria=@categoria&fechaInicio=@fechaInicio&fechaFin=@fechaFin"
+                           class="px-3 py-1 text-sm @(i == Model.CurrentPage ? "bg-red-600 text-white" : "bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-500") rounded-lg transition-colors">
+                            @i
+                        </a>
+                    }
+                    @if (Model.CurrentPage < Model.TotalPages)
+                    {
+                        <a href="/egresos?pagina=@(Model.CurrentPage + 1)&tamanoPagina=@tamanoPagina&busqueda=@busqueda&categoria=@categoria&fechaInicio=@fechaInicio&fechaFin=@fechaFin"
+                           class="px-3 py-1 text-sm bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-500 text-gray-700 dark:text-white transition-colors">
+                            Siguiente →
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+    // Auto-ocultar notificaciones
+    setTimeout(function() {
+        var notifExito = document.getElementById('notificacion-exito');
+        var notifError = document.getElementById('notificacion-error');
+        if (notifExito) notifExito.remove();
+        if (notifError) notifError.remove();
+    }, 5000);
+</script>
+

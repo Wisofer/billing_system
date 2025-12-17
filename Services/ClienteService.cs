@@ -227,6 +227,7 @@ public class ClienteService : IClienteService
         existente.FechaCreacion = cliente.FechaCreacion;
         existente.TotalFacturas = cliente.TotalFacturas; // Permitir edición manual
         existente.ServicioId = cliente.ServicioId; // Mantener para compatibilidad
+        existente.Observaciones = cliente.Observaciones; // Notas sobre el cliente
 
         _context.SaveChanges();
         return existente;

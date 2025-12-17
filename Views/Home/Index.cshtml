@@ -70,6 +70,69 @@
     </div>
 </div>
 
+<!-- Egresos y Balance -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Total Egresos -->
+    <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 border-2 border-red-200 dark:border-red-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-red-700 dark:text-red-300 uppercase tracking-wide">Total Egresos</h3>
+            <div class="w-12 h-12 bg-red-500 dark:bg-red-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-red-700 dark:text-red-200 mb-2">C$ @Model.TotalEgresos.ToString("N2")</p>
+        <p class="text-xs text-red-600 dark:text-red-400 font-medium">@Model.CantidadEgresos registros</p>
+    </div>
+
+    <!-- Egresos Mes Actual -->
+    <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 border-2 border-orange-200 dark:border-orange-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">Egresos Este Mes</h3>
+            <div class="w-12 h-12 bg-orange-500 dark:bg-orange-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-orange-700 dark:text-orange-200 mb-2">C$ @Model.EgresosMesActual.ToString("N2")</p>
+        <p class="text-xs text-orange-600 dark:text-orange-400 font-medium">Gastos del mes</p>
+    </div>
+
+    <!-- Balance (Ingresos - Egresos) -->
+    @{
+        var balancePositivo = Model.Balance >= 0;
+        var balanceColorBg = balancePositivo ? "from-teal-50 to-teal-100 dark:from-teal-900 dark:to-teal-800" : "from-rose-50 to-rose-100 dark:from-rose-900 dark:to-rose-800";
+        var balanceColorBorder = balancePositivo ? "border-teal-200 dark:border-teal-700" : "border-rose-200 dark:border-rose-700";
+        var balanceColorText = balancePositivo ? "text-teal-700 dark:text-teal-300" : "text-rose-700 dark:text-rose-300";
+        var balanceColorIcon = balancePositivo ? "bg-teal-500 dark:bg-teal-600" : "bg-rose-500 dark:bg-rose-600";
+        var balanceColorValue = balancePositivo ? "text-teal-700 dark:text-teal-200" : "text-rose-700 dark:text-rose-200";
+        var balanceColorSub = balancePositivo ? "text-teal-600 dark:text-teal-400" : "text-rose-600 dark:text-rose-400";
+    }
+    <div class="bg-gradient-to-br @balanceColorBg border-2 @balanceColorBorder rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold @balanceColorText uppercase tracking-wide">Balance Total</h3>
+            <div class="w-12 h-12 @balanceColorIcon rounded-lg flex items-center justify-center shadow-md">
+                @if (balancePositivo)
+                {
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                }
+                else
+                {
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                    </svg>
+                }
+            </div>
+        </div>
+        <p class="text-3xl font-bold @balanceColorValue mb-2">C$ @Model.Balance.ToString("N2")</p>
+        <p class="text-xs @balanceColorSub font-medium">@(balancePositivo ? "Ganancia" : "Pérdida") neta</p>
+    </div>
+</div>
+
 <!-- Estadísticas por Categoría -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
     <!-- Internet -->

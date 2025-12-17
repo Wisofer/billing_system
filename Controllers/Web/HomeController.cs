@@ -15,13 +15,15 @@ public class HomeController : Controller
     private readonly IFacturaService _facturaService;
     private readonly IPagoService _pagoService;
     private readonly IClienteService _clienteService;
+    private readonly IEgresoService _egresoService;
     private readonly ApplicationDbContext _context;
 
-    public HomeController(IFacturaService facturaService, IPagoService pagoService, IClienteService clienteService, ApplicationDbContext context)
+    public HomeController(IFacturaService facturaService, IPagoService pagoService, IClienteService clienteService, IEgresoService egresoService, ApplicationDbContext context)
     {
         _facturaService = facturaService;
         _pagoService = pagoService;
         _clienteService = clienteService;
+        _egresoService = egresoService;
         _context = context;
     }
 
@@ -283,6 +285,11 @@ public class HomeController : Controller
             ClientesConInternet = clientesConInternet,
             ClientesConStreaming = clientesConStreaming,
             ClientesConAmbos = clientesConAmbos,
+            
+            // Egresos
+            TotalEgresos = _egresoService.CalcularTotalEgresos(),
+            EgresosMesActual = _egresoService.CalcularTotalEgresosMesActual(),
+            CantidadEgresos = _egresoService.ObtenerActivos().Count,
             
             // Mensuales
             EstadisticasMensuales = estadisticasMensuales

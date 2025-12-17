@@ -242,13 +242,24 @@ public class PagoService : IPagoService
             }
             _context.SaveChanges();
 
-            // Actualizar estado de cada factura
+            // Actualizar estado de cada factura e incrementar TotalFacturas del cliente
             foreach (var factura in facturas)
             {
-                var totalPagado = ObtenerPorFactura(factura!.Id).Sum(p => p.Monto);
+                var estadoAnterior = factura!.Estado;
+                var totalPagado = ObtenerPorFactura(factura.Id).Sum(p => p.Monto);
                 if (totalPagado >= factura.Monto)
                 {
                     factura.Estado = SD.EstadoFacturaPagada;
+                    
+                    // Incrementar TotalFacturas solo si la factura NO estaba pagada antes
+                    if (estadoAnterior != SD.EstadoFacturaPagada)
+                    {
+                        var cliente = _context.Clientes.FirstOrDefault(c => c.Id == factura.ClienteId);
+                        if (cliente != null)
+                        {
+                            cliente.TotalFacturas++;
+                        }
+                    }
                 }
             }
             _context.SaveChanges();
@@ -273,10 +284,21 @@ public class PagoService : IPagoService
             _context.SaveChanges();
 
             // Actualizar estado de factura si está completamente pagada
+            var estadoAnterior = factura.Estado;
             var totalPagado = ObtenerPorFactura(factura.Id).Sum(p => p.Monto);
             if (totalPagado >= factura.Monto)
             {
                 factura.Estado = SD.EstadoFacturaPagada;
+                
+                // Incrementar TotalFacturas solo si la factura NO estaba pagada antes
+                if (estadoAnterior != SD.EstadoFacturaPagada)
+                {
+                    var cliente = _context.Clientes.FirstOrDefault(c => c.Id == factura.ClienteId);
+                    if (cliente != null)
+                    {
+                        cliente.TotalFacturas++;
+                    }
+                }
                 _context.SaveChanges();
             }
         }
@@ -352,10 +374,21 @@ public class PagoService : IPagoService
             var factura = _facturaService.ObtenerPorId(facturaId);
             if (factura != null)
             {
+                var estadoAnterior = factura.Estado;
                 var totalPagado = ObtenerPorFactura(factura.Id).Sum(p => p.Monto);
                 if (totalPagado < factura.Monto)
                 {
                     factura.Estado = SD.EstadoFacturaPendiente;
+                    
+                    // Decrementar TotalFacturas solo si la factura ESTABA pagada antes
+                    if (estadoAnterior == SD.EstadoFacturaPagada)
+                    {
+                        var cliente = _context.Clientes.FirstOrDefault(c => c.Id == factura.ClienteId);
+                        if (cliente != null && cliente.TotalFacturas > 0)
+                        {
+                            cliente.TotalFacturas--;
+                        }
+                    }
                 }
             }
         }
@@ -403,10 +436,21 @@ public class PagoService : IPagoService
                 var factura = _facturaService.ObtenerPorId(facturaId);
                 if (factura != null)
                 {
+                    var estadoAnterior = factura.Estado;
                     var totalPagado = ObtenerPorFactura(factura.Id).Sum(p => p.Monto);
                     if (totalPagado < factura.Monto)
                     {
                         factura.Estado = SD.EstadoFacturaPendiente;
+                        
+                        // Decrementar TotalFacturas solo si la factura ESTABA pagada antes
+                        if (estadoAnterior == SD.EstadoFacturaPagada)
+                        {
+                            var cliente = _context.Clientes.FirstOrDefault(c => c.Id == factura.ClienteId);
+                            if (cliente != null && cliente.TotalFacturas > 0)
+                            {
+                                cliente.TotalFacturas--;
+                            }
+                        }
                     }
                 }
             }

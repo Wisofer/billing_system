@@ -12,6 +12,7 @@ public class Cliente
     public DateTime FechaCreacion { get; set; } = DateTime.Now;
     public int TotalFacturas { get; set; } = 0; // Contador de facturas del cliente
     public int? ServicioId { get; set; } // Último servicio usado por el cliente (mantener para compatibilidad)
+    public string? Observaciones { get; set; } // Notas sobre el cliente (ej: "buen pagador", "requiere seguimiento", etc.)
     
     // Relaciones
     public virtual ICollection<Factura> Facturas { get; set; } = new List<Factura>();

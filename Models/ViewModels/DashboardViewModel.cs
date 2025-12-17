@@ -31,6 +31,15 @@ public class DashboardViewModel
     public int ClientesConStreaming { get; set; }
     public int ClientesConAmbos { get; set; }
     
+    // Estadísticas de egresos
+    public decimal TotalEgresos { get; set; }
+    public decimal EgresosMesActual { get; set; }
+    public int CantidadEgresos { get; set; }
+    
+    // Balance (Ingresos - Egresos)
+    public decimal Balance => PagosRealizados - TotalEgresos;
+    public decimal BalanceMesActual { get; set; }
+    
     // Estadísticas mensuales (últimos 6 meses)
     public List<MesEstadistica> EstadisticasMensuales { get; set; } = new();
 }

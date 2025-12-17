@@ -117,6 +117,9 @@ builder.Services.AddScoped<IMantenimientoReparacionService, MantenimientoReparac
 builder.Services.AddScoped<IMetodoPagoService, MetodoPagoService>();
 builder.Services.AddScoped<IServicioLandingPageService, ServicioLandingPageService>();
 
+// Servicios de Egresos/Gastos
+builder.Services.AddScoped<IEgresoService, EgresoService>();
+
 // Registrar servicio en segundo plano para generación automática de facturas
 // Este servicio se ejecutará el día 1 de cada mes a las 2:00 AM
 builder.Services.AddHostedService<FacturaAutomaticaBackgroundService>();
@@ -149,6 +152,45 @@ using (var scope = app.Services.CreateScope())
             if (!ex.Message.Contains("already exists") && !ex.Message.Contains("duplicate"))
             {
                 logger.LogWarning($"Advertencia al verificar columna Mensaje: {ex.Message}");
+            }
+        }
+        
+        // Crear tabla Egresos si no existe
+        try
+        {
+            dbContext.Database.ExecuteSqlRaw(@"
+                CREATE TABLE IF NOT EXISTS ""Egresos"" (
+                    ""Id"" SERIAL PRIMARY KEY,
+                    ""Codigo"" character varying(20) NOT NULL,
+                    ""Descripcion"" character varying(500) NOT NULL,
+                    ""Categoria"" character varying(100) NOT NULL,
+                    ""Monto"" numeric(18,2) NOT NULL,
+                    ""Fecha"" timestamp without time zone NOT NULL,
+                    ""NumeroFactura"" character varying(100),
+                    ""Proveedor"" character varying(200),
+                    ""MetodoPago"" character varying(50) NOT NULL DEFAULT 'Efectivo',
+                    ""Observaciones"" character varying(1000),
+                    ""UsuarioId"" integer,
+                    ""Activo"" boolean NOT NULL DEFAULT true,
+                    ""FechaCreacion"" timestamp without time zone NOT NULL,
+                    ""FechaActualizacion"" timestamp without time zone,
+                    CONSTRAINT ""FK_Egresos_Usuarios_UsuarioId"" FOREIGN KEY (""UsuarioId"") REFERENCES ""Usuarios""(""Id"") ON DELETE SET NULL
+                );
+            ");
+            
+            // Crear índices si no existen
+            dbContext.Database.ExecuteSqlRaw(@"CREATE UNIQUE INDEX IF NOT EXISTS ""IX_Egresos_Codigo"" ON ""Egresos"" (""Codigo"");");
+            dbContext.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Egresos_Fecha"" ON ""Egresos"" (""Fecha"");");
+            dbContext.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Egresos_Categoria"" ON ""Egresos"" (""Categoria"");");
+            dbContext.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Egresos_UsuarioId"" ON ""Egresos"" (""UsuarioId"");");
+            
+            logger.LogInformation("Tabla 'Egresos' verificada/creada correctamente");
+        }
+        catch (Exception ex)
+        {
+            if (!ex.Message.Contains("already exists") && !ex.Message.Contains("duplicate"))
+            {
+                logger.LogWarning($"Advertencia al crear tabla Egresos: {ex.Message}");
             }
         }
         
