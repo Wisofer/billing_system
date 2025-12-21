@@ -1,0 +1,279 @@
+@model billing_system.Models.Entities.MovimientoInventario
+@using billing_system.Models.Entities
+@using billing_system.Utils
+@{
+    ViewData["Title"] = "Nuevo Movimiento de Inventario";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var equipos = ViewBag.Equipos as List<Equipo> ?? new List<Equipo>();
+    var ubicaciones = ViewBag.Ubicaciones as List<Ubicacion> ?? new List<Ubicacion>();
+    var tipos = ViewBag.Tipos as string[] ?? new string[0];
+    var subtiposEntrada = ViewBag.SubtiposEntrada as string[] ?? new string[0];
+    var subtiposSalida = ViewBag.SubtiposSalida as string[] ?? new string[0];
+    var subtiposTransferencia = ViewBag.SubtiposTransferencia as string[] ?? new string[0];
+}
+
+<!-- Encabezado -->
+<div class="mb-6 max-w-5xl mx-auto">
+    <div class="flex items-center space-x-3 mb-2">
+        <a href="/movimientos-inventario" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                <span class="text-xl mr-2">📦</span>
+                Nuevo Movimiento de Inventario
+            </h1>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">Registra entradas, salidas o transferencias de equipos</p>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-5xl mx-auto">
+    <form method="post" action="/movimientos-inventario/crear" id="movimientoForm" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+        @Html.AntiForgeryToken()
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Tipo -->
+            <div>
+                <label for="Tipo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Tipo de Movimiento <span class="text-red-500">*</span>
+                </label>
+                <select name="Tipo" id="Tipo" required
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                    <option value="">Seleccione un tipo</option>
+                    @foreach (var t in tipos)
+                    {
+                        <option value="@t">@t</option>
+                    }
+                </select>
+                @if (ViewData.ModelState["Tipo"]?.Errors.Any() == true)
+                {
+                    <p class="text-red-500 text-xs mt-1">@ViewData.ModelState["Tipo"]?.Errors.First().ErrorMessage</p>
+                }
+            </div>
+
+            <!-- Subtipo -->
+            <div>
+                <label for="Subtipo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Subtipo <span class="text-red-500">*</span>
+                </label>
+                <select name="Subtipo" id="Subtipo" required
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                    <option value="">Seleccione un subtipo</option>
+                </select>
+                @if (ViewData.ModelState["Subtipo"]?.Errors.Any() == true)
+                {
+                    <p class="text-red-500 text-xs mt-1">@ViewData.ModelState["Subtipo"]?.Errors.First().ErrorMessage</p>
+                }
+            </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="mb-6">
+            <label for="Observaciones" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Observaciones
+            </label>
+            <textarea name="Observaciones" id="Observaciones" rows="3" maxlength="1000"
+                      class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Notas adicionales sobre el movimiento..."></textarea>
+        </div>
+
+        <!-- Sección de Transferencia (oculta por defecto) -->
+        <div id="transferenciaSection" class="mb-6 hidden">
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-3">Ubicaciones de Transferencia</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="UbicacionOrigenId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Ubicación Origen <span class="text-red-500">*</span>
+                        </label>
+                        <select name="UbicacionOrigenId" id="UbicacionOrigenId"
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                            <option value="">Seleccione origen</option>
+                            @foreach (var u in ubicaciones)
+                            {
+                                <option value="@u.Id">@u.Nombre</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label for="UbicacionDestinoId" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Ubicación Destino <span class="text-red-500">*</span>
+                        </label>
+                        <select name="UbicacionDestinoId" id="UbicacionDestinoId"
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                            <option value="">Seleccione destino</option>
+                            @foreach (var u in ubicaciones)
+                            {
+                                <option value="@u.Id">@u.Nombre</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipos -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Equipos</h3>
+                <button type="button" id="agregarEquipo" class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Agregar Equipo
+                </button>
+            </div>
+
+            <div id="equiposContainer" class="space-y-4">
+                <!-- Equipo inicial -->
+                <div class="equipo-item bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Equipo <span class="text-red-500">*</span>
+                            </label>
+                            <select name="EquipoIds" class="equipo-select w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" required>
+                                <option value="">Seleccione un equipo</option>
+                                @foreach (var eq in equipos)
+                                {
+                                    <option value="@eq.Id" data-stock="@eq.Stock">@eq.Nombre (@eq.Codigo) - Stock: @eq.Stock</option>
+                                }
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Cantidad <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" name="Cantidades" class="cantidad-input w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" min="1" value="1" required />
+                            <p class="stock-info text-xs text-gray-500 dark:text-gray-400 mt-1"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Precio Unitario (opcional)
+                            </label>
+                            <input type="number" name="PreciosUnitarios" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" placeholder="0.00" />
+                            <button type="button" class="eliminar-equipo mt-2 text-red-600 hover:text-red-800 text-xs hidden">Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <a href="/movimientos-inventario" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-white font-medium rounded-lg transition-colors">
+                Cancelar
+            </a>
+            <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+                Registrar Movimiento
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tipoSelect = document.getElementById('Tipo');
+    const subtipoSelect = document.getElementById('Subtipo');
+    const transferenciaSection = document.getElementById('transferenciaSection');
+    const agregarEquipoBtn = document.getElementById('agregarEquipo');
+    const equiposContainer = document.getElementById('equiposContainer');
+
+    const subtiposEntrada = @Html.Raw(Json.Serialize(subtiposEntrada));
+    const subtiposSalida = @Html.Raw(Json.Serialize(subtiposSalida));
+    const subtiposTransferencia = @Html.Raw(Json.Serialize(subtiposTransferencia));
+    const equipos = @Html.Raw(Json.Serialize(equipos.Select(e => new { e.Id, e.Nombre, e.Codigo, e.Stock })));
+
+    // Actualizar subtipos según tipo
+    tipoSelect.addEventListener('change', function() {
+        const tipo = this.value;
+        subtipoSelect.innerHTML = '<option value="">Seleccione un subtipo</option>';
+
+        if (tipo === '@SD.TipoMovimientoEntrada') {
+            subtiposEntrada.forEach(st => {
+                const option = document.createElement('option');
+                option.value = st;
+                option.textContent = st;
+                subtipoSelect.appendChild(option);
+            });
+        } else if (tipo === '@SD.TipoMovimientoSalida') {
+            subtiposSalida.forEach(st => {
+                const option = document.createElement('option');
+                option.value = st;
+                option.textContent = st;
+                subtipoSelect.appendChild(option);
+            });
+        }
+
+        // Mostrar/ocultar sección de transferencia
+        if (tipo === '@SD.TipoMovimientoEntrada' || tipo === '@SD.TipoMovimientoSalida') {
+            transferenciaSection.classList.add('hidden');
+        }
+    });
+
+    // Mostrar sección de transferencia
+    subtipoSelect.addEventListener('change', function() {
+        if (this.value === '@SD.SubtipoMovimientoTransferencia') {
+            transferenciaSection.classList.remove('hidden');
+            // Agregar opción de transferencia si no está
+            if (!Array.from(subtipoSelect.options).some(o => o.value === '@SD.SubtipoMovimientoTransferencia')) {
+                const option = document.createElement('option');
+                option.value = '@SD.SubtipoMovimientoTransferencia';
+                option.textContent = '@SD.SubtipoMovimientoTransferencia';
+                subtipoSelect.appendChild(option);
+            }
+        } else {
+            transferenciaSection.classList.add('hidden');
+        }
+    });
+
+    // Agregar equipo
+    agregarEquipoBtn.addEventListener('click', function() {
+        const nuevoEquipo = document.querySelector('.equipo-item').cloneNode(true);
+        nuevoEquipo.querySelector('.eliminar-equipo').classList.remove('hidden');
+        nuevoEquipo.querySelector('.equipo-select').value = '';
+        nuevoEquipo.querySelector('.cantidad-input').value = '1';
+        nuevoEquipo.querySelector('input[name="PreciosUnitarios"]').value = '';
+        nuevoEquipo.querySelector('.stock-info').textContent = '';
+        equiposContainer.appendChild(nuevoEquipo);
+        actualizarEventosEquipos();
+    });
+
+    // Eliminar equipo
+    function actualizarEventosEquipos() {
+        document.querySelectorAll('.eliminar-equipo').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (equiposContainer.children.length > 1) {
+                    this.closest('.equipo-item').remove();
+                }
+            });
+        });
+
+        // Actualizar stock info
+        document.querySelectorAll('.equipo-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const equipoId = this.value;
+                const equipo = equipos.find(e => e.id == equipoId);
+                const stockInfo = this.closest('.equipo-item').querySelector('.stock-info');
+                if (equipo) {
+                    stockInfo.textContent = `Stock disponible: ${equipo.stock}`;
+                    if (equipo.stock <= 0 && tipoSelect.value === '@SD.TipoMovimientoSalida') {
+                        stockInfo.classList.add('text-red-500');
+                        stockInfo.textContent += ' (Sin stock disponible)';
+                    } else {
+                        stockInfo.classList.remove('text-red-500');
+                    }
+                } else {
+                    stockInfo.textContent = '';
+                }
+            });
+        });
+    }
+
+    actualizarEventosEquipos();
+});
+</script>
+

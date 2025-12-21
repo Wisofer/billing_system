@@ -1,0 +1,310 @@
+@model billing_system.Models.ViewModels.PagedResult<billing_system.Models.Entities.MovimientoInventario>
+@using billing_system.Models.Entities
+@using billing_system.Utils
+@{
+    ViewData["Title"] = "Movimientos de Inventario";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var tipo = ViewBag.Tipo as string ?? "Todos";
+    var subtipo = ViewBag.Subtipo as string ?? "Todos";
+    var equipoId = ViewBag.EquipoId as int?;
+    var fechaInicio = ViewBag.FechaInicio as string;
+    var fechaFin = ViewBag.FechaFin as string;
+    var tamanoPagina = (int)(ViewBag.TamanoPagina ?? 20);
+    var totalEntradas = (int)(ViewBag.TotalEntradas ?? 0);
+    var totalSalidas = (int)(ViewBag.TotalSalidas ?? 0);
+    var movimientosHoy = (int)(ViewBag.MovimientosHoy ?? 0);
+    var movimientosMes = (int)(ViewBag.MovimientosMes ?? 0);
+    var tipos = ViewBag.Tipos as string[] ?? new string[0];
+    var subtipos = ViewBag.Subtipos as string[] ?? new string[0];
+    var equipos = ViewBag.Equipos as List<Equipo> ?? new List<Equipo>();
+}
+
+<!-- Notificaciones -->
+@if (TempData["Success"] != null)
+{
+    <div id="notificacion-exito" class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-pulse">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span>@TempData["Success"]</span>
+        <button onclick="this.parentElement.remove()" class="ml-4 hover:text-green-200">✕</button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div id="notificacion-error" class="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        <span>@TempData["Error"]</span>
+        <button onclick="this.parentElement.remove()" class="ml-4 hover:text-red-200">✕</button>
+    </div>
+}
+
+<!-- Encabezado -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+            <span class="text-2xl mr-3">📦</span>
+            Movimientos de Inventario
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Registra y consulta entradas, salidas y transferencias de equipos</p>
+    </div>
+    <div class="mt-4 md:mt-0">
+        <a href="/movimientos-inventario/crear" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Nuevo Movimiento
+        </a>
+    </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 border-2 border-green-200 dark:border-green-700 rounded-xl p-5 shadow-lg">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">Entradas</p>
+                <p class="text-2xl font-bold text-green-700 dark:text-green-200 mt-1">@totalEntradas</p>
+            </div>
+            <div class="w-12 h-12 bg-green-500 dark:bg-green-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900 dark:to-red-800 border-2 border-red-200 dark:border-red-700 rounded-xl p-5 shadow-lg">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-red-700 dark:text-red-300 uppercase tracking-wide">Salidas</p>
+                <p class="text-2xl font-bold text-red-700 dark:text-red-200 mt-1">@totalSalidas</p>
+            </div>
+            <div class="w-12 h-12 bg-red-500 dark:bg-red-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border-2 border-blue-200 dark:border-blue-700 rounded-xl p-5 shadow-lg">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">Hoy</p>
+                <p class="text-2xl font-bold text-blue-700 dark:text-blue-200 mt-1">@movimientosHoy</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-500 dark:bg-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 border-2 border-purple-200 dark:border-purple-700 rounded-xl p-5 shadow-lg">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">Este Mes</p>
+                <p class="text-2xl font-bold text-purple-700 dark:text-purple-200 mt-1">@movimientosMes</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-500 dark:bg-purple-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
+    <form method="get" action="/movimientos-inventario" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <!-- Tipo -->
+        <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo</label>
+            <select name="tipo" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                @foreach (var t in tipos)
+                {
+                    <option value="@t" selected="@(tipo == t)">@t</option>
+                }
+            </select>
+        </div>
+
+        <!-- Subtipo -->
+        <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Subtipo</label>
+            <select name="subtipo" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                @foreach (var st in subtipos)
+                {
+                    <option value="@st" selected="@(subtipo == st)">@st</option>
+                }
+            </select>
+        </div>
+
+        <!-- Equipo -->
+        <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Equipo</label>
+            <select name="equipoId" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                <option value="">Todos</option>
+                @foreach (var eq in equipos)
+                {
+                    <option value="@eq.Id" selected="@(equipoId == eq.Id)">@eq.Nombre</option>
+                }
+            </select>
+        </div>
+
+        <!-- Fecha Inicio -->
+        <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Desde</label>
+            <input type="date" name="fechaInicio" value="@fechaInicio"
+                   class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" />
+        </div>
+
+        <!-- Fecha Fin -->
+        <div>
+            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Hasta</label>
+            <input type="date" name="fechaFin" value="@fechaFin"
+                   class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white" />
+        </div>
+
+        <!-- Botones -->
+        <div class="flex items-end space-x-2">
+            <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-sm">
+                Filtrar
+            </button>
+            <a href="/movimientos-inventario" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-white font-medium rounded-lg transition-colors text-sm">
+                Limpiar
+            </a>
+        </div>
+
+        <input type="hidden" name="tamanoPagina" value="@tamanoPagina" />
+    </form>
+</div>
+
+<!-- Tabla de Movimientos -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Fecha</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Tipo</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Subtipo</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Equipos</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Usuario</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                @if (Model.Items.Any())
+                {
+                    @foreach (var movimiento in Model.Items)
+                    {
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                @movimiento.Fecha.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td class="px-4 py-3">
+                                @{
+                                    var tipoColor = movimiento.Tipo == SD.TipoMovimientoEntrada 
+                                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                        : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+                                }
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @tipoColor">
+                                    @movimiento.Tipo
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-200">
+                                    @movimiento.Subtipo
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="text-sm text-gray-900 dark:text-white">
+                                    @foreach (var em in movimiento.EquipoMovimientos.Take(2))
+                                    {
+                                        <div>@em.Equipo.Nombre <span class="text-gray-500">(x@em.Cantidad)</span></div>
+                                    }
+                                    @if (movimiento.EquipoMovimientos.Count > 2)
+                                    {
+                                        <div class="text-xs text-gray-500">+@(movimiento.EquipoMovimientos.Count - 2) más</div>
+                                    }
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                @(movimiento.Usuario?.NombreCompleto ?? "N/A")
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <a href="/movimientos-inventario/ver/@movimiento.Id" class="p-2 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Ver detalles">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+                                    <form method="post" action="/movimientos-inventario/eliminar/@movimiento.Id" class="inline" onsubmit="return confirm('¿Está seguro de eliminar este movimiento? El stock será revertido.');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Eliminar">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                            <svg class="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                            <p class="text-lg font-medium">No se encontraron movimientos</p>
+                            <p class="text-sm mt-1">Intenta ajustar los filtros o registra un nuevo movimiento</p>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600 flex items-center justify-between">
+            <div class="text-sm text-gray-700 dark:text-gray-300">
+                Mostrando @((Model.CurrentPage - 1) * Model.PageSize + 1) a @(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalItems)) de @Model.TotalItems movimientos
+            </div>
+            <div class="flex space-x-2">
+                @if (Model.CurrentPage > 1)
+                {
+                    <a href="?pagina=@(Model.CurrentPage - 1)&tipo=@tipo&subtipo=@subtipo&equipoId=@equipoId&fechaInicio=@fechaInicio&fechaFin=@fechaFin&tamanoPagina=@tamanoPagina" 
+                       class="px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500">
+                        Anterior
+                    </a>
+                }
+                @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                {
+                    <a href="?pagina=@i&tipo=@tipo&subtipo=@subtipo&equipoId=@equipoId&fechaInicio=@fechaInicio&fechaFin=@fechaFin&tamanoPagina=@tamanoPagina"
+                       class="px-3 py-2 @(i == Model.CurrentPage ? "bg-blue-600 text-white" : "bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-700 dark:text-gray-200") rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-500">
+                        @i
+                    </a>
+                }
+                @if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <a href="?pagina=@(Model.CurrentPage + 1)&tipo=@tipo&subtipo=@subtipo&equipoId=@equipoId&fechaInicio=@fechaInicio&fechaFin=@fechaFin&tamanoPagina=@tamanoPagina"
+                       class="px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500">
+                        Siguiente
+                    </a>
+                }
+            </div>
+        </div>
+    }
+</div>
+

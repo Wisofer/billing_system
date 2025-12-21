@@ -1,0 +1,174 @@
+@model billing_system.Models.Entities.MovimientoInventario
+@using billing_system.Utils
+@{
+    ViewData["Title"] = "Detalle de Movimiento";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Encabezado -->
+<div class="mb-6">
+    <div class="flex items-center space-x-3 mb-2">
+        <a href="/movimientos-inventario" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                <span class="text-xl mr-2">📦</span>
+                Detalle de Movimiento
+            </h1>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">Información completa del movimiento de inventario</p>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <!-- Información General -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Información General</h2>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Fecha y Hora</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white font-semibold">
+                    @Model.Fecha.ToString("dd/MM/yyyy HH:mm")
+                </dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tipo</dt>
+                <dd class="mt-1">
+                    @{
+                        var tipoColor = Model.Tipo == SD.TipoMovimientoEntrada 
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+                    }
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium @tipoColor">
+                        @Model.Tipo
+                    </span>
+                </dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Subtipo</dt>
+                <dd class="mt-1">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-200">
+                        @Model.Subtipo
+                    </span>
+                </dd>
+            </div>
+            <div>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Usuario</dt>
+                <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                    @(Model.Usuario?.NombreCompleto ?? "N/A")
+                </dd>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.Observaciones))
+            {
+                <div class="md:col-span-2">
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Observaciones</dt>
+                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">
+                        @Model.Observaciones
+                    </dd>
+                </div>
+            }
+        </dl>
+    </div>
+
+    <!-- Equipos del Movimiento -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Equipos Incluidos</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Equipo</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Código</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Cantidad</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Precio Unitario</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Total</th>
+                        @if (Model.Subtipo == SD.SubtipoMovimientoTransferencia)
+                        {
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Origen</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Destino</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    @foreach (var em in Model.EquipoMovimientos)
+                    {
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+                                @em.Equipo.Nombre
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300 font-mono">
+                                @em.Equipo.Codigo
+                            </td>
+                            <td class="px-4 py-3 text-center text-sm text-gray-900 dark:text-white font-semibold">
+                                @em.Cantidad
+                            </td>
+                            <td class="px-4 py-3 text-right text-sm text-gray-600 dark:text-gray-300">
+                                @if (em.PrecioUnitario.HasValue)
+                                {
+                                    <span>C$ @em.PrecioUnitario.Value.ToString("N2")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-gray-400">-</span>
+                                }
+                            </td>
+                            <td class="px-4 py-3 text-right text-sm font-semibold text-gray-900 dark:text-white">
+                                @if (em.PrecioUnitario.HasValue)
+                                {
+                                    <span>C$ @((em.PrecioUnitario.Value * em.Cantidad).ToString("N2"))</span>
+                                }
+                                else
+                                {
+                                    <span class="text-gray-400">-</span>
+                                }
+                            </td>
+                            @if (Model.Subtipo == SD.SubtipoMovimientoTransferencia)
+                            {
+                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    @(em.UbicacionOrigen?.Nombre ?? "-")
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    @(em.UbicacionDestino?.Nombre ?? "-")
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+                @if (Model.EquipoMovimientos.Any(em => em.PrecioUnitario.HasValue))
+                {
+                    <tfoot class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <td colspan="@(Model.Subtipo == SD.SubtipoMovimientoTransferencia ? "4" : "4")" class="px-4 py-3 text-right text-sm font-semibold text-gray-900 dark:text-white">
+                                Total:
+                            </td>
+                            <td class="px-4 py-3 text-right text-sm font-bold text-gray-900 dark:text-white">
+                                C$ @Model.EquipoMovimientos.Where(em => em.PrecioUnitario.HasValue).Sum(em => em.PrecioUnitario!.Value * em.Cantidad).ToString("N2")
+                            </td>
+                            @if (Model.Subtipo == SD.SubtipoMovimientoTransferencia)
+                            {
+                                <td colspan="2"></td>
+                            }
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="flex items-center justify-end space-x-4">
+        <a href="/movimientos-inventario" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-white font-medium rounded-lg transition-colors">
+            Volver
+        </a>
+        <form method="post" action="/movimientos-inventario/eliminar/@Model.Id" class="inline" onsubmit="return confirm('¿Está seguro de eliminar este movimiento? El stock será revertido.');">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors">
+                Eliminar Movimiento
+            </button>
+        </form>
+    </div>
+</div>
+
