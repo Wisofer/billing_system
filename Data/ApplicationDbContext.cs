@@ -454,6 +454,8 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Mensaje).IsRequired().HasMaxLength(1000);
             entity.Property(e => e.Estado).HasMaxLength(20).HasDefaultValue("Nuevo");
             entity.Property(e => e.Ubicacion).HasMaxLength(100);
+            entity.Property(e => e.Latitud).HasColumnType("decimal(10,8)");
+            entity.Property(e => e.Longitud).HasColumnType("decimal(11,8)");
             entity.HasIndex(e => e.FechaEnvio);
             entity.HasIndex(e => e.Estado);
         });

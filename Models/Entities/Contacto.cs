@@ -34,6 +34,10 @@ namespace billing_system.Models.Entities
 
         [StringLength(100)]
         public string? Ubicacion { get; set; }  // Lugar de donde contacta (Managua, Matagalpa, etc.)
+
+        public decimal? Latitud { get; set; }  // Coordenada de latitud (GPS)
+        
+        public decimal? Longitud { get; set; }  // Coordenada de longitud (GPS)
     }
 }
 

@@ -39,7 +39,14 @@ builder.Services.AddCors(options =>
 });
 
 // Agregar servicios al contenedor
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        // Aceptar nombres de propiedades en minúsculas (case-insensitive)
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+        // Permitir leer números desde strings si es necesario (pero preferir números)
+        options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString;
+    });
 
 // Configurar URLs en minúsculas
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
@@ -256,6 +263,19 @@ using (var scope = app.Services.CreateScope())
             try
             {
                 dbContext.Database.ExecuteSqlRaw(@"ALTER TABLE ""Contactos"" ADD COLUMN IF NOT EXISTS ""Ubicacion"" character varying(100);");
+            }
+            catch (Exception) { /* La columna ya existe */ }
+            
+            // Agregar columnas Latitud y Longitud si no existen
+            try
+            {
+                dbContext.Database.ExecuteSqlRaw(@"ALTER TABLE ""Contactos"" ADD COLUMN IF NOT EXISTS ""Latitud"" decimal(10,8);");
+            }
+            catch (Exception) { /* La columna ya existe */ }
+            
+            try
+            {
+                dbContext.Database.ExecuteSqlRaw(@"ALTER TABLE ""Contactos"" ADD COLUMN IF NOT EXISTS ""Longitud"" decimal(11,8);");
             }
             catch (Exception) { /* La columna ya existe */ }
             
