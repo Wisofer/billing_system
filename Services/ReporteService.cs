@@ -139,15 +139,46 @@ public class ReporteService : IReporteService
         }
 
         // Lista de pagos para el reporte
-        reporte.ListaPagos = pagos.Select(p => new PagoReporteDto
+        reporte.ListaPagos = pagos.Select(p => 
         {
-            Id = p.Id,
-            ClienteCodigo = p.Factura?.Cliente?.Codigo ?? "",
-            ClienteNombre = p.Factura?.Cliente?.Nombre ?? "",
-            Fecha = p.FechaPago,
-            Monto = p.Monto,
-            MetodoPago = p.TipoPago,
-            NumeroReferencia = p.Observaciones ?? ""
+            // Intentar obtener el cliente de diferentes fuentes
+            string clienteCodigo = "";
+            string clienteNombre = "";
+            
+            // 1. Si tiene Factura directa, usar el cliente de la factura
+            if (p.Factura?.Cliente != null)
+            {
+                clienteCodigo = p.Factura.Cliente.Codigo;
+                clienteNombre = p.Factura.Cliente.Nombre;
+            }
+            // 2. Si NO tiene factura directa pero tiene PagoFacturas, usar el cliente de la primera factura
+            else if (p.PagoFacturas != null && p.PagoFacturas.Any())
+            {
+                var primeraFactura = p.PagoFacturas.FirstOrDefault()?.Factura;
+                if (primeraFactura?.Cliente != null)
+                {
+                    clienteCodigo = primeraFactura.Cliente.Codigo;
+                    clienteNombre = primeraFactura.Cliente.Nombre;
+                }
+            }
+            
+            // Si aún no tiene cliente, mostrar "Sin factura asociada"
+            if (string.IsNullOrEmpty(clienteNombre))
+            {
+                clienteNombre = "Pago sin factura asociada";
+                clienteCodigo = "---";
+            }
+            
+            return new PagoReporteDto
+            {
+                Id = p.Id,
+                ClienteCodigo = clienteCodigo,
+                ClienteNombre = clienteNombre,
+                Fecha = p.FechaPago,
+                Monto = p.Monto,
+                MetodoPago = p.TipoPago,
+                NumeroReferencia = p.Observaciones ?? ""
+            };
         }).ToList();
     }
 
