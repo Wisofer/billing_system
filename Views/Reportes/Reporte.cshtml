@@ -140,32 +140,32 @@
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                        <th class="px-3 py-2 text-left">Número</th>
-                        <th class="px-3 py-2 text-left">Cliente</th>
-                        <th class="px-3 py-2 text-left">Fecha</th>
-                        <th class="px-3 py-2 text-right">Monto</th>
-                        <th class="px-3 py-2 text-center">Estado</th>
-                        <th class="px-3 py-2 text-center">Categoría</th>
+                        <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Número</th>
+                        <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Cliente</th>
+                        <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Fecha</th>
+                        <th class="px-3 py-2 text-right text-gray-700 dark:text-gray-200 font-semibold">Monto</th>
+                        <th class="px-3 py-2 text-center text-gray-700 dark:text-gray-200 font-semibold">Estado</th>
+                        <th class="px-3 py-2 text-center text-gray-700 dark:text-gray-200 font-semibold">Categoría</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @foreach (var factura in Model.ListaFacturas)
                     {
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="px-3 py-2">@factura.Numero</td>
+                            <td class="px-3 py-2 text-gray-900 dark:text-gray-100">@factura.Numero</td>
                             <td class="px-3 py-2">
-                                <div class="font-medium">@factura.ClienteNombre</div>
-                                <div class="text-xs text-gray-500">@factura.ClienteCodigo</div>
+                                <div class="font-medium text-gray-900 dark:text-gray-100">@factura.ClienteNombre</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">@factura.ClienteCodigo</div>
                             </td>
-                            <td class="px-3 py-2">@factura.Fecha.ToString("dd/MM/yyyy")</td>
-                            <td class="px-3 py-2 text-right font-semibold">C$ @factura.Monto.ToString("N2")</td>
+                            <td class="px-3 py-2 text-gray-900 dark:text-gray-100">@factura.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td class="px-3 py-2 text-right font-semibold text-gray-900 dark:text-gray-100">C$ @factura.Monto.ToString("N2")</td>
                             <td class="px-3 py-2 text-center">
-                                <span class="px-2 py-1 rounded text-xs @(factura.Estado == "Pagada" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800")">
+                                <span class="px-2 py-1 rounded text-xs @(factura.Estado == "Pagada" ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200" : "bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200")">
                                     @factura.Estado
                                 </span>
                             </td>
                             <td class="px-3 py-2 text-center">
-                                <span class="px-2 py-1 rounded text-xs @(factura.Categoria == "Internet" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800")">
+                                <span class="px-2 py-1 rounded text-xs @(factura.Categoria == "Internet" ? "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200" : "bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200")">
                                     @factura.Categoria
                                 </span>
                             </td>
@@ -185,11 +185,11 @@
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                        <th class="px-3 py-2 text-left">Cliente</th>
-                        <th class="px-3 py-2 text-left">Fecha</th>
-                        <th class="px-3 py-2 text-right">Monto</th>
-                        <th class="px-3 py-2 text-left">Método</th>
-                        <th class="px-3 py-2 text-left">Referencia</th>
+                        <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Cliente</th>
+                        <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Fecha</th>
+                        <th class="px-3 py-2 text-right text-gray-700 dark:text-gray-200 font-semibold">Monto</th>
+                        <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Método</th>
+                        <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Referencia</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -197,13 +197,13 @@
                     {
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                             <td class="px-3 py-2">
-                                <div class="font-medium">@pago.ClienteNombre</div>
-                                <div class="text-xs text-gray-500">@pago.ClienteCodigo</div>
+                                <div class="font-medium text-gray-900 dark:text-gray-100">@pago.ClienteNombre</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">@pago.ClienteCodigo</div>
                             </td>
-                            <td class="px-3 py-2">@pago.Fecha.ToString("dd/MM/yyyy")</td>
-                            <td class="px-3 py-2 text-right font-semibold text-green-600">C$ @pago.Monto.ToString("N2")</td>
-                            <td class="px-3 py-2">@pago.MetodoPago</td>
-                            <td class="px-3 py-2 text-xs text-gray-500">@pago.NumeroReferencia</td>
+                            <td class="px-3 py-2 text-gray-900 dark:text-gray-100">@pago.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td class="px-3 py-2 text-right font-semibold text-green-600 dark:text-green-400">C$ @pago.Monto.ToString("N2")</td>
+                            <td class="px-3 py-2 text-gray-900 dark:text-gray-100">@pago.MetodoPago</td>
+                            <td class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">@pago.NumeroReferencia</td>
                         </tr>
                     }
                 </tbody>
@@ -220,22 +220,22 @@
             <table class="min-w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                        <th class="px-3 py-2 text-left">Concepto</th>
-                        <th class="px-3 py-2 text-left">Fecha</th>
-                        <th class="px-3 py-2 text-right">Monto</th>
-                        <th class="px-3 py-2 text-left">Categoría</th>
-                        <th class="px-3 py-2 text-left">Descripción</th>
+                        <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Concepto</th>
+                        <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Fecha</th>
+                        <th class="px-3 py-2 text-right text-gray-700 dark:text-gray-200 font-semibold">Monto</th>
+                        <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Categoría</th>
+                        <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Descripción</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @foreach (var egreso in Model.ListaEgresos)
                     {
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="px-3 py-2 font-medium">@egreso.Concepto</td>
-                            <td class="px-3 py-2">@egreso.Fecha.ToString("dd/MM/yyyy")</td>
-                            <td class="px-3 py-2 text-right font-semibold text-red-600">C$ @egreso.Monto.ToString("N2")</td>
-                            <td class="px-3 py-2">@egreso.Categoria</td>
-                            <td class="px-3 py-2 text-xs text-gray-500">@egreso.Descripcion</td>
+                            <td class="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">@egreso.Concepto</td>
+                            <td class="px-3 py-2 text-gray-900 dark:text-gray-100">@egreso.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td class="px-3 py-2 text-right font-semibold text-red-600 dark:text-red-400">C$ @egreso.Monto.ToString("N2")</td>
+                            <td class="px-3 py-2 text-gray-900 dark:text-gray-100">@egreso.Categoria</td>
+                            <td class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">@egreso.Descripcion</td>
                         </tr>
                     }
                 </tbody>
@@ -254,20 +254,20 @@
                 <table class="min-w-full text-sm">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th class="px-3 py-2 text-left">Código</th>
-                            <th class="px-3 py-2 text-left">Nombre</th>
-                            <th class="px-3 py-2 text-left">Fecha Creación</th>
-                            <th class="px-3 py-2 text-left">Servicios</th>
+                            <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Código</th>
+                            <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Nombre</th>
+                            <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Fecha Creación</th>
+                            <th class="px-3 py-2 text-left text-gray-700 dark:text-gray-200 font-semibold">Servicios</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @foreach (var cliente in Model.ListaClientesNuevos)
                         {
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <td class="px-3 py-2 font-medium">@cliente.Codigo</td>
-                                <td class="px-3 py-2">@cliente.Nombre</td>
-                                <td class="px-3 py-2">@cliente.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td class="px-3 py-2 text-xs text-gray-500">@cliente.Servicios</td>
+                                <td class="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">@cliente.Codigo</td>
+                                <td class="px-3 py-2 text-gray-900 dark:text-gray-100">@cliente.Nombre</td>
+                                <td class="px-3 py-2 text-gray-900 dark:text-gray-100">@cliente.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">@cliente.Servicios</td>
                             </tr>
                         }
                     </tbody>
