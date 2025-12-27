@@ -2,7 +2,15 @@ namespace billing_system.Models.ViewModels;
 
 public class DashboardViewModel
 {
-    // Estadísticas generales
+    // Estadísticas del mes actual
+    public decimal IngresosMesActual { get; set; }
+    public decimal EgresosMesActual { get; set; }
+    public decimal BalanceMesActual { get; set; }
+    public int FacturasMesActual { get; set; }
+    public int PagosMesActual { get; set; }
+    public string MesActualTexto { get; set; } = "";
+    
+    // Estadísticas generales (históricas)
     public decimal PagosPendientes { get; set; }
     public decimal PagosRealizados { get; set; }
     public decimal IngresoTotal { get; set; }
@@ -31,14 +39,12 @@ public class DashboardViewModel
     public int ClientesConStreaming { get; set; }
     public int ClientesConAmbos { get; set; }
     
-    // Estadísticas de egresos
+    // Estadísticas de egresos (históricas)
     public decimal TotalEgresos { get; set; }
-    public decimal EgresosMesActual { get; set; }
     public int CantidadEgresos { get; set; }
     
-    // Balance (Ingresos - Egresos)
+    // Balance (Ingresos - Egresos) histórico
     public decimal Balance => PagosRealizados - TotalEgresos;
-    public decimal BalanceMesActual { get; set; }
     
     // Estadísticas mensuales (últimos 6 meses)
     public List<MesEstadistica> EstadisticasMensuales { get; set; } = new();

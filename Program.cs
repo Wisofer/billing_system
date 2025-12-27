@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using QuestPDF.Infrastructure;
 using System.Text;
+using System.Globalization;
 
 // Inicializar QuestPDF antes de cualquier uso
 QuestPDF.Settings.License = LicenseType.Community;
@@ -17,6 +18,11 @@ QuestPDF.Settings.License = LicenseType.Community;
 // Configurar Npgsql para manejar DateTime correctamente con PostgreSQL
 // Esto permite usar DateTime.Now sin especificar UTC explícitamente
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+// Configurar cultura predeterminada para Nicaragua (formato de números: coma para miles)
+var culturaNicaragua = new CultureInfo("es-NI");
+CultureInfo.DefaultThreadCurrentCulture = culturaNicaragua;
+CultureInfo.DefaultThreadCurrentUICulture = culturaNicaragua;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -163,6 +169,9 @@ builder.Services.AddScoped<IEgresoService, EgresoService>();
 
 // Servicios de Contacto (Landing Page)
 builder.Services.AddScoped<IContactoService, ContactoService>();
+
+// Servicios de Reportes
+builder.Services.AddScoped<IReporteService, ReporteService>();
 
 // Registrar servicio en segundo plano para generación automática de facturas
 // Este servicio se ejecutará el día 1 de cada mes a las 2:00 AM

@@ -450,19 +450,21 @@ public class PdfService : IPdfService
                                         if (servicio == null)
                                             continue;
                                         
-                                        // Si es Streaming y tiene múltiples suscripciones, mostrar cada una
-                                        if (servicio.Categoria == SD.CategoriaStreaming && facturaServicio.Cantidad > 1)
+                                        // Si tiene múltiples servicios/suscripciones, mostrar cada uno
+                                        if (facturaServicio.Cantidad > 1)
                                         {
-                                            // Mostrar el precio completo del servicio por cada suscripción
+                                            // Mostrar el precio completo del servicio por cada unidad
                                             var precioUnitario = servicio.Precio;
                                             subtotalSinProporcional += precioUnitario * facturaServicio.Cantidad;
                                             subtotalCalculadoEnLoop = true;
+                                            
+                                            var textoTipo = servicio.Categoria == SD.CategoriaStreaming ? "Suscripción" : "Servicio";
                                             
                                             for (int i = 1; i <= facturaServicio.Cantidad; i++)
                                             {
                                                 table.Cell().Element(BodyCellStyle).Column(servicioInfoColumn =>
                                                 {
-                                                    servicioInfoColumn.Item().Text($"{servicio.Nombre} - Suscripción {i}").FontSize(9);
+                                                    servicioInfoColumn.Item().Text($"{servicio.Nombre} - {textoTipo} {i}").FontSize(9);
                                                     if (!string.IsNullOrWhiteSpace(servicio.Descripcion))
                                                     {
                                                         servicioInfoColumn.Item().PaddingTop(2).Text(servicio.Descripcion).FontSize(8).FontColor(Colors.Grey.Darken1);
@@ -711,7 +713,9 @@ public class PdfService : IPdfService
     {
         // Redondear: si pasa de 5 (>= 0.5), redondea hacia arriba
         var montoRedondeado = Math.Round(monto, MidpointRounding.AwayFromZero);
-        return ((int)montoRedondeado).ToString("N0");
+        // Usar cultura de Nicaragua (es-NI) para formato correcto: coma para miles
+        var cultura = new System.Globalization.CultureInfo("es-NI");
+        return ((int)montoRedondeado).ToString("N0", cultura);
     }
 
     /// <summary>
@@ -723,7 +727,9 @@ public class PdfService : IPdfService
         {
             return FormatearMontoEntero(monto);
         }
-        return monto.ToString("N2");
+        // Usar cultura de Nicaragua (es-NI) para formato correcto: coma para miles, punto para decimales
+        var cultura = new System.Globalization.CultureInfo("es-NI");
+        return monto.ToString("N2", cultura);
     }
 
     /// <summary>
@@ -740,14 +746,8 @@ public class PdfService : IPdfService
                 var servicio = facturaServicio.Servicio;
                 if (servicio != null)
                 {
-                    if (servicio.Categoria == SD.CategoriaStreaming && facturaServicio.Cantidad > 1)
-                    {
+                    // Siempre multiplicar por cantidad (para Internet y Streaming)
                         subtotal += servicio.Precio * facturaServicio.Cantidad;
-                    }
-                    else
-                    {
-                        subtotal += servicio.Precio;
-                    }
                 }
             }
         }

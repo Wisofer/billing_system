@@ -56,11 +56,12 @@ public class WhatsAppService : IWhatsAppService
             : $"{urlBase}/facturas/descargar-pdf-publico/{factura.Id}?token={token}";
         
         // Reemplazar variables
+        var cultura = new System.Globalization.CultureInfo("es-NI");
         mensaje = mensaje.Replace("{NombreCliente}", factura.Cliente?.Nombre ?? "");
         mensaje = mensaje.Replace("{CodigoCliente}", factura.Cliente?.Codigo ?? "");
         mensaje = mensaje.Replace("{NumeroFactura}", factura.Numero);
-        mensaje = mensaje.Replace("{Monto}", factura.Monto.ToString("N2"));
-        mensaje = mensaje.Replace("{Mes}", factura.MesFacturacion.ToString("MMMM yyyy"));
+        mensaje = mensaje.Replace("{Monto}", factura.Monto.ToString("N2", cultura));
+        mensaje = mensaje.Replace("{Mes}", factura.MesFacturacion.ToString("MMMM yyyy", cultura));
         mensaje = mensaje.Replace("{Categoria}", factura.Categoria);
         mensaje = mensaje.Replace("{Estado}", factura.Estado);
         mensaje = mensaje.Replace("{FechaCreacion}", factura.FechaCreacion.ToString("dd/MM/yyyy"));

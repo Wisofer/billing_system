@@ -164,3 +164,11 @@
 /home/william/Documentos/billing_system/bin/Debug/net9.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 /home/william/Documentos/billing_system/bin/Debug/net9.0/Microsoft.IdentityModel.Tokens.dll
 /home/william/Documentos/billing_system/bin/Debug/net9.0/System.IdentityModel.Tokens.Jwt.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/ClosedXML.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/ClosedXML.Parser.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/DocumentFormat.OpenXml.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/DocumentFormat.OpenXml.Framework.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/ExcelNumberFormat.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/RBush.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/SixLabors.Fonts.dll
+/home/william/Documentos/billing_system/bin/Debug/net9.0/System.IO.Packaging.dll

@@ -74,14 +74,20 @@
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Servicio</label>
                     <div class="flex items-center space-x-2">
                         <p class="text-sm text-gray-900 dark:text-white">@Model.Servicio.Nombre</p>
+                        @{
+                            var clienteServicio = Model.Cliente?.ClienteServicios?.FirstOrDefault(cs => cs.ServicioId == Model.ServicioId && cs.Activo);
+                            var cantidad = clienteServicio?.Cantidad ?? 1;
+                        }
                         @if (Model.Servicio.Categoria == "Internet")
                         {
                             <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Internet</span>
+                            @if (cantidad > 1)
+                            {
+                                <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">(@cantidad servicios)</span>
+                            }
                         }
                         else if (Model.Servicio.Categoria == "Streaming")
                         {
-                            var clienteServicio = Model.Cliente?.ClienteServicios?.FirstOrDefault(cs => cs.ServicioId == Model.ServicioId && cs.Activo);
-                            var cantidad = clienteServicio?.Cantidad ?? 1;
                             <span class="px-2 py-0.5 text-xs font-medium rounded-md bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Streaming</span>
                             @if (cantidad > 1)
                             {

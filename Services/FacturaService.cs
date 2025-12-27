@@ -196,20 +196,13 @@ public class FacturaService : IFacturaService
 
         factura.Numero = GenerarNumeroFactura(cliente, factura.MesFacturacion, servicio.Categoria);
         
-        // Calcular monto: Streaming sin proporcional, Internet con proporcional
-        if (servicio.Categoria == SD.CategoriaStreaming)
-        {
-            // Streaming: siempre precio completo (precio * cantidad)
+        // Obtener cantidad del ClienteServicio
             var clienteServicio = _context.ClienteServicios
                 .FirstOrDefault(cs => cs.ClienteId == cliente.Id && cs.ServicioId == servicio.Id && cs.Activo);
             var cantidad = clienteServicio?.Cantidad ?? 1;
-            factura.Monto = servicio.Precio * cantidad;
-        }
-        else
-        {
-            // Internet: aplicar proporcional
-            factura.Monto = CalcularMontoProporcional(cliente, servicio, factura.MesFacturacion);
-        }
+        
+        // Calcular monto usando el método unificado
+        factura.Monto = CalcularMontoServicio(servicio, cliente, factura.MesFacturacion, cantidad);
         
         factura.Estado = SD.EstadoFacturaPendiente;
         factura.FechaCreacion = DateTime.Now;
@@ -285,8 +278,8 @@ public class FacturaService : IFacturaService
                 var clienteServicio = item.ClienteServicio;
                 int cantidad = 1;
                 
-                // Para Streaming, obtener la cantidad de suscripciones
-                if (servicio.Categoria == SD.CategoriaStreaming && clienteServicio != null)
+                // Obtener la cantidad para todos los servicios (Internet y Streaming)
+                if (clienteServicio != null)
                 {
                     cantidad = clienteServicio.Cantidad;
                 }
@@ -522,13 +515,8 @@ public class FacturaService : IFacturaService
                 foreach (var clienteServicio in serviciosDelGrupo)
                 {
                     var servicio = clienteServicio.Servicio!;
-                    int cantidad = 1;
-                    
-                    // Para Streaming, obtener la cantidad de suscripciones
-                    if (servicio.Categoria == SD.CategoriaStreaming)
-                    {
-                        cantidad = clienteServicio.Cantidad;
-                    }
+                    // Obtener la cantidad para todos los servicios (Internet y Streaming)
+                    int cantidad = clienteServicio.Cantidad;
                     
                     // Calcular monto del servicio
                     var montoServicio = CalcularMontoServicio(servicio, cliente, mesFacturacion, cantidad);

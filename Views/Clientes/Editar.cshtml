@@ -88,14 +88,20 @@
                                         }
                                     </label>
                                 </div>
+                                <div class="cantidad-container ml-6 mt-2 @(estaActivo ? "" : "hidden")">
+                                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
                                 @if (servicio.Categoria == "Streaming")
                                 {
-                                    <div class="cantidad-container ml-6 mt-2 @(estaActivo ? "" : "hidden")">
-                                        <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Cantidad de suscripciones</label>
+                                            <text>Cantidad de suscripciones</text>
+                                        }
+                                        else
+                                        {
+                                            <text>Cantidad de servicios</text>
+                                        }
+                                    </label>
                                         <input type="number" name="Cantidad_@servicio.Id" min="1" value="@cantidadActual" 
                                                class="cantidad-input w-24 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     </div>
-                                }
                             </div>
                         }
                     }

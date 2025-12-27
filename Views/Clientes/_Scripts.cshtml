@@ -63,15 +63,14 @@ function cerrarModalCrear() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Manejar mostrar/ocultar campo de cantidad para servicios Streaming
+    // Manejar mostrar/ocultar campo de cantidad para todos los servicios (Internet y Streaming)
     const servicioCheckboxes = document.querySelectorAll('.servicio-checkbox');
     servicioCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             const servicioItem = this.closest('.servicio-item');
             const cantidadContainer = servicioItem?.querySelector('.cantidad-container');
-            const categoria = this.getAttribute('data-categoria');
             
-            if (categoria === 'Streaming' && cantidadContainer) {
+            if (cantidadContainer) {
                 if (this.checked) {
                     cantidadContainer.classList.remove('hidden');
                 } else {
@@ -108,18 +107,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.Cedula) formDataToSend.append('Cedula', data.Cedula);
         if (data.Email) formDataToSend.append('Email', data.Email);
         
-        // Agregar servicios con sus cantidades
+        // Agregar servicios con sus cantidades (para todos los servicios)
         servicioIds.forEach(id => {
             formDataToSend.append('ServicioIds', id.toString());
-            // Obtener cantidad si es Streaming
+            // Obtener cantidad para todos los servicios (Internet y Streaming)
             const servicioItem = document.querySelector(`[data-servicio-id="${id}"]`);
             if (servicioItem) {
-                const categoria = servicioItem.getAttribute('data-categoria');
-                if (categoria === 'Streaming') {
                     const cantidadInput = servicioItem.querySelector('.cantidad-input');
                     const cantidad = cantidadInput ? parseInt(cantidadInput.value) || 1 : 1;
                     formDataToSend.append(`Cantidad_${id}`, cantidad.toString());
-                }
             }
         });
         

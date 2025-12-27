@@ -36,6 +36,28 @@ public class HomeController : Controller
         {
             return Redirect(SecurityHelper.GetRedirectUrlByRole(User));
         }
+        // Calcular fechas del mes actual
+        var fechaMesActual = DateTime.Now;
+        var primerDiaMes = new DateTime(fechaMesActual.Year, fechaMesActual.Month, 1);
+        var ultimoDiaMes = primerDiaMes.AddMonths(1).AddDays(-1).Date.AddDays(1).AddSeconds(-1);
+        var mesActualTexto = fechaMesActual.ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-NI"));
+
+        // Estadísticas del mes actual
+        var pagosMesActual = _context.Pagos
+            .Where(p => p.FechaPago >= primerDiaMes && p.FechaPago <= ultimoDiaMes)
+            .ToList();
+        
+        var ingresosMesActual = pagosMesActual.Sum(p => p.Monto);
+        
+        var egresosMesActual = _context.Egresos
+            .Where(e => e.Fecha >= primerDiaMes && e.Fecha <= ultimoDiaMes)
+            .Sum(e => (decimal?)e.Monto) ?? 0;
+        
+        var facturasMesActual = _context.Facturas
+            .Count(f => f.FechaCreacion >= primerDiaMes && f.FechaCreacion <= ultimoDiaMes);
+        
+        var balanceMesActual = ingresosMesActual - egresosMesActual;
+
         // Estadísticas generales (consultas optimizadas)
         var pagosPendientes = _facturaService.CalcularTotalPendiente();
         var pagosRealizados = _pagoService.CalcularTotalIngresos();
@@ -257,6 +279,14 @@ public class HomeController : Controller
 
         var viewModel = new DashboardViewModel
         {
+            // Estadísticas del mes actual
+            IngresosMesActual = ingresosMesActual,
+            EgresosMesActual = egresosMesActual,
+            BalanceMesActual = balanceMesActual,
+            FacturasMesActual = facturasMesActual,
+            PagosMesActual = pagosMesActual.Count,
+            MesActualTexto = mesActualTexto,
+            
             // Estadísticas generales
             PagosPendientes = pagosPendientes,
             PagosRealizados = pagosRealizados,
@@ -286,10 +316,9 @@ public class HomeController : Controller
             ClientesConStreaming = clientesConStreaming,
             ClientesConAmbos = clientesConAmbos,
             
-            // Egresos
+            // Egresos históricos
             TotalEgresos = _egresoService.CalcularTotalEgresos(),
-            EgresosMesActual = _egresoService.CalcularTotalEgresosMesActual(),
-            CantidadEgresos = _egresoService.ObtenerActivos().Count,
+            CantidadEgresos = _egresoService.ObtenerActivos().Count(),
             
             // Mensuales
             EstadisticasMensuales = estadisticasMensuales

@@ -346,10 +346,10 @@
                 checkbox.value = servicio.id;
                 checkbox.id = 'servicio_' + servicio.id;
                 checkbox.className = 'w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700';
-                // Calcular precio total considerando cantidad (solo para Streaming)
+                // Calcular precio total considerando cantidad (Internet y Streaming)
                 const cantidad = servicio.cantidad || 1;
                 const precioUnitario = parseFloat(servicio.precio);
-                const precioTotal = servicio.categoria === 'Streaming' ? precioUnitario * cantidad : precioUnitario;
+                const precioTotal = precioUnitario * cantidad;
                 
                 checkbox.setAttribute('data-precio', precioTotal);
                 checkbox.setAttribute('data-precio-unitario', precioUnitario);
@@ -375,11 +375,12 @@
                     categoriaBadge.textContent = servicio.categoria || 'N/A';
                 }
                 
-                // Mostrar nombre con cantidad si es Streaming y cantidad > 1
+                // Mostrar nombre con cantidad si cantidad > 1
                 let nombreTexto;
         
-                if (servicio.categoria === 'Streaming' && cantidad > 1) {
-                    nombreTexto = document.createTextNode(servicio.nombre + ' (' + cantidad + ' suscripciones) - C$ ' + precioTotal.toLocaleString('es-NI', {
+                if (cantidad > 1) {
+                    const textoTipo = servicio.categoria === 'Streaming' ? 'suscripciones' : 'servicios';
+                    nombreTexto = document.createTextNode(servicio.nombre + ' (' + cantidad + ' ' + textoTipo + ') - C$ ' + precioTotal.toLocaleString('es-NI', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
                     }));

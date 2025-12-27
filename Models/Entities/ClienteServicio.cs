@@ -5,7 +5,7 @@ public class ClienteServicio
     public int Id { get; set; }
     public int ClienteId { get; set; }
     public int ServicioId { get; set; }
-    public int Cantidad { get; set; } = 1; // Cantidad de suscripciones (solo para Streaming)
+    public int Cantidad { get; set; } = 1; // Cantidad de servicios/suscripciones (Internet y Streaming)
     public bool Activo { get; set; } = true;
     public DateTime FechaInicio { get; set; } = DateTime.Now;
     public DateTime? FechaFin { get; set; } // Para historial cuando se desactiva

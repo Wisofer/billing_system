@@ -128,9 +128,7 @@ public class ClientesController : Controller
                     var servicio = _servicioService.ObtenerPorId(servicioId);
                     if (servicio == null) continue;
                     
-                    // Si es Streaming, obtener cantidad del formulario o usar default
-                    if (servicio.Categoria == SD.CategoriaStreaming)
-                    {
+                    // Obtener cantidad del formulario para todos los servicios (Internet y Streaming)
                         var cantidadKey = $"Cantidad_{servicioId}";
                         int cantidad = 1;
                         
@@ -143,12 +141,6 @@ public class ClientesController : Controller
                         }
                         
                         serviciosConCantidad[servicioId] = cantidad;
-                    }
-                    else
-                    {
-                        // Para Internet, cantidad siempre es 1
-                        serviciosConCantidad[servicioId] = 1;
-                    }
                 }
                 
                 // Usar AsignarServiciosConCantidad para todos los servicios
@@ -283,10 +275,7 @@ public class ClientesController : Controller
                     var servicio = _servicioService.ObtenerPorId(servicioId);
                     if (servicio == null) continue;
                     
-                    // Si es Streaming, obtener cantidad del formulario o usar default
-                    if (servicio.Categoria == SD.CategoriaStreaming)
-                    {
-                        tieneServiciosStreaming = true;
+                    // Obtener cantidad del formulario para todos los servicios (Internet y Streaming)
                         var cantidadKey = $"Cantidad_{servicioId}";
                         int cantidad = 1;
                         
@@ -299,11 +288,10 @@ public class ClientesController : Controller
                         }
                         
                         serviciosConCantidad[servicioId] = cantidad;
-                    }
-                    else
+                    
+                    if (servicio.Categoria == SD.CategoriaStreaming)
                     {
-                        // Para Internet, cantidad siempre es 1
-                        serviciosConCantidad[servicioId] = 1;
+                        tieneServiciosStreaming = true;
                     }
                 }
                 

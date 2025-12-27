@@ -1,0 +1,174 @@
+@{
+    ViewData["Title"] = "Reportes Mensuales";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var mesActual = ViewBag.MesActual ?? DateTime.Now.Month;
+    var añoActual = ViewBag.AñoActual ?? DateTime.Now.Year;
+}
+
+<!-- Encabezado -->
+<div class="mb-8">
+    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">📊 Reportes Mensuales</h2>
+    <p class="text-gray-500 dark:text-gray-400">Genera reportes financieros detallados por periodo</p>
+</div>
+
+<!-- Tarjeta principal de selección -->
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+        <form method="post" action="/reportes/generarreporte">
+            @Html.AntiForgeryToken()
+            <!-- Selector de tipo de filtro -->
+            <div class="mb-8">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                    Seleccionar Periodo
+                </label>
+                
+                <!-- Radio buttons -->
+                <div class="space-y-4">
+                    <!-- Opción: Por Mes -->
+                    <div class="flex items-start">
+                        <input type="radio" id="filtroMes" name="tipoFiltro" value="mes" checked
+                               class="mt-1 w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                        <label for="filtroMes" class="ml-3 flex-1">
+                            <span class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+                                Por Mes
+                            </span>
+                            <div class="mt-3 grid grid-cols-2 gap-4" id="filtroMesContainer">
+                                <!-- Selector de Mes -->
+                                <div>
+                                    <label for="mes" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                        Mes
+                                    </label>
+                                    <select name="mes" id="mes" 
+                                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                        <option value="1" selected="@(mesActual == 1)">Enero</option>
+                                        <option value="2" selected="@(mesActual == 2)">Febrero</option>
+                                        <option value="3" selected="@(mesActual == 3)">Marzo</option>
+                                        <option value="4" selected="@(mesActual == 4)">Abril</option>
+                                        <option value="5" selected="@(mesActual == 5)">Mayo</option>
+                                        <option value="6" selected="@(mesActual == 6)">Junio</option>
+                                        <option value="7" selected="@(mesActual == 7)">Julio</option>
+                                        <option value="8" selected="@(mesActual == 8)">Agosto</option>
+                                        <option value="9" selected="@(mesActual == 9)">Septiembre</option>
+                                        <option value="10" selected="@(mesActual == 10)">Octubre</option>
+                                        <option value="11" selected="@(mesActual == 11)">Noviembre</option>
+                                        <option value="12" selected="@(mesActual == 12)">Diciembre</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Selector de Año -->
+                                <div>
+                                    <label for="año" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                        Año
+                                    </label>
+                                    <select name="año" id="año" 
+                                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                        @for (int i = añoActual; i >= añoActual - 5; i--)
+                                        {
+                                            <option value="@i" selected="@(i == añoActual)">@i</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Opción: Por Rango de Fechas -->
+                    <div class="flex items-start">
+                        <input type="radio" id="filtroRango" name="tipoFiltro" value="rango"
+                               class="mt-1 w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                        <label for="filtroRango" class="ml-3 flex-1">
+                            <span class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+                                Por Rango de Fechas
+                            </span>
+                            <div class="mt-3 grid grid-cols-2 gap-4" id="filtroRangoContainer" style="display: none;">
+                                <!-- Fecha Inicio -->
+                                <div>
+                                    <label for="fechaInicio" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                        Fecha Inicio
+                                    </label>
+                                    <input type="date" name="fechaInicio" id="fechaInicio"
+                                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                </div>
+                                
+                                <!-- Fecha Fin -->
+                                <div>
+                                    <label for="fechaFin" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                        Fecha Fin
+                                    </label>
+                                    <input type="date" name="fechaFin" id="fechaFin"
+                                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón de generación -->
+            <div class="flex justify-center">
+                <button type="submit" 
+                        class="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Generar Reporte
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="mt-8 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">
+                    El reporte incluye:
+                </h3>
+                <div class="mt-2 text-sm text-blue-700 dark:text-blue-400">
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Resumen ejecutivo (Ingresos, Egresos, Balance)</li>
+                        <li>Ingresos por categoría (Internet/Streaming)</li>
+                        <li>Lista detallada de facturas del periodo</li>
+                        <li>Lista de pagos recibidos</li>
+                        <li>Registro de egresos</li>
+                        <li>Clientes nuevos del periodo</li>
+                        <li>Comparación con periodo anterior</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filtroMes = document.getElementById('filtroMes');
+        const filtroRango = document.getElementById('filtroRango');
+        const filtroMesContainer = document.getElementById('filtroMesContainer');
+        const filtroRangoContainer = document.getElementById('filtroRangoContainer');
+        
+        // Cambiar entre filtros
+        filtroMes.addEventListener('change', function() {
+            if (this.checked) {
+                filtroMesContainer.style.display = 'grid';
+                filtroRangoContainer.style.display = 'none';
+            }
+        });
+        
+        filtroRango.addEventListener('change', function() {
+            if (this.checked) {
+                filtroMesContainer.style.display = 'none';
+                filtroRangoContainer.style.display = 'grid';
+            }
+        });
+    });
+</script>
+}
+
+
