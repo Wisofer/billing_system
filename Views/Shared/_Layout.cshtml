@@ -996,5 +996,9 @@
     }
 
     @await RenderSectionAsync("Scripts", required: false)
+    
+    @* Modal Dialog Reutilizable - Reemplaza alert() y confirm() *@
+    @await Html.PartialAsync("_ModalDialog")
+    <script src="~/js/modal-dialog.js"></script>
 </body>
 </html>

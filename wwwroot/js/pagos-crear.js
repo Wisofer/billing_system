@@ -1503,7 +1503,7 @@ const Utilidades = {
             setTimeout(() => {
                 clienteSearch.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
             }, 3000);
-            alert('Debe seleccionar un cliente');
+            ModalDialog.alert('Debe seleccionar un cliente', 'warning');
             return false;
         }
         
@@ -1512,7 +1512,7 @@ const Utilidades = {
         
         if (!facturaId && !facturaIds) {
             e.preventDefault();
-            alert('Debe seleccionar al menos una factura');
+            ModalDialog.alert('Debe seleccionar al menos una factura', 'warning');
             return false;
         }
         
@@ -1523,11 +1523,20 @@ const Utilidades = {
                           `El monto esperado es: C$ ${montoEsperado.toLocaleString('es-NI', {minimumFractionDigits: 2, maximumFractionDigits: 2})}\n\n` +
                           `¿Estás seguro de que quieres continuar?`;
             
-            if (!confirm(mensaje)) {
-                montoInput.value = montoEsperado.toFixed(2).replace(',', '.');
-                montoInput.readOnly = true;
-                return false;
-            }
+            // Necesitamos manejar esto de forma asíncrona
+            (async () => {
+                const resultado = await ModalDialog.confirm(mensaje);
+                if (!resultado) {
+                    montoInput.value = montoEsperado.toFixed(2).replace(',', '.');
+                    montoInput.readOnly = true;
+                } else {
+                    montoInput.readOnly = false;
+                    // Re-enviar el formulario
+                    formPago.submit();
+                }
+            })();
+            
+            return false;
         }
         
         montoInput.value = monto.toFixed(2).replace(',', '.');

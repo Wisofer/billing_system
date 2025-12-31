@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('Total:', total);
                     
                     if (total === 0) {
-                        alert('No hay facturas para descargar con los filtros aplicados.');
+                        ModalDialog.alert('No hay facturas para descargar con los filtros aplicados.', 'warning');
                         if (loaderDescargarPdfs) {
                             loaderDescargarPdfs.classList.add('hidden');
                         }
@@ -192,9 +192,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log(`Iniciando descarga de ${total} facturas (Internet y Streaming)...`);
                     descargarSiguiente(0);
                 })
-                .catch(error => {
+                .catch(async error => {
                     console.error('Error:', error);
-                    alert('Error al descargar facturas: ' + error.message);
+                    await ModalDialog.alert('Error al descargar facturas: ' + error.message, 'error');
                     if (loaderDescargarPdfs) {
                         loaderDescargarPdfs.classList.add('hidden');
                     }
@@ -329,10 +329,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     btnGenerarAutomaticas.disabled = false;
                     btnGenerarAutomaticas.classList.remove('opacity-50', 'cursor-not-allowed');
                     btnGenerarAutomaticas.innerHTML = contenidoOriginal;
-                    alert('Error al generar las facturas. Por favor, intenta de nuevo.');
+                    ModalDialog.alert('Error al generar las facturas. Por favor, intenta de nuevo.', 'error');
                 });
             })
-            .catch(error => {
+            .catch(async error => {
                 console.error('Error al obtener total de clientes:', error);
                 // Si falla, usar un valor por defecto
                 totalClientes = 1;
@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     btnGenerarAutomaticas.disabled = false;
                     btnGenerarAutomaticas.classList.remove('opacity-50', 'cursor-not-allowed');
                     btnGenerarAutomaticas.innerHTML = contenidoOriginal;
-                    alert('Error al generar las facturas. Por favor, intenta de nuevo.');
+                    ModalDialog.alert('Error al generar las facturas. Por favor, intenta de nuevo.', 'error');
                 });
             });
             

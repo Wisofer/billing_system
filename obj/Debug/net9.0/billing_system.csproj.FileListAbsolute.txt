@@ -140,7 +140,6 @@
 /home/william/Documentos/billing_system/obj/Debug/net9.0/billing_system.sourcelink.json
 /home/william/Documentos/billing_system/obj/Debug/net9.0/scopedcss/bundle/billing_system.styles.css
 /home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/wl0vaw1ipa-zefz65wvgg.gz
-/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/ngoiiiitkb-kqfcujz1uq.gz
 /home/william/Documentos/billing_system/obj/Debug/net9.0/staticwebassets.build.json
 /home/william/Documentos/billing_system/obj/Debug/net9.0/staticwebassets.development.json
 /home/william/Documentos/billing_system/obj/Debug/net9.0/staticwebassets.build.endpoints.json
@@ -172,3 +171,5 @@
 /home/william/Documentos/billing_system/bin/Debug/net9.0/RBush.dll
 /home/william/Documentos/billing_system/bin/Debug/net9.0/SixLabors.Fonts.dll
 /home/william/Documentos/billing_system/bin/Debug/net9.0/System.IO.Packaging.dll
+/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/iyztg35vz5-vfj4q25gjc.gz
+/home/william/Documentos/billing_system/obj/Debug/net9.0/compressed/ngoiiiitkb-8ix266o24q.gz

@@ -1,0 +1,35 @@
+@* Modal Dialog Reutilizable - Reemplaza alert() y confirm() *@
+<div id="modalDialog" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-dialog-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Overlay -->
+        <div id="modalDialogOverlay" class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 transition-opacity"></div>
+
+        <!-- Centro del modal -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <!-- Contenedor del modal -->
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+            <!-- Header -->
+            <div id="modalDialogHeader" class="px-4 py-3 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center">
+                    <!-- Icono -->
+                    <div id="modalDialogIcon" class="flex-shrink-0 mr-3">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                    <!-- Título -->
+                    <h3 id="modalDialogTitle" class="text-lg font-medium text-gray-900 dark:text-white"></h3>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="px-4 py-4 sm:px-6">
+                <p id="modalDialogMessage" class="text-sm text-gray-500 dark:text-gray-300 whitespace-pre-line"></p>
+            </div>
+
+            <!-- Footer -->
+            <div id="modalDialogFooter" class="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200 dark:border-gray-700">
+                <!-- Botones se llenan dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>

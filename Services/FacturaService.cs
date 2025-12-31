@@ -115,7 +115,7 @@ public class FacturaService : IFacturaService
         
         if (categoria == SD.CategoriaStreaming)
         {
-            // STREAMING: Numeración propia separada (busca solo facturas con -STR)
+            // STREAMING: Numeración continua separada (solo facturas con -STR)
             int numeroMaximoSTR = 0;
             foreach (var numeroFactura in todasLasFacturas)
             {
@@ -132,12 +132,12 @@ public class FacturaService : IFacturaService
                     }
                 }
             }
-            // Streaming: continuar desde el más alto encontrado (o empezar desde 1)
+            // Streaming: Continuar desde el número más alto encontrado + 1
             numero = numeroMaximoSTR + 1;
         }
         else
         {
-            // INTERNET: Numeración secuencial global desde 179 (solo facturas sin -STR)
+            // INTERNET: Numeración secuencial global continua (solo facturas sin -STR)
             int numeroMaximoInternet = 0;
             foreach (var numeroFactura in todasLasFacturas)
             {
@@ -154,9 +154,26 @@ public class FacturaService : IFacturaService
                     }
                 }
             }
-            // Internet: Si el número máximo es >= 179, continuar la secuencia, sino empezar desde 179
-            numero = numeroMaximoInternet >= 179 ? numeroMaximoInternet + 1 : 179;
+            // Internet: Continuar desde el número más alto encontrado + 1
+            numero = numeroMaximoInternet + 1;
         }
+        
+        return $"{numero:D4}-{nombreCliente}-{mesStr}{añoStr}{sufijo}";
+    }
+
+    /// <summary>
+    /// Genera un número de factura usando un contador predefinido (sin consultar BD).
+    /// Usado para generar múltiples facturas secuencialmente sin duplicados.
+    /// </summary>
+    private string GenerarNumeroFacturaConContador(Cliente cliente, DateTime mes, int numero, string? categoria = null)
+    {
+        var mesStr = mes.ToString("MM");
+        var añoStr = mes.ToString("yyyy");
+        
+        var nombreSinEspacios = cliente.Nombre.Replace(" ", "");
+        var longitudNombre = Math.Min(10, nombreSinEspacios.Length);
+        var nombreCliente = longitudNombre > 0 ? nombreSinEspacios.Substring(0, longitudNombre) : "Cliente";
+        var sufijo = categoria == SD.CategoriaStreaming ? "-STR" : "";
         
         return $"{numero:D4}-{nombreCliente}-{mesStr}{añoStr}{sufijo}";
     }
@@ -223,6 +240,46 @@ public class FacturaService : IFacturaService
         var cliente = _clienteService.ObtenerPorId(clienteId);
         if (cliente == null)
             throw new Exception("Cliente no encontrado");
+
+        // OPTIMIZACIÓN: Consultar BD UNA SOLA VEZ al inicio para obtener números máximos
+        // Esto evita duplicados cuando se generan múltiples facturas (Internet + Streaming)
+        var todasLasFacturas = _context.Facturas
+            .Select(f => f.Numero)
+            .ToList();
+
+        int numeroMaximoInternet = 0;
+        int numeroMaximoStreaming = 0;
+
+        foreach (var numeroFactura in todasLasFacturas)
+        {
+            if (!string.IsNullOrEmpty(numeroFactura))
+            {
+                var partes = numeroFactura.Split('-');
+                if (partes.Length > 0 && int.TryParse(partes[0], out var num))
+                {
+                    if (numeroFactura.EndsWith("-STR"))
+                    {
+                        // Streaming
+                        if (num > numeroMaximoStreaming)
+                        {
+                            numeroMaximoStreaming = num;
+                        }
+                    }
+                    else
+                    {
+                        // Internet
+                        if (num > numeroMaximoInternet)
+                        {
+                            numeroMaximoInternet = num;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Inicializar contadores en memoria (se incrementarán secuencialmente)
+        int contadorInternet = numeroMaximoInternet;
+        int contadorStreaming = numeroMaximoStreaming;
 
         var facturasCreadas = new List<Factura>();
 
@@ -299,13 +356,26 @@ public class FacturaService : IFacturaService
             }
 
             // Crear la factura consolidada
+            // OPTIMIZACIÓN: Generar número usando contador en memoria (evita duplicados)
+            string numeroFactura;
+            if (categoria == SD.CategoriaStreaming)
+            {
+                contadorStreaming++;
+                numeroFactura = GenerarNumeroFacturaConContador(cliente, mesFacturacion, contadorStreaming, categoria);
+            }
+            else
+            {
+                contadorInternet++;
+                numeroFactura = GenerarNumeroFacturaConContador(cliente, mesFacturacion, contadorInternet, categoria);
+            }
+
             var factura = new Factura
             {
                 ClienteId = clienteId,
                 ServicioId = primerServicio.Id, // Servicio principal para compatibilidad
                 Categoria = categoria,
                 MesFacturacion = mesFacturacion,
-                Numero = GenerarNumeroFactura(cliente, mesFacturacion, categoria),
+                Numero = numeroFactura,
                 Monto = montoTotal,
                 Estado = SD.EstadoFacturaPendiente,
                 FechaCreacion = DateTime.Now,
@@ -448,6 +518,46 @@ public class FacturaService : IFacturaService
             return; // No hay clientes activos
         }
 
+        // OPTIMIZACIÓN: Consultar BD UNA SOLA VEZ al inicio para obtener números máximos
+        // Esto evita duplicados cuando se generan múltiples facturas simultáneamente
+        var todasLasFacturas = _context.Facturas
+            .Select(f => f.Numero)
+            .ToList();
+
+        int numeroMaximoInternet = 0;
+        int numeroMaximoStreaming = 0;
+
+        foreach (var numeroFactura in todasLasFacturas)
+        {
+            if (!string.IsNullOrEmpty(numeroFactura))
+            {
+                var partes = numeroFactura.Split('-');
+                if (partes.Length > 0 && int.TryParse(partes[0], out var num))
+                {
+                    if (numeroFactura.EndsWith("-STR"))
+                    {
+                        // Streaming
+                        if (num > numeroMaximoStreaming)
+                        {
+                            numeroMaximoStreaming = num;
+                        }
+                    }
+                    else
+                    {
+                        // Internet
+                        if (num > numeroMaximoInternet)
+                        {
+                            numeroMaximoInternet = num;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Inicializar contadores en memoria (se incrementarán secuencialmente)
+        int contadorInternet = numeroMaximoInternet;
+        int contadorStreaming = numeroMaximoStreaming;
+
         var facturasACrear = new List<Factura>();
 
         foreach (var cliente in clientes)
@@ -533,8 +643,18 @@ public class FacturaService : IFacturaService
                 }
 
                 // Crear la factura consolidada
-                // Usar GenerarNumeroFactura para evitar duplicados y obtener el número correcto
-                var numeroFactura = GenerarNumeroFactura(cliente, mesFacturacion, categoria);
+                // OPTIMIZACIÓN: Generar número usando contador en memoria (evita duplicados)
+                string numeroFactura;
+                if (categoria == SD.CategoriaStreaming)
+                {
+                    contadorStreaming++;
+                    numeroFactura = GenerarNumeroFacturaConContador(cliente, mesFacturacion, contadorStreaming, categoria);
+                }
+                else
+                {
+                    contadorInternet++;
+                    numeroFactura = GenerarNumeroFacturaConContador(cliente, mesFacturacion, contadorInternet, categoria);
+                }
                 
                 var factura = new Factura
                 {

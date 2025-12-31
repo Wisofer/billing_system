@@ -486,7 +486,7 @@ setTimeout(function() {
                                     }
                                     @if (esAdministrador)
                                     {
-                                        <form method="post" action="/pagos/eliminar/@pago.Id" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar este pago?');">
+                                        <form method="post" action="/pagos/eliminar/@pago.Id" class="inline" onsubmit="event.preventDefault(); ModalDialog.confirm('¿Estás seguro de eliminar este pago?', () => this.submit()); return false;">
                                             @Html.AntiForgeryToken()
                                             <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900 p-2 rounded-lg transition-colors" title="Eliminar pago">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -590,11 +590,11 @@ setTimeout(function() {
                         .map(cb => parseInt(cb.value));
                     
                     if (seleccionadas.length === 0) {
-                        alert('Por favor, selecciona al menos un pago para eliminar.');
+                        await ModalDialog.alert('Por favor, selecciona al menos un pago para eliminar.', 'warning');
                         return;
                     }
                     
-                    const confirmacion = confirm(`¿Estás seguro de eliminar ${seleccionadas.length} pago(s)?\n\nEsta acción no se puede deshacer.`);
+                    const confirmacion = await ModalDialog.confirm(`¿Estás seguro de eliminar ${seleccionadas.length} pago(s)?\n\nEsta acción no se puede deshacer.`);
                     
                     if (!confirmacion) {
                         return;
@@ -603,7 +603,7 @@ setTimeout(function() {
                     // Obtener el token anti-forgery (buscar en toda la página)
                     const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
                     if (!tokenInput) {
-                        alert('Error de seguridad. Por favor, recarga la página e intenta de nuevo.');
+                        await ModalDialog.alert('Error de seguridad. Por favor, recarga la página e intenta de nuevo.', 'error');
                         return;
                     }
                     const token = tokenInput.value;
@@ -633,12 +633,12 @@ setTimeout(function() {
                             // Redirigir a la página de pagos
                             window.location.href = '/pagos';
                         } else {
-                            alert('Error al eliminar los pagos. Por favor, intenta de nuevo.');
+                            await ModalDialog.alert('Error al eliminar los pagos. Por favor, intenta de nuevo.', 'error');
                             btnEliminarSeleccionadas.disabled = false;
                             btnEliminarSeleccionadas.innerHTML = contenidoOriginal;
                         }
                     } catch (error) {
-                        alert('Error al eliminar los pagos. Por favor, intenta de nuevo.');
+                        await ModalDialog.alert('Error al eliminar los pagos. Por favor, intenta de nuevo.', 'error');
                         btnEliminarSeleccionadas.disabled = false;
                         btnEliminarSeleccionadas.innerHTML = contenidoOriginal;
                     }

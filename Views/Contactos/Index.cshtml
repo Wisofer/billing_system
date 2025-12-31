@@ -249,7 +249,7 @@
                                         }
                                         <!-- Eliminar -->
                                         <form method="post" action="/Contactos/Eliminar/@contacto.Id" class="inline"
-                                              onsubmit="return confirm('¿Estás seguro de eliminar este mensaje?')">
+                                              onsubmit="event.preventDefault(); ModalDialog.confirm('¿Estás seguro de eliminar este mensaje?', () => this.submit()); return false;">
                                             <button type="submit" 
                                                     class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900 p-2 rounded-lg transition-colors"
                                                     title="Eliminar">

@@ -175,7 +175,7 @@
                                     </form>
 
                                     <!-- Eliminar -->
-                                    <form action="/servicios-landing/eliminar/@servicio.Id" method="post" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar este servicio?')">
+                                    <form action="/servicios-landing/eliminar/@servicio.Id" method="post" class="inline" onsubmit="event.preventDefault(); ModalDialog.confirm('¿Estás seguro de eliminar este servicio?', () => this.submit()); return false;">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" title="Eliminar">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

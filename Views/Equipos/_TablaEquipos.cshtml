@@ -243,7 +243,7 @@
                                         <form method="post" action="/equipos/devolver-asignacion/@equipo.Id" class="inline">
                                             @Html.AntiForgeryToken()
                                             <button type="submit" 
-                                                    onclick="return confirm('¿Devolver el equipo asignado a @(asignacionActiva.Cliente?.Nombre ?? asignacionActiva.EmpleadoNombre)?')"
+                                                    onclick="event.preventDefault(); ModalDialog.confirm('¿Devolver el equipo asignado a @(asignacionActiva.Cliente?.Nombre ?? asignacionActiva.EmpleadoNombre)?', () => this.closest('form').submit()); return false;"
                                                     class="p-1 text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded" 
                                                     title="Devolver asignación">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,7 +257,7 @@
                                     <form method="post" action="/equipos/toggle-activo/@equipo.Id" class="inline">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" 
-                                                onclick="return confirm('@(equipo.Activo ? "¿Deshabilitar" : "¿Habilitar") el equipo @equipo.Nombre?')"
+                                                onclick="event.preventDefault(); ModalDialog.confirm('@(equipo.Activo ? "¿Deshabilitar" : "¿Habilitar") el equipo @equipo.Nombre?', () => this.closest('form').submit()); return false;"
                                                 class="p-1 @(equipo.Activo ? "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700" : "text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20") rounded" 
                                                 title="@(equipo.Activo ? "Deshabilitar" : "Habilitar") equipo">
                                             @if (equipo.Activo)
@@ -538,7 +538,7 @@ async function verHistorial(equipoId, equipoNombre) {
         const data = await response.json();
         
         if (!data.success) {
-            alert('Error al cargar el historial: ' + data.message);
+            await ModalDialog.alert('Error al cargar el historial: ' + data.message, 'error');
             return;
         }
         
@@ -620,7 +620,7 @@ async function verHistorial(equipoId, equipoNombre) {
         document.getElementById('modalHistorial').classList.remove('hidden');
         
     } catch (error) {
-        alert('Error al cargar el historial: ' + error.message);
+        await ModalDialog.alert('Error al cargar el historial: ' + error.message, 'error');
     }
 }
 

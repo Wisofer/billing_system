@@ -151,7 +151,7 @@
                                         </form>
                                         @if (cantidadEquipos == 0)
                                         {
-                                            <form method="post" action="/categorias-equipo/eliminar/@categoria.Id" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar la categoría \'@categoria.Nombre\'? Esta acción no se puede deshacer.');">
+                                            <form method="post" action="/categorias-equipo/eliminar/@categoria.Id" class="inline" onsubmit="event.preventDefault(); ModalDialog.confirm('¿Estás seguro de eliminar la categoría \'@categoria.Nombre\'? Esta acción no se puede deshacer.', () => this.submit()); return false;">
                                                 @Html.AntiForgeryToken()
                                                 <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" title="Eliminar">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

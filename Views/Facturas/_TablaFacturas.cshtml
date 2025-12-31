@@ -114,7 +114,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </a>
-                                        <form method="post" action="/facturas/eliminar/@factura.Id" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar esta factura?');">
+                                        <form method="post" action="/facturas/eliminar/@factura.Id" class="inline" onsubmit="event.preventDefault(); ModalDialog.confirm('¿Estás seguro de eliminar esta factura?', () => this.submit()); return false;">
                                             @Html.AntiForgeryToken()
                                             <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900 p-2 rounded-lg transition-colors" title="Eliminar factura">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,11 +209,11 @@
                         .map(cb => parseInt(cb.value));
                     
                     if (seleccionadas.length === 0) {
-                        alert('Por favor, selecciona al menos una factura para eliminar.');
+                        await ModalDialog.alert('Por favor, selecciona al menos una factura para eliminar.', 'warning');
                         return;
                     }
                     
-                    const confirmacion = confirm(`¿Estás seguro de eliminar ${seleccionadas.length} factura(s)?\n\nEsta acción no se puede deshacer.`);
+                    const confirmacion = await ModalDialog.confirm(`¿Estás seguro de eliminar ${seleccionadas.length} factura(s)?\n\nEsta acción no se puede deshacer.`);
                     
                     if (!confirmacion) {
                         return;
@@ -223,7 +223,7 @@
                     const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
                     if (!tokenInput) {
                         console.error('Token anti-forgery no encontrado');
-                        alert('Error de seguridad. Por favor, recarga la página e intenta de nuevo.');
+                        await ModalDialog.alert('Error de seguridad. Por favor, recarga la página e intenta de nuevo.', 'error');
                         return;
                     }
                     const token = tokenInput.value;
@@ -255,13 +255,13 @@
                         } else {
                             const errorText = await response.text();
                             console.error('Error del servidor:', errorText);
-                            alert('Error al eliminar las facturas. Por favor, intenta de nuevo.');
+                            await ModalDialog.alert('Error al eliminar las facturas. Por favor, intenta de nuevo.', 'error');
                             btnEliminarSeleccionadas.disabled = false;
                             btnEliminarSeleccionadas.innerHTML = contenidoOriginal;
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        alert('Error al eliminar las facturas. Por favor, intenta de nuevo.');
+                        await ModalDialog.alert('Error al eliminar las facturas. Por favor, intenta de nuevo.', 'error');
                         btnEliminarSeleccionadas.disabled = false;
                         btnEliminarSeleccionadas.innerHTML = contenidoOriginal;
                     }

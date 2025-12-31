@@ -170,7 +170,7 @@
                 </form>
             }
             <form method="post" action="/Contactos/Eliminar/@Model.Id" class="inline ml-auto"
-                  onsubmit="return confirm('¿Estás seguro de eliminar este mensaje?')">
+                  onsubmit="event.preventDefault(); ModalDialog.confirm('¿Estás seguro de eliminar este mensaje?', () => this.submit()); return false;">
                 <button type="submit" 
                         class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

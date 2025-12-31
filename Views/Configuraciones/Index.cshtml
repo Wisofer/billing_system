@@ -613,7 +613,7 @@
                 audioSuccess.volume = 0.6;
                 audioSuccess.play().catch(() => {});
             } catch (e) { console.error(e); }
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'success');
             location.reload();
         } else {
             try {
@@ -621,7 +621,7 @@
                 audioError.volume = 0.6;
                 audioError.play().catch(() => {});
             } catch (e) { console.error(e); }
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'error');
         }
     }
 
@@ -650,7 +650,7 @@
                 audioSuccess.volume = 0.6;
                 audioSuccess.play().catch(() => {});
             } catch (e) { console.error(e); }
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'success');
             location.reload();
         } else {
             try {
@@ -658,12 +658,13 @@
                 audioError.volume = 0.6;
                 audioError.play().catch(() => {});
             } catch (e) { console.error(e); }
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'error');
         }
     }
 
     async function eliminarUsuario(id, nombreUsuario) {
-        if (!confirm(`¿Estás seguro de eliminar al usuario "${nombreUsuario}"?`)) {
+        const confirmado = await ModalDialog.confirm(`¿Estás seguro de eliminar al usuario "${nombreUsuario}"?`);
+        if (!confirmado) {
             return;
         }
 
@@ -682,7 +683,7 @@
                 audioSuccess.volume = 0.6;
                 audioSuccess.play().catch(() => {});
             } catch (e) { console.error(e); }
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'success');
             location.reload();
         } else {
             try {
@@ -690,7 +691,7 @@
                 audioError.volume = 0.6;
                 audioError.play().catch(() => {});
             } catch (e) { console.error(e); }
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'error');
         }
     }
 
@@ -809,7 +810,7 @@
     function abrirModalEditarPlantilla(id) {
         const plantilla = plantillasData.find(p => p.id === id);
         if (!plantilla) {
-            alert('Plantilla no encontrada');
+            ModalDialog.alert('Plantilla no encontrada', 'warning');
             return;
         }
         
@@ -844,10 +845,10 @@
 
         const result = await response.json();
         if (result.success) {
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'success');
             location.reload();
         } else {
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'error');
         }
     }
 
@@ -870,10 +871,10 @@
 
         const result = await response.json();
         if (result.success) {
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'success');
             location.reload();
         } else {
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'error');
         }
     }
 
@@ -904,12 +905,12 @@
         
         if ((valorCompra && (isNaN(compraDecimal) || compraDecimal <= 0 || compraDecimal > 100)) ||
             (valorVenta && (isNaN(ventaDecimal) || ventaDecimal <= 0 || ventaDecimal > 100))) {
-            alert('Los tipos de cambio deben ser valores válidos entre 0.01 y 100.');
+            await ModalDialog.alert('Los tipos de cambio deben ser valores válidos entre 0.01 y 100.', 'warning');
             return;
         }
 
         if (!valorCompra && !valorVenta) {
-            alert('Debe ingresar al menos un valor de tipo de cambio.');
+            await ModalDialog.alert('Debe ingresar al menos un valor de tipo de cambio.', 'warning');
             return;
         }
 
@@ -928,7 +929,7 @@
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('Error del servidor:', errorText);
-                alert('Error al actualizar el tipo de cambio. Por favor, verifica que la base de datos esté actualizada.');
+                await ModalDialog.alert('Error al actualizar el tipo de cambio. Por favor, verifica que la base de datos esté actualizada.', 'error');
                 return;
             }
 
@@ -939,7 +940,7 @@
                     audioSuccess.volume = 0.6;
                     audioSuccess.play().catch(() => {});
                 } catch (e) { console.error(e); }
-                alert(result.message);
+                await ModalDialog.alert(result.message, 'success');
                 location.reload();
             } else {
                 try {
@@ -947,11 +948,11 @@
                     audioError.volume = 0.6;
                     audioError.play().catch(() => {});
                 } catch (e) { console.error(e); }
-                alert(result.message);
+                await ModalDialog.alert(result.message, 'error');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error al actualizar el tipo de cambio: ' + error.message);
+            await ModalDialog.alert('Error al actualizar el tipo de cambio: ' + error.message, 'error');
         }
     }
 
@@ -959,7 +960,8 @@
         const plantilla = plantillasData.find(p => p.id === id);
         const nombre = plantilla ? plantilla.nombre : 'esta plantilla';
         
-        if (!confirm(`¿Estás seguro de eliminar la plantilla "${nombre}"?`)) {
+        const confirmado = await ModalDialog.confirm(`¿Estás seguro de eliminar la plantilla "${nombre}"?`);
+        if (!confirmado) {
             return;
         }
 
@@ -973,10 +975,10 @@
 
         const result = await response.json();
         if (result.success) {
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'success');
             location.reload();
         } else {
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'error');
         }
     }
 
@@ -991,10 +993,10 @@
 
         const result = await response.json();
         if (result.success) {
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'success');
             location.reload();
         } else {
-            alert(result.message);
+            await ModalDialog.alert(result.message, 'error');
         }
     }
 </script>

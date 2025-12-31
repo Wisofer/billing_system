@@ -378,7 +378,7 @@ setTimeout(function() {
             
             if (!clienteId) {
                 e.preventDefault();
-                alert('Debe seleccionar un cliente');
+                ModalDialog.alert('Debe seleccionar un cliente', 'warning');
                 document.getElementById('clienteSearch')?.focus();
                 return false;
             }
@@ -387,19 +387,19 @@ setTimeout(function() {
             const tieneFactura = (facturaId && facturaId.trim() !== '') || (facturaIds && facturaIds.trim() !== '');
             if (!tieneFactura) {
                 e.preventDefault();
-                alert('Debe seleccionar al menos una factura');
+                ModalDialog.alert('Debe seleccionar al menos una factura', 'warning');
                 return false;
             }
             
             if (!monto || parseFloat(monto) <= 0) {
                 e.preventDefault();
-                alert('El monto debe ser mayor a cero');
+                ModalDialog.alert('El monto debe ser mayor a cero', 'warning');
                 return false;
             }
             
             if (!moneda) {
                 e.preventDefault();
-                alert('Debe seleccionar una moneda');
+                ModalDialog.alert('Debe seleccionar una moneda', 'warning');
                 return false;
             }
             
@@ -466,7 +466,7 @@ setTimeout(function() {
                         } else {
                             montoFormateado = baseParaVuelto.toFixed(2).replace('.', ',');
                         }
-                        alert(`El monto recibido debe ser mayor o igual a ${monedaSimbolo} ${montoFormateado}`);
+                        ModalDialog.alert(`El monto recibido debe ser mayor o igual a ${monedaSimbolo} ${montoFormateado}`, 'warning');
                         montoRecibidoFisicoInput.focus();
                         // Forzar recálculo para mostrar el error visual
                         if (window.calcularVueltoFisico) {
@@ -484,13 +484,13 @@ setTimeout(function() {
                 
                 if (!banco) {
                     e.preventDefault();
-                    alert('Debe seleccionar un banco');
+                    ModalDialog.alert('Debe seleccionar un banco', 'warning');
                     return false;
                 }
                 
                 if (!tipoCuenta) {
                     e.preventDefault();
-                    alert('Debe seleccionar un tipo de cuenta');
+                    ModalDialog.alert('Debe seleccionar un tipo de cuenta', 'warning');
                     return false;
                 }
             }

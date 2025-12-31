@@ -146,12 +146,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
                 } else if (result.message) {
-                    alert(result.message);
+                    await ModalDialog.alert(result.message, 'info');
                 }
             }
         } catch (error) {
             console.error('Error completo:', error);
-            alert('Error al crear el cliente: ' + error.message);
+            await ModalDialog.alert('Error al crear el cliente: ' + error.message, 'error');
         }
     });
 });
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const archivoInput = document.getElementById('archivoExcel');
             if (!archivoInput || !archivoInput.files || archivoInput.files.length === 0) {
                 e.preventDefault();
-                alert('Por favor selecciona un archivo Excel.');
+                ModalDialog.alert('Por favor selecciona un archivo Excel.', 'warning');
                 return;
             }
             

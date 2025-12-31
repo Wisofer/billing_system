@@ -9,6 +9,10 @@
       "PackagePath": "staticwebassets/images/logo.png"
     },
     {
+      "Id": "/home/william/Documentos/billing_system/wwwroot/js/modal-dialog.js",
+      "PackagePath": "staticwebassets/js/modal-dialog.js"
+    },
+    {
       "Id": "/home/william/Documentos/billing_system/wwwroot/js/pagos-crear.js",
       "PackagePath": "staticwebassets/js/pagos-crear.js"
     },
