@@ -9,6 +9,7 @@ public class DashboardViewModel
     public int FacturasMesActual { get; set; }
     public int PagosMesActual { get; set; }
     public string MesActualTexto { get; set; } = "";
+    public string MesFacturacionTexto { get; set; } = ""; // Mes anterior (mes de facturación)
     
     // Estadísticas generales (históricas)
     public decimal PagosPendientes { get; set; }

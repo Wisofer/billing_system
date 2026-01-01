@@ -41,6 +41,12 @@ public class HomeController : Controller
         var primerDiaMes = new DateTime(fechaMesActual.Year, fechaMesActual.Month, 1);
         var ultimoDiaMes = primerDiaMes.AddMonths(1).AddDays(-1).Date.AddDays(1).AddSeconds(-1);
         var mesActualTexto = fechaMesActual.ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-NI"));
+        
+        // Mes de facturación (mes anterior - primero se consume, luego se paga)
+        var mesFacturacion = fechaMesActual.AddMonths(-1);
+        var mesFacturacionTexto = mesFacturacion.ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-NI"));
+        var primerDiaMesFacturacion = new DateTime(mesFacturacion.Year, mesFacturacion.Month, 1);
+        var ultimoDiaMesFacturacion = primerDiaMesFacturacion.AddMonths(1).AddDays(-1).Date.AddDays(1).AddSeconds(-1);
 
         // Estadísticas del mes actual
         var pagosMesActual = _context.Pagos
@@ -67,8 +73,7 @@ public class HomeController : Controller
             .ToList();
         
         decimal ingresosMesActualInternet = 0;
-        var facturasConPagosInternet = new HashSet<int>(); // Para evitar duplicados
-        var facturasPagadasEsteMesInternet = new HashSet<int>();
+        var facturasPagadasEsteMesInternet = new HashSet<int>(); // Facturas que se pagaron este mes
         
         foreach (var pago in pagosMesActualConFacturas)
         {
@@ -76,7 +81,6 @@ public class HomeController : Controller
             if (pago.Factura != null && pago.Factura.Categoria == SD.CategoriaInternet)
             {
                 ingresosMesActualInternet += pago.Monto;
-                facturasConPagosInternet.Add(pago.Factura.Id);
                 // Si la factura está pagada, agregarla a la lista
                 if (pago.Factura.Estado == SD.EstadoFacturaPagada)
                 {
@@ -90,7 +94,6 @@ public class HomeController : Controller
                 if (pagoFactura.Factura != null && pagoFactura.Factura.Categoria == SD.CategoriaInternet)
                 {
                     ingresosMesActualInternet += pagoFactura.MontoAplicado;
-                    facturasConPagosInternet.Add(pagoFactura.Factura.Id);
                     // Si la factura está pagada, agregarla a la lista
                     if (pagoFactura.Factura.Estado == SD.EstadoFacturaPagada)
                     {
@@ -100,16 +103,23 @@ public class HomeController : Controller
             }
         }
 
-        // Estadísticas del mes actual por categoría - Internet
-        // Facturas que recibieron pagos este mes
-        var facturasMesActualInternet = facturasConPagosInternet.Count;
-        var facturasPagadasMesActualInternet = facturasPagadasEsteMesInternet.Count;
-        var facturasPendientesMesActualInternet = facturasMesActualInternet - facturasPagadasMesActualInternet;
+        // Estadísticas del mes de facturación (mes anterior) por categoría - Internet
+        // Facturas del mes anterior (diciembre) que se están pagando en el mes actual (enero)
+        var facturasMesFacturacionInternet = _context.Facturas
+            .Where(f => f.Categoria == SD.CategoriaInternet && 
+                       f.MesFacturacion.Year == mesFacturacion.Year && 
+                       f.MesFacturacion.Month == mesFacturacion.Month)
+            .ToList();
+        
+        var facturasMesActualInternet = facturasMesFacturacionInternet.Count;
+        var facturasPagadasMesActualInternet = facturasMesFacturacionInternet
+            .Count(f => f.Estado == SD.EstadoFacturaPagada);
+        var facturasPendientesMesActualInternet = facturasMesFacturacionInternet
+            .Count(f => f.Estado == SD.EstadoFacturaPendiente);
 
         // Ingresos del mes actual - Streaming
         decimal ingresosMesActualStreaming = 0;
-        var facturasConPagosStreaming = new HashSet<int>(); // Para evitar duplicados
-        var facturasPagadasEsteMesStreaming = new HashSet<int>();
+        var facturasPagadasEsteMesStreaming = new HashSet<int>(); // Facturas que se pagaron este mes
         
         foreach (var pago in pagosMesActualConFacturas)
         {
@@ -117,7 +127,6 @@ public class HomeController : Controller
             if (pago.Factura != null && pago.Factura.Categoria == SD.CategoriaStreaming)
             {
                 ingresosMesActualStreaming += pago.Monto;
-                facturasConPagosStreaming.Add(pago.Factura.Id);
                 // Si la factura está pagada, agregarla a la lista
                 if (pago.Factura.Estado == SD.EstadoFacturaPagada)
                 {
@@ -131,7 +140,6 @@ public class HomeController : Controller
                 if (pagoFactura.Factura != null && pagoFactura.Factura.Categoria == SD.CategoriaStreaming)
                 {
                     ingresosMesActualStreaming += pagoFactura.MontoAplicado;
-                    facturasConPagosStreaming.Add(pagoFactura.Factura.Id);
                     // Si la factura está pagada, agregarla a la lista
                     if (pagoFactura.Factura.Estado == SD.EstadoFacturaPagada)
                     {
@@ -141,11 +149,19 @@ public class HomeController : Controller
             }
         }
 
-        // Estadísticas del mes actual por categoría - Streaming
-        // Facturas que recibieron pagos este mes
-        var facturasMesActualStreaming = facturasConPagosStreaming.Count;
-        var facturasPagadasMesActualStreaming = facturasPagadasEsteMesStreaming.Count;
-        var facturasPendientesMesActualStreaming = facturasMesActualStreaming - facturasPagadasMesActualStreaming;
+        // Estadísticas del mes de facturación (mes anterior) por categoría - Streaming
+        // Facturas del mes anterior (diciembre) que se están pagando en el mes actual (enero)
+        var facturasMesFacturacionStreaming = _context.Facturas
+            .Where(f => f.Categoria == SD.CategoriaStreaming && 
+                       f.MesFacturacion.Year == mesFacturacion.Year && 
+                       f.MesFacturacion.Month == mesFacturacion.Month)
+            .ToList();
+        
+        var facturasMesActualStreaming = facturasMesFacturacionStreaming.Count;
+        var facturasPagadasMesActualStreaming = facturasMesFacturacionStreaming
+            .Count(f => f.Estado == SD.EstadoFacturaPagada);
+        var facturasPendientesMesActualStreaming = facturasMesFacturacionStreaming
+            .Count(f => f.Estado == SD.EstadoFacturaPendiente);
 
         // Estadísticas generales (consultas optimizadas)
         var pagosPendientes = _facturaService.CalcularTotalPendiente();
@@ -375,6 +391,7 @@ public class HomeController : Controller
             FacturasMesActual = facturasMesActual,
             PagosMesActual = pagosMesActual.Count,
             MesActualTexto = mesActualTexto,
+            MesFacturacionTexto = mesFacturacionTexto,
             
             // Estadísticas generales
             PagosPendientes = pagosPendientes,
