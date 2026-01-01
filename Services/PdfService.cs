@@ -272,188 +272,298 @@ public class PdfService : IPdfService
                     });
             });
 
-            // Segunda página - Publicidad de Servicios de Sistemas (Streaming) - Diseño Creativo y Compacto
+            // Segunda página - Publicidad de Servicios de Sistemas (Streaming) - Diseño Creativo y Relevante
             container.Page(page =>
             {
                 page.Size(PageSizes.A4);
-                page.Margin(0.6f, Unit.Centimetre);
+                page.Margin(0.8f, Unit.Centimetre);
                 page.PageColor(Colors.White);
-                page.DefaultTextStyle(x => x.FontSize(8));
+                page.DefaultTextStyle(x => x.FontSize(9));
 
                 page.Content()
                     .Column(column =>
                     {
-                        // Header con diseño moderno
+                        // Header llamativo
                         column.Item()
                             .Background(Colors.Blue.Darken4)
-                            .Padding(10)
+                            .Padding(12)
                             .Column(headerColumn =>
                             {
                                 headerColumn.Item()
                                     .AlignCenter()
-                                    .Text("¿CANSADO DE LLEVAR TODO A MANO?")
-                                    .FontSize(15)
+                                    .Text("💰 ¿TU NEGOCIO ESTÁ PERDIENDO DINERO? 💰")
+                                    .FontSize(16)
                                     .Bold()
                                     .FontColor(Colors.White);
                                 
-                                headerColumn.Item().PaddingTop(2)
+                                headerColumn.Item().PaddingTop(4)
                                     .AlignCenter()
-                                    .Text("Sistemas Personalizados a la Medida de tu Negocio")
-                                    .FontSize(8)
+                                    .Text("Deja de perder facturas, clientes y ganancias")
+                                    .FontSize(10)
                                     .Bold()
                                     .FontColor(Colors.White);
                             });
 
-                        // Beneficios en diseño compacto con colores vibrantes
-                        column.Item().PaddingTop(5)
-                            .Column(beneficiosColumn =>
+                        // Problemas comunes que resuelve
+                        column.Item().PaddingTop(8)
+                            .Column(problemasColumn =>
                             {
-                                beneficiosColumn.Item()
+                                problemasColumn.Item()
                                     .AlignCenter()
-                                    .Background(Colors.Grey.Lighten2)
-                                    .PaddingVertical(4)
-                                    .Text("TRANSFORMA TU NEGOCIO CON TECNOLOGÍA")
-                                    .FontSize(8)
+                                    .Background(Colors.Red.Lighten4)
+                                    .PaddingVertical(6)
+                                    .PaddingHorizontal(5)
+                                    .Text("⚠️ PROBLEMAS QUE RESOLVEMOS:")
+                                    .FontSize(10)
                                     .Bold()
-                                    .FontColor(Colors.Blue.Darken4);
+                                    .FontColor(Colors.Red.Darken4);
                                 
-                                // Grid 2x3 compacto
-                                beneficiosColumn.Item().PaddingTop(4)
+                                problemasColumn.Item().PaddingTop(5)
                                     .Row(row =>
                                     {
                                         row.RelativeItem()
                                             .Column(leftCol =>
                                             {
                                                 leftCol.Item()
-                                                    .Background(Colors.Blue.Lighten4)
-                                                    .Padding(4)
-                                                    .Text(">> Automatiza y ahorra tiempo")
-                                                    .FontSize(7)
+                                                    .Background(Colors.White)
+                                                    .Border(1)
+                                                    .BorderColor(Colors.Red.Lighten2)
+                                                    .Padding(6)
+                                                    .Text("📄 Pierdes facturas o no las encuentras")
+                                                    .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Blue.Darken4);
+                                                    .FontColor(Colors.Grey.Darken3);
                                                 
-                                                leftCol.Item().PaddingTop(2)
-                                                    .Background(Colors.Green.Lighten4)
-                                                    .Padding(4)
-                                                    .Text(">> Control total centralizado")
-                                                    .FontSize(7)
+                                                leftCol.Item().PaddingTop(3)
+                                                    .Background(Colors.White)
+                                                    .Border(1)
+                                                    .BorderColor(Colors.Red.Lighten2)
+                                                    .Padding(6)
+                                                    .Text("💸 No sabes quién te debe dinero")
+                                                    .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Green.Darken4);
+                                                    .FontColor(Colors.Grey.Darken3);
                                                 
-                                                leftCol.Item().PaddingTop(2)
-                                                    .Background(Colors.Orange.Lighten4)
-                                                    .Padding(4)
-                                                    .Text(">> Soporte técnico continuo")
-                                                    .FontSize(7)
+                                                leftCol.Item().PaddingTop(3)
+                                                    .Background(Colors.White)
+                                                    .Border(1)
+                                                    .BorderColor(Colors.Red.Lighten2)
+                                                    .Padding(6)
+                                                    .Text("📝 Llevas todo en cuadernos o Excel")
+                                                    .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Orange.Darken4);
+                                                    .FontColor(Colors.Grey.Darken3);
                                             });
                                         
-                                        row.ConstantItem(4);
+                                        row.ConstantItem(5);
                                         
                                         row.RelativeItem()
                                             .Column(rightCol =>
                                             {
                                                 rightCol.Item()
-                                                    .Background(Colors.Purple.Lighten4)
-                                                    .Padding(4)
-                                                    .Text(">> Soluciones personalizadas")
-                                                    .FontSize(7)
+                                                    .Background(Colors.White)
+                                                    .Border(1)
+                                                    .BorderColor(Colors.Red.Lighten2)
+                                                    .Padding(6)
+                                                    .Text("📊 No sabes cuánto estás ganando")
+                                                    .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Purple.Darken4);
+                                                    .FontColor(Colors.Grey.Darken3);
                                                 
-                                                rightCol.Item().PaddingTop(2)
-                                                    .Background(Colors.Red.Lighten4)
-                                                    .Padding(4)
-                                                    .Text(">> Reportes en tiempo real")
-                                                    .FontSize(7)
+                                                rightCol.Item().PaddingTop(3)
+                                                    .Background(Colors.White)
+                                                    .Border(1)
+                                                    .BorderColor(Colors.Red.Lighten2)
+                                                    .Padding(6)
+                                                    .Text("📦 No controlas tu inventario")
+                                                    .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Red.Darken4);
+                                                    .FontColor(Colors.Grey.Darken3);
+                                                
+                                                rightCol.Item().PaddingTop(3)
+                                                    .Background(Colors.White)
+                                                    .Border(1)
+                                                    .BorderColor(Colors.Red.Lighten2)
+                                                    .Padding(6)
+                                                    .Text("⏰ Pierdes tiempo buscando información")
+                                                    .FontSize(8)
+                                                    .Bold()
+                                                    .FontColor(Colors.Grey.Darken3);
                                             });
                                     });
                             });
 
-                        // Contacto compacto
-                        column.Item().PaddingTop(5)
-                            .Background(Colors.Green.Darken3)
-                            .Padding(7)
+                        // Solución
+                        column.Item().PaddingTop(8)
+                            .Column(solucionColumn =>
+                            {
+                                solucionColumn.Item()
+                                    .AlignCenter()
+                                    .Background(Colors.Green.Darken3)
+                                    .PaddingVertical(6)
+                                    .PaddingHorizontal(5)
+                                    .Text("✅ NUESTRA SOLUCIÓN:")
+                                    .FontSize(11)
+                                    .Bold()
+                                    .FontColor(Colors.White);
+                                
+                                solucionColumn.Item().PaddingTop(5)
+                                    .Background(Colors.Green.Lighten5)
+                                    .Padding(8)
+                                    .Column(descripcionColumn =>
+                                    {
+                                        descripcionColumn.Item()
+                                            .AlignCenter()
+                                            .Text("💻 Sistema de Gestión Personalizado para tu Negocio")
+                                            .FontSize(10)
+                                            .Bold()
+                                            .FontColor(Colors.Green.Darken4);
+                                        
+                                        descripcionColumn.Item().PaddingTop(5)
+                                            .Row(row =>
+                                            {
+                                                row.RelativeItem()
+                                                    .Column(leftCol =>
+                                                    {
+                                                        leftCol.Item()
+                                                            .Background(Colors.White)
+                                                            .Padding(5)
+                                                            .Text("✅ Controla facturas y pagos")
+                                                            .FontSize(8)
+                                                            .Bold()
+                                                            .FontColor(Colors.Green.Darken4);
+                                                        
+                                                        leftCol.Item().PaddingTop(3)
+                                                            .Background(Colors.White)
+                                                            .Padding(5)
+                                                            .Text("✅ Sabes quién debe y cuánto")
+                                                            .FontSize(8)
+                                                            .Bold()
+                                                            .FontColor(Colors.Green.Darken4);
+                                                        
+                                                        leftCol.Item().PaddingTop(3)
+                                                            .Background(Colors.White)
+                                                            .Padding(5)
+                                                            .Text("✅ Reportes de ganancias claros")
+                                                            .FontSize(8)
+                                                            .Bold()
+                                                            .FontColor(Colors.Green.Darken4);
+                                                    });
+                                                
+                                                row.ConstantItem(5);
+                                        
+                                                row.RelativeItem()
+                                                    .Column(rightCol =>
+                                                    {
+                                                        rightCol.Item()
+                                                            .Background(Colors.White)
+                                                            .Padding(5)
+                                                            .Text("✅ Control de inventario fácil")
+                                                            .FontSize(8)
+                                                            .Bold()
+                                                            .FontColor(Colors.Green.Darken4);
+                                                        
+                                                        rightCol.Item().PaddingTop(3)
+                                                            .Background(Colors.White)
+                                                            .Padding(5)
+                                                            .Text("✅ Todo en un solo lugar")
+                                                            .FontSize(8)
+                                                            .Bold()
+                                                            .FontColor(Colors.Green.Darken4);
+                                                        
+                                                        rightCol.Item().PaddingTop(3)
+                                                            .Background(Colors.White)
+                                                            .Padding(5)
+                                                            .Text("✅ Fácil de usar, sin complicaciones")
+                                                            .FontSize(8)
+                                                            .Bold()
+                                                            .FontColor(Colors.Green.Darken4);
+                                                    });
+                                            });
+                                    });
+                            });
+
+                        // Contacto destacado
+                        column.Item().PaddingTop(8)
+                            .Background(Colors.Orange.Darken3)
+                            .Padding(10)
                             .Column(contactoColumn =>
                             {
                                 contactoColumn.Item()
                                     .AlignCenter()
-                                    .Text("CONTÁCTANOS PARA UNA CONSULTA GRATUITA")
-                                    .FontSize(8)
+                                    .Text("📞 ¡LLÁMANOS HOY Y EMPIEZA A GANAR MÁS! 📞")
+                                    .FontSize(10)
                                     .Bold()
                                     .FontColor(Colors.White);
                                 
-                                contactoColumn.Item().PaddingTop(4)
+                                contactoColumn.Item().PaddingTop(6)
                                     .Row(row =>
                                     {
                                         row.RelativeItem()
                                             .Background(Colors.White)
-                                            .Padding(4)
+                                            .Padding(6)
                                             .Column(whatsappColumn =>
                                             {
                                                 whatsappColumn.Item()
                                                     .AlignCenter()
-                                                    .Text("WhatsApp")
-                                                    .FontSize(7)
+                                                    .Text("💬 WhatsApp")
+                                                    .FontSize(8)
                                                     .Bold()
                                                     .FontColor(Colors.Green.Darken4);
                                                 
-                                                whatsappColumn.Item().PaddingTop(1)
+                                                whatsappColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
                                                     .Hyperlink("https://wa.me/50581539569")
                                                     .Text("+505 81539569")
-                                                    .FontSize(8)
+                                                    .FontSize(9)
                                                     .Bold()
                                                     .FontColor(Colors.Green.Darken3)
                                                     .Underline();
                                             });
                                         
-                                        row.ConstantItem(3);
+                                        row.ConstantItem(4);
                                         
                                         row.RelativeItem()
                                             .Background(Colors.White)
-                                            .Padding(4)
+                                            .Padding(6)
                                             .Column(telefonoColumn =>
                                             {
                                                 telefonoColumn.Item()
                                                     .AlignCenter()
-                                                    .Text("Claro")
-                                                    .FontSize(7)
+                                                    .Text("📱 Teléfono Claro")
+                                                    .FontSize(8)
                                                     .Bold()
                                                     .FontColor(Colors.Blue.Darken4);
                                                 
-                                                telefonoColumn.Item().PaddingTop(1)
+                                                telefonoColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
                                                     .Hyperlink("tel:+50582310100")
                                                     .Text("82310100")
-                                                    .FontSize(8)
+                                                    .FontSize(9)
                                                     .Bold()
                                                     .FontColor(Colors.Blue.Darken3)
                                                     .Underline();
                                             });
                                         
-                                        row.ConstantItem(3);
+                                        row.ConstantItem(4);
                                         
                                         row.RelativeItem()
                                             .Background(Colors.White)
-                                            .Padding(4)
+                                            .Padding(6)
                                             .Column(emailColumn =>
                                             {
                                                 emailColumn.Item()
                                                     .AlignCenter()
-                                                    .Text("Email")
-                                                    .FontSize(7)
+                                                    .Text("📧 Email")
+                                                    .FontSize(8)
                                                     .Bold()
                                                     .FontColor(Colors.Orange.Darken4);
                                                 
-                                                emailColumn.Item().PaddingTop(1)
+                                                emailColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
                                                     .Hyperlink("mailto:wisofer17@gmail.com")
                                                     .Text("wisofer17@gmail.com")
-                                                    .FontSize(6)
+                                                    .FontSize(7)
                                                     .Bold()
                                                     .FontColor(Colors.Orange.Darken3)
                                                     .Underline();
@@ -893,18 +1003,18 @@ public class PdfService : IPdfService
                     });
             });
 
-            // Segunda página - Publicidad de Servicios de Sistemas (Internet) - Diseño Creativo y Compacto
+            // Segunda página - Publicidad de Servicios de Sistemas (Internet) - Diseño Creativo y Relevante
             container.Page(page =>
             {
                 page.Size(PageSizes.A4);
-                page.Margin(0.7f, Unit.Centimetre);
+                page.Margin(0.8f, Unit.Centimetre);
                 page.PageColor(Colors.White);
-                page.DefaultTextStyle(x => x.FontSize(8));
+                page.DefaultTextStyle(x => x.FontSize(9));
 
                 page.Content()
                     .Column(column =>
                     {
-                        // Header con fondo degradado y diseño moderno
+                        // Header llamativo
                         column.Item()
                             .Background(Colors.Blue.Darken4)
                             .Padding(12)
@@ -912,62 +1022,68 @@ public class PdfService : IPdfService
                             {
                                 headerColumn.Item()
                                     .AlignCenter()
-                                    .Text("¿CANSADO DE LLEVAR TODO A MANO?")
+                                    .Text("💰 ¿TU NEGOCIO ESTÁ PERDIENDO DINERO? 💰")
                                     .FontSize(16)
                                     .Bold()
                                     .FontColor(Colors.White);
                                 
-                                headerColumn.Item().PaddingTop(3)
+                                headerColumn.Item().PaddingTop(4)
                                     .AlignCenter()
-                                    .Text("Sistemas Personalizados a la Medida de tu Negocio")
-                                    .FontSize(9)
+                                    .Text("Deja de perder facturas, clientes y ganancias")
+                                    .FontSize(10)
                                     .Bold()
                                     .FontColor(Colors.White);
                             });
 
-                        // Beneficios en diseño tipo banner con colores vibrantes
-                        column.Item().PaddingTop(6)
-                            .Column(beneficiosColumn =>
+                        // Problemas comunes que resuelve
+                        column.Item().PaddingTop(8)
+                            .Column(problemasColumn =>
                             {
-                                beneficiosColumn.Item()
+                                problemasColumn.Item()
                                     .AlignCenter()
-                                    .Background(Colors.Grey.Lighten2)
-                                    .PaddingVertical(5)
-                                    .Text("TRANSFORMA TU NEGOCIO CON TECNOLOGÍA")
-                                    .FontSize(9)
+                                    .Background(Colors.Red.Lighten4)
+                                    .PaddingVertical(6)
+                                    .PaddingHorizontal(5)
+                                    .Text("⚠️ PROBLEMAS QUE RESOLVEMOS:")
+                                    .FontSize(10)
                                     .Bold()
-                                    .FontColor(Colors.Blue.Darken4);
+                                    .FontColor(Colors.Red.Darken4);
                                 
-                                // Grid compacto 2 columnas
-                                beneficiosColumn.Item().PaddingTop(5)
+                                problemasColumn.Item().PaddingTop(5)
                                     .Row(row =>
                                     {
                                         row.RelativeItem()
                                             .Column(leftCol =>
                                             {
                                                 leftCol.Item()
-                                                    .Background(Colors.Blue.Lighten4)
-                                                    .Padding(5)
-                                                    .Text(">> Automatiza y ahorra tiempo")
-                                                    .FontSize(7)
+                                                    .Background(Colors.White)
+                                                    .Border(1)
+                                                    .BorderColor(Colors.Red.Lighten2)
+                                                    .Padding(6)
+                                                    .Text("📄 Pierdes facturas o no las encuentras")
+                                                    .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Blue.Darken4);
+                                                    .FontColor(Colors.Grey.Darken3);
                                                 
                                                 leftCol.Item().PaddingTop(3)
-                                                    .Background(Colors.Green.Lighten4)
-                                                    .Padding(5)
-                                                    .Text(">> Control total centralizado")
-                                                    .FontSize(7)
+                                                    .Background(Colors.White)
+                                                    .Border(1)
+                                                    .BorderColor(Colors.Red.Lighten2)
+                                                    .Padding(6)
+                                                    .Text("💸 No sabes quién te debe dinero")
+                                                    .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Green.Darken4);
+                                                    .FontColor(Colors.Grey.Darken3);
                                                 
                                                 leftCol.Item().PaddingTop(3)
-                                                    .Background(Colors.Orange.Lighten4)
-                                                    .Padding(5)
-                                                    .Text(">> Soporte técnico continuo")
-                                                    .FontSize(7)
+                                                    .Background(Colors.White)
+                                                    .Border(1)
+                                                    .BorderColor(Colors.Red.Lighten2)
+                                                    .Padding(6)
+                                                    .Text("📝 Llevas todo en cuadernos o Excel")
+                                                    .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Orange.Darken4);
+                                                    .FontColor(Colors.Grey.Darken3);
                                             });
                                         
                                         row.ConstantItem(5);
@@ -976,57 +1092,161 @@ public class PdfService : IPdfService
                                             .Column(rightCol =>
                                             {
                                                 rightCol.Item()
-                                                    .Background(Colors.Purple.Lighten4)
-                                                    .Padding(5)
-                                                    .Text(">> Soluciones personalizadas")
-                                                    .FontSize(7)
+                                                    .Background(Colors.White)
+                                                    .Border(1)
+                                                    .BorderColor(Colors.Red.Lighten2)
+                                                    .Padding(6)
+                                                    .Text("📊 No sabes cuánto estás ganando")
+                                                    .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Purple.Darken4);
+                                                    .FontColor(Colors.Grey.Darken3);
                                                 
                                                 rightCol.Item().PaddingTop(3)
-                                                    .Background(Colors.Red.Lighten4)
-                                                    .Padding(5)
-                                                    .Text(">> Reportes en tiempo real")
-                                                    .FontSize(7)
+                                                    .Background(Colors.White)
+                                                    .Border(1)
+                                                    .BorderColor(Colors.Red.Lighten2)
+                                                    .Padding(6)
+                                                    .Text("📦 No controlas tu inventario")
+                                                    .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Red.Darken4);
+                                                    .FontColor(Colors.Grey.Darken3);
+                                                
+                                                rightCol.Item().PaddingTop(3)
+                                                    .Background(Colors.White)
+                                                    .Border(1)
+                                                    .BorderColor(Colors.Red.Lighten2)
+                                                    .Padding(6)
+                                                    .Text("⏰ Pierdes tiempo buscando información")
+                                                    .FontSize(8)
+                                                    .Bold()
+                                                    .FontColor(Colors.Grey.Darken3);
                                             });
                                     });
                             });
 
-                        // Contacto en diseño horizontal compacto
-                        column.Item().PaddingTop(6)
-                            .Background(Colors.Green.Darken3)
-                            .Padding(8)
+                        // Solución
+                        column.Item().PaddingTop(8)
+                            .Column(solucionColumn =>
+                            {
+                                solucionColumn.Item()
+                                    .AlignCenter()
+                                    .Background(Colors.Green.Darken3)
+                                    .PaddingVertical(6)
+                                    .PaddingHorizontal(5)
+                                    .Text("✅ NUESTRA SOLUCIÓN:")
+                                    .FontSize(11)
+                                    .Bold()
+                                    .FontColor(Colors.White);
+                                
+                                solucionColumn.Item().PaddingTop(5)
+                                    .Background(Colors.Green.Lighten5)
+                                    .Padding(8)
+                                    .Column(descripcionColumn =>
+                                    {
+                                        descripcionColumn.Item()
+                                            .AlignCenter()
+                                            .Text("💻 Sistema de Gestión Personalizado para tu Negocio")
+                                            .FontSize(10)
+                                            .Bold()
+                                            .FontColor(Colors.Green.Darken4);
+                                        
+                                        descripcionColumn.Item().PaddingTop(5)
+                                            .Row(row =>
+                                            {
+                                                row.RelativeItem()
+                                                    .Column(leftCol =>
+                                                    {
+                                                        leftCol.Item()
+                                                            .Background(Colors.White)
+                                                            .Padding(5)
+                                                            .Text("✅ Controla facturas y pagos")
+                                                            .FontSize(8)
+                                                            .Bold()
+                                                            .FontColor(Colors.Green.Darken4);
+                                                        
+                                                        leftCol.Item().PaddingTop(3)
+                                                            .Background(Colors.White)
+                                                            .Padding(5)
+                                                            .Text("✅ Sabes quién debe y cuánto")
+                                                            .FontSize(8)
+                                                            .Bold()
+                                                            .FontColor(Colors.Green.Darken4);
+                                                        
+                                                        leftCol.Item().PaddingTop(3)
+                                                            .Background(Colors.White)
+                                                            .Padding(5)
+                                                            .Text("✅ Reportes de ganancias claros")
+                                                            .FontSize(8)
+                                                            .Bold()
+                                                            .FontColor(Colors.Green.Darken4);
+                                                    });
+                                                
+                                                row.ConstantItem(5);
+                                        
+                                                row.RelativeItem()
+                                                    .Column(rightCol =>
+                                                    {
+                                                        rightCol.Item()
+                                                            .Background(Colors.White)
+                                                            .Padding(5)
+                                                            .Text("✅ Control de inventario fácil")
+                                                            .FontSize(8)
+                                                            .Bold()
+                                                            .FontColor(Colors.Green.Darken4);
+                                                        
+                                                        rightCol.Item().PaddingTop(3)
+                                                            .Background(Colors.White)
+                                                            .Padding(5)
+                                                            .Text("✅ Todo en un solo lugar")
+                                                            .FontSize(8)
+                                                            .Bold()
+                                                            .FontColor(Colors.Green.Darken4);
+                                                        
+                                                        rightCol.Item().PaddingTop(3)
+                                                            .Background(Colors.White)
+                                                            .Padding(5)
+                                                            .Text("✅ Fácil de usar, sin complicaciones")
+                                                            .FontSize(8)
+                                                            .Bold()
+                                                            .FontColor(Colors.Green.Darken4);
+                                                    });
+                                            });
+                                    });
+                            });
+
+                        // Contacto destacado
+                        column.Item().PaddingTop(8)
+                            .Background(Colors.Orange.Darken3)
+                            .Padding(10)
                             .Column(contactoColumn =>
                             {
                                 contactoColumn.Item()
                                     .AlignCenter()
-                                    .Text("CONTÁCTANOS PARA UNA CONSULTA GRATUITA")
-                                    .FontSize(9)
+                                    .Text("📞 ¡LLÁMANOS HOY Y EMPIEZA A GANAR MÁS! 📞")
+                                    .FontSize(10)
                                     .Bold()
                                     .FontColor(Colors.White);
                                 
-                                contactoColumn.Item().PaddingTop(5)
+                                contactoColumn.Item().PaddingTop(6)
                                     .Row(row =>
                                     {
                                         row.RelativeItem()
                                             .Background(Colors.White)
-                                            .Padding(5)
+                                            .Padding(6)
                                             .Column(whatsappColumn =>
                                             {
                                                 whatsappColumn.Item()
                                                     .AlignCenter()
-                                                    .Text("WhatsApp")
-                                                    .FontSize(7)
+                                                    .Text("💬 WhatsApp")
+                                                    .FontSize(8)
                                                     .Bold()
                                                     .FontColor(Colors.Green.Darken4);
                                                 
-                                                whatsappColumn.Item().PaddingTop(1)
+                                                whatsappColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
                                                     .Hyperlink("https://wa.me/50581539569")
                                                     .Text("+505 81539569")
-                                                    .FontSize(8)
+                                                    .FontSize(9)
                                                     .Bold()
                                                     .FontColor(Colors.Green.Darken3)
                                                     .Underline();
@@ -1036,21 +1256,21 @@ public class PdfService : IPdfService
                                         
                                         row.RelativeItem()
                                             .Background(Colors.White)
-                                            .Padding(5)
+                                            .Padding(6)
                                             .Column(telefonoColumn =>
                                             {
                                                 telefonoColumn.Item()
                                                     .AlignCenter()
-                                                    .Text("Claro")
-                                                    .FontSize(7)
+                                                    .Text("📱 Teléfono Claro")
+                                                    .FontSize(8)
                                                     .Bold()
                                                     .FontColor(Colors.Blue.Darken4);
                                                 
-                                                telefonoColumn.Item().PaddingTop(1)
+                                                telefonoColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
                                                     .Hyperlink("tel:+50582310100")
                                                     .Text("82310100")
-                                                    .FontSize(8)
+                                                    .FontSize(9)
                                                     .Bold()
                                                     .FontColor(Colors.Blue.Darken3)
                                                     .Underline();
@@ -1060,21 +1280,21 @@ public class PdfService : IPdfService
                                         
                                         row.RelativeItem()
                                             .Background(Colors.White)
-                                            .Padding(5)
+                                            .Padding(6)
                                             .Column(emailColumn =>
                                             {
                                                 emailColumn.Item()
                                                     .AlignCenter()
-                                                    .Text("Email")
-                                                    .FontSize(7)
+                                                    .Text("📧 Email")
+                                                    .FontSize(8)
                                                     .Bold()
                                                     .FontColor(Colors.Orange.Darken4);
                                                 
-                                                emailColumn.Item().PaddingTop(1)
+                                                emailColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
                                                     .Hyperlink("mailto:wisofer17@gmail.com")
                                                     .Text("wisofer17@gmail.com")
-                                                    .FontSize(6)
+                                                    .FontSize(7)
                                                     .Bold()
                                                     .FontColor(Colors.Orange.Darken3)
                                                     .Underline();
