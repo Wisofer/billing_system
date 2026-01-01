@@ -271,6 +271,197 @@ public class PdfService : IPdfService
                         x.Span($"Generado el {DateTime.Now:dd/MM/yyyy HH:mm}").FontSize(7).FontColor(Colors.Grey.Medium);
                     });
             });
+
+            // Segunda página - Publicidad de Servicios de Sistemas (Streaming) - Diseño Creativo y Compacto
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(0.6f, Unit.Centimetre);
+                page.PageColor(Colors.White);
+                page.DefaultTextStyle(x => x.FontSize(8));
+
+                page.Content()
+                    .Column(column =>
+                    {
+                        // Header con diseño moderno
+                        column.Item()
+                            .Background(Colors.Blue.Darken4)
+                            .Padding(10)
+                            .Column(headerColumn =>
+                            {
+                                headerColumn.Item()
+                                    .AlignCenter()
+                                    .Text("¿CANSADO DE LLEVAR TODO A MANO?")
+                                    .FontSize(15)
+                                    .Bold()
+                                    .FontColor(Colors.White);
+                                
+                                headerColumn.Item().PaddingTop(2)
+                                    .AlignCenter()
+                                    .Text("Sistemas Personalizados a la Medida de tu Negocio")
+                                    .FontSize(8)
+                                    .Bold()
+                                    .FontColor(Colors.White);
+                            });
+
+                        // Beneficios en diseño compacto con colores vibrantes
+                        column.Item().PaddingTop(5)
+                            .Column(beneficiosColumn =>
+                            {
+                                beneficiosColumn.Item()
+                                    .AlignCenter()
+                                    .Background(Colors.Grey.Lighten2)
+                                    .PaddingVertical(4)
+                                    .Text("TRANSFORMA TU NEGOCIO CON TECNOLOGÍA")
+                                    .FontSize(8)
+                                    .Bold()
+                                    .FontColor(Colors.Blue.Darken4);
+                                
+                                // Grid 2x3 compacto
+                                beneficiosColumn.Item().PaddingTop(4)
+                                    .Row(row =>
+                                    {
+                                        row.RelativeItem()
+                                            .Column(leftCol =>
+                                            {
+                                                leftCol.Item()
+                                                    .Background(Colors.Blue.Lighten4)
+                                                    .Padding(4)
+                                                    .Text(">> Automatiza y ahorra tiempo")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Blue.Darken4);
+                                                
+                                                leftCol.Item().PaddingTop(2)
+                                                    .Background(Colors.Green.Lighten4)
+                                                    .Padding(4)
+                                                    .Text(">> Control total centralizado")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Green.Darken4);
+                                                
+                                                leftCol.Item().PaddingTop(2)
+                                                    .Background(Colors.Orange.Lighten4)
+                                                    .Padding(4)
+                                                    .Text(">> Soporte técnico continuo")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Orange.Darken4);
+                                            });
+                                        
+                                        row.ConstantItem(4);
+                                        
+                                        row.RelativeItem()
+                                            .Column(rightCol =>
+                                            {
+                                                rightCol.Item()
+                                                    .Background(Colors.Purple.Lighten4)
+                                                    .Padding(4)
+                                                    .Text(">> Soluciones personalizadas")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Purple.Darken4);
+                                                
+                                                rightCol.Item().PaddingTop(2)
+                                                    .Background(Colors.Red.Lighten4)
+                                                    .Padding(4)
+                                                    .Text(">> Reportes en tiempo real")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Red.Darken4);
+                                            });
+                                    });
+                            });
+
+                        // Contacto compacto
+                        column.Item().PaddingTop(5)
+                            .Background(Colors.Green.Darken3)
+                            .Padding(7)
+                            .Column(contactoColumn =>
+                            {
+                                contactoColumn.Item()
+                                    .AlignCenter()
+                                    .Text("CONTÁCTANOS PARA UNA CONSULTA GRATUITA")
+                                    .FontSize(8)
+                                    .Bold()
+                                    .FontColor(Colors.White);
+                                
+                                contactoColumn.Item().PaddingTop(4)
+                                    .Row(row =>
+                                    {
+                                        row.RelativeItem()
+                                            .Background(Colors.White)
+                                            .Padding(4)
+                                            .Column(whatsappColumn =>
+                                            {
+                                                whatsappColumn.Item()
+                                                    .AlignCenter()
+                                                    .Text("WhatsApp")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Green.Darken4);
+                                                
+                                                whatsappColumn.Item().PaddingTop(1)
+                                                    .AlignCenter()
+                                                    .Hyperlink("https://wa.me/50581539569")
+                                                    .Text("+505 81539569")
+                                                    .FontSize(8)
+                                                    .Bold()
+                                                    .FontColor(Colors.Green.Darken3)
+                                                    .Underline();
+                                            });
+                                        
+                                        row.ConstantItem(3);
+                                        
+                                        row.RelativeItem()
+                                            .Background(Colors.White)
+                                            .Padding(4)
+                                            .Column(telefonoColumn =>
+                                            {
+                                                telefonoColumn.Item()
+                                                    .AlignCenter()
+                                                    .Text("Claro")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Blue.Darken4);
+                                                
+                                                telefonoColumn.Item().PaddingTop(1)
+                                                    .AlignCenter()
+                                                    .Hyperlink("tel:+50582310100")
+                                                    .Text("82310100")
+                                                    .FontSize(8)
+                                                    .Bold()
+                                                    .FontColor(Colors.Blue.Darken3)
+                                                    .Underline();
+                                            });
+                                        
+                                        row.ConstantItem(3);
+                                        
+                                        row.RelativeItem()
+                                            .Background(Colors.White)
+                                            .Padding(4)
+                                            .Column(emailColumn =>
+                                            {
+                                                emailColumn.Item()
+                                                    .AlignCenter()
+                                                    .Text("Email")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Orange.Darken4);
+                                                
+                                                emailColumn.Item().PaddingTop(1)
+                                                    .AlignCenter()
+                                                    .Hyperlink("mailto:wisofer17@gmail.com")
+                                                    .Text("wisofer17@gmail.com")
+                                                    .FontSize(6)
+                                                    .Bold()
+                                                    .FontColor(Colors.Orange.Darken3)
+                                                    .Underline();
+                                            });
+                                    });
+                            });
+                    });
+            });
         });
 
         return documento.GeneratePdf();
@@ -699,6 +890,197 @@ public class PdfService : IPdfService
                     {
                         x.Span("Sistema de Facturación Servicio De Internet - ").FontSize(7).FontColor(Colors.Grey.Medium);
                         x.Span($"Generado el {DateTime.Now:dd/MM/yyyy HH:mm}").FontSize(7).FontColor(Colors.Grey.Medium);
+                    });
+            });
+
+            // Segunda página - Publicidad de Servicios de Sistemas (Internet) - Diseño Creativo y Compacto
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(0.7f, Unit.Centimetre);
+                page.PageColor(Colors.White);
+                page.DefaultTextStyle(x => x.FontSize(8));
+
+                page.Content()
+                    .Column(column =>
+                    {
+                        // Header con fondo degradado y diseño moderno
+                        column.Item()
+                            .Background(Colors.Blue.Darken4)
+                            .Padding(12)
+                            .Column(headerColumn =>
+                            {
+                                headerColumn.Item()
+                                    .AlignCenter()
+                                    .Text("¿CANSADO DE LLEVAR TODO A MANO?")
+                                    .FontSize(16)
+                                    .Bold()
+                                    .FontColor(Colors.White);
+                                
+                                headerColumn.Item().PaddingTop(3)
+                                    .AlignCenter()
+                                    .Text("Sistemas Personalizados a la Medida de tu Negocio")
+                                    .FontSize(9)
+                                    .Bold()
+                                    .FontColor(Colors.White);
+                            });
+
+                        // Beneficios en diseño tipo banner con colores vibrantes
+                        column.Item().PaddingTop(6)
+                            .Column(beneficiosColumn =>
+                            {
+                                beneficiosColumn.Item()
+                                    .AlignCenter()
+                                    .Background(Colors.Grey.Lighten2)
+                                    .PaddingVertical(5)
+                                    .Text("TRANSFORMA TU NEGOCIO CON TECNOLOGÍA")
+                                    .FontSize(9)
+                                    .Bold()
+                                    .FontColor(Colors.Blue.Darken4);
+                                
+                                // Grid compacto 2 columnas
+                                beneficiosColumn.Item().PaddingTop(5)
+                                    .Row(row =>
+                                    {
+                                        row.RelativeItem()
+                                            .Column(leftCol =>
+                                            {
+                                                leftCol.Item()
+                                                    .Background(Colors.Blue.Lighten4)
+                                                    .Padding(5)
+                                                    .Text(">> Automatiza y ahorra tiempo")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Blue.Darken4);
+                                                
+                                                leftCol.Item().PaddingTop(3)
+                                                    .Background(Colors.Green.Lighten4)
+                                                    .Padding(5)
+                                                    .Text(">> Control total centralizado")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Green.Darken4);
+                                                
+                                                leftCol.Item().PaddingTop(3)
+                                                    .Background(Colors.Orange.Lighten4)
+                                                    .Padding(5)
+                                                    .Text(">> Soporte técnico continuo")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Orange.Darken4);
+                                            });
+                                        
+                                        row.ConstantItem(5);
+                                        
+                                        row.RelativeItem()
+                                            .Column(rightCol =>
+                                            {
+                                                rightCol.Item()
+                                                    .Background(Colors.Purple.Lighten4)
+                                                    .Padding(5)
+                                                    .Text(">> Soluciones personalizadas")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Purple.Darken4);
+                                                
+                                                rightCol.Item().PaddingTop(3)
+                                                    .Background(Colors.Red.Lighten4)
+                                                    .Padding(5)
+                                                    .Text(">> Reportes en tiempo real")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Red.Darken4);
+                                            });
+                                    });
+                            });
+
+                        // Contacto en diseño horizontal compacto
+                        column.Item().PaddingTop(6)
+                            .Background(Colors.Green.Darken3)
+                            .Padding(8)
+                            .Column(contactoColumn =>
+                            {
+                                contactoColumn.Item()
+                                    .AlignCenter()
+                                    .Text("CONTÁCTANOS PARA UNA CONSULTA GRATUITA")
+                                    .FontSize(9)
+                                    .Bold()
+                                    .FontColor(Colors.White);
+                                
+                                contactoColumn.Item().PaddingTop(5)
+                                    .Row(row =>
+                                    {
+                                        row.RelativeItem()
+                                            .Background(Colors.White)
+                                            .Padding(5)
+                                            .Column(whatsappColumn =>
+                                            {
+                                                whatsappColumn.Item()
+                                                    .AlignCenter()
+                                                    .Text("WhatsApp")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Green.Darken4);
+                                                
+                                                whatsappColumn.Item().PaddingTop(1)
+                                                    .AlignCenter()
+                                                    .Hyperlink("https://wa.me/50581539569")
+                                                    .Text("+505 81539569")
+                                                    .FontSize(8)
+                                                    .Bold()
+                                                    .FontColor(Colors.Green.Darken3)
+                                                    .Underline();
+                                            });
+                                        
+                                        row.ConstantItem(4);
+                                        
+                                        row.RelativeItem()
+                                            .Background(Colors.White)
+                                            .Padding(5)
+                                            .Column(telefonoColumn =>
+                                            {
+                                                telefonoColumn.Item()
+                                                    .AlignCenter()
+                                                    .Text("Claro")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Blue.Darken4);
+                                                
+                                                telefonoColumn.Item().PaddingTop(1)
+                                                    .AlignCenter()
+                                                    .Hyperlink("tel:+50582310100")
+                                                    .Text("82310100")
+                                                    .FontSize(8)
+                                                    .Bold()
+                                                    .FontColor(Colors.Blue.Darken3)
+                                                    .Underline();
+                                            });
+                                        
+                                        row.ConstantItem(4);
+                                        
+                                        row.RelativeItem()
+                                            .Background(Colors.White)
+                                            .Padding(5)
+                                            .Column(emailColumn =>
+                                            {
+                                                emailColumn.Item()
+                                                    .AlignCenter()
+                                                    .Text("Email")
+                                                    .FontSize(7)
+                                                    .Bold()
+                                                    .FontColor(Colors.Orange.Darken4);
+                                                
+                                                emailColumn.Item().PaddingTop(1)
+                                                    .AlignCenter()
+                                                    .Hyperlink("mailto:wisofer17@gmail.com")
+                                                    .Text("wisofer17@gmail.com")
+                                                    .FontSize(6)
+                                                    .Bold()
+                                                    .FontColor(Colors.Orange.Darken3)
+                                                    .Underline();
+                                            });
+                                    });
+                            });
                     });
             });
         });
