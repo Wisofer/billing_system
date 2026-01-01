@@ -58,6 +58,95 @@ public class HomeController : Controller
         
         var balanceMesActual = ingresosMesActual - egresosMesActual;
 
+        // Ingresos del mes actual - Internet (pagos del mes actual relacionados con facturas de Internet)
+        var pagosMesActualConFacturas = _context.Pagos
+            .Include(p => p.Factura)
+            .Include(p => p.PagoFacturas)
+            .ThenInclude(pf => pf.Factura)
+            .Where(p => p.FechaPago >= primerDiaMes && p.FechaPago <= ultimoDiaMes)
+            .ToList();
+        
+        decimal ingresosMesActualInternet = 0;
+        var facturasConPagosInternet = new HashSet<int>(); // Para evitar duplicados
+        var facturasPagadasEsteMesInternet = new HashSet<int>();
+        
+        foreach (var pago in pagosMesActualConFacturas)
+        {
+            // Procesar factura directa
+            if (pago.Factura != null && pago.Factura.Categoria == SD.CategoriaInternet)
+            {
+                ingresosMesActualInternet += pago.Monto;
+                facturasConPagosInternet.Add(pago.Factura.Id);
+                // Si la factura está pagada, agregarla a la lista
+                if (pago.Factura.Estado == SD.EstadoFacturaPagada)
+                {
+                    facturasPagadasEsteMesInternet.Add(pago.Factura.Id);
+                }
+            }
+            
+            // Procesar facturas a través de PagoFacturas
+            foreach (var pagoFactura in pago.PagoFacturas)
+            {
+                if (pagoFactura.Factura != null && pagoFactura.Factura.Categoria == SD.CategoriaInternet)
+                {
+                    ingresosMesActualInternet += pagoFactura.MontoAplicado;
+                    facturasConPagosInternet.Add(pagoFactura.Factura.Id);
+                    // Si la factura está pagada, agregarla a la lista
+                    if (pagoFactura.Factura.Estado == SD.EstadoFacturaPagada)
+                    {
+                        facturasPagadasEsteMesInternet.Add(pagoFactura.Factura.Id);
+                    }
+                }
+            }
+        }
+
+        // Estadísticas del mes actual por categoría - Internet
+        // Facturas que recibieron pagos este mes
+        var facturasMesActualInternet = facturasConPagosInternet.Count;
+        var facturasPagadasMesActualInternet = facturasPagadasEsteMesInternet.Count;
+        var facturasPendientesMesActualInternet = facturasMesActualInternet - facturasPagadasMesActualInternet;
+
+        // Ingresos del mes actual - Streaming
+        decimal ingresosMesActualStreaming = 0;
+        var facturasConPagosStreaming = new HashSet<int>(); // Para evitar duplicados
+        var facturasPagadasEsteMesStreaming = new HashSet<int>();
+        
+        foreach (var pago in pagosMesActualConFacturas)
+        {
+            // Procesar factura directa
+            if (pago.Factura != null && pago.Factura.Categoria == SD.CategoriaStreaming)
+            {
+                ingresosMesActualStreaming += pago.Monto;
+                facturasConPagosStreaming.Add(pago.Factura.Id);
+                // Si la factura está pagada, agregarla a la lista
+                if (pago.Factura.Estado == SD.EstadoFacturaPagada)
+                {
+                    facturasPagadasEsteMesStreaming.Add(pago.Factura.Id);
+                }
+            }
+            
+            // Procesar facturas a través de PagoFacturas
+            foreach (var pagoFactura in pago.PagoFacturas)
+            {
+                if (pagoFactura.Factura != null && pagoFactura.Factura.Categoria == SD.CategoriaStreaming)
+                {
+                    ingresosMesActualStreaming += pagoFactura.MontoAplicado;
+                    facturasConPagosStreaming.Add(pagoFactura.Factura.Id);
+                    // Si la factura está pagada, agregarla a la lista
+                    if (pagoFactura.Factura.Estado == SD.EstadoFacturaPagada)
+                    {
+                        facturasPagadasEsteMesStreaming.Add(pagoFactura.Factura.Id);
+                    }
+                }
+            }
+        }
+
+        // Estadísticas del mes actual por categoría - Streaming
+        // Facturas que recibieron pagos este mes
+        var facturasMesActualStreaming = facturasConPagosStreaming.Count;
+        var facturasPagadasMesActualStreaming = facturasPagadasEsteMesStreaming.Count;
+        var facturasPendientesMesActualStreaming = facturasMesActualStreaming - facturasPagadasMesActualStreaming;
+
         // Estadísticas generales (consultas optimizadas)
         var pagosPendientes = _facturaService.CalcularTotalPendiente();
         var pagosRealizados = _pagoService.CalcularTotalIngresos();
@@ -297,19 +386,31 @@ public class HomeController : Controller
             TotalPagos = totalPagos,
             TotalClientesActivos = totalClientesActivos,
             
-            // Internet
+            // Internet (históricas)
             IngresosInternet = ingresosInternet,
             PendientesInternet = pendientesInternet,
             FacturasInternet = facturasInternetCount,
             FacturasPagadasInternet = facturasPagadasInternet,
             FacturasPendientesInternet = facturasPendientesInternet,
             
-            // Streaming
+            // Internet (mes actual)
+            IngresosMesActualInternet = ingresosMesActualInternet,
+            FacturasPagadasMesActualInternet = facturasPagadasMesActualInternet,
+            FacturasPendientesMesActualInternet = facturasPendientesMesActualInternet,
+            FacturasMesActualInternet = facturasMesActualInternet,
+            
+            // Streaming (históricas)
             IngresosStreaming = ingresosStreaming,
             PendientesStreaming = pendientesStreaming,
             FacturasStreaming = facturasStreamingCount,
             FacturasPagadasStreaming = facturasPagadasStreaming,
             FacturasPendientesStreaming = facturasPendientesStreaming,
+            
+            // Streaming (mes actual)
+            IngresosMesActualStreaming = ingresosMesActualStreaming,
+            FacturasPagadasMesActualStreaming = facturasPagadasMesActualStreaming,
+            FacturasPendientesMesActualStreaming = facturasPendientesMesActualStreaming,
+            FacturasMesActualStreaming = facturasMesActualStreaming,
             
             // Clientes
             ClientesConInternet = clientesConInternet,

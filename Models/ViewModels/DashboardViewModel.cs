@@ -20,19 +20,31 @@ public class DashboardViewModel
     public int TotalPagos { get; set; }
     public int TotalClientesActivos { get; set; }
     
-    // Estadísticas por categoría - Internet
+    // Estadísticas por categoría - Internet (históricas)
     public decimal IngresosInternet { get; set; }
     public decimal PendientesInternet { get; set; }
     public int FacturasInternet { get; set; }
     public int FacturasPagadasInternet { get; set; }
     public int FacturasPendientesInternet { get; set; }
     
-    // Estadísticas por categoría - Streaming
+    // Estadísticas del mes actual - Internet
+    public decimal IngresosMesActualInternet { get; set; }
+    public int FacturasPagadasMesActualInternet { get; set; }
+    public int FacturasPendientesMesActualInternet { get; set; }
+    public int FacturasMesActualInternet { get; set; }
+    
+    // Estadísticas por categoría - Streaming (históricas)
     public decimal IngresosStreaming { get; set; }
     public decimal PendientesStreaming { get; set; }
     public int FacturasStreaming { get; set; }
     public int FacturasPagadasStreaming { get; set; }
     public int FacturasPendientesStreaming { get; set; }
+    
+    // Estadísticas del mes actual - Streaming
+    public decimal IngresosMesActualStreaming { get; set; }
+    public int FacturasPagadasMesActualStreaming { get; set; }
+    public int FacturasPendientesMesActualStreaming { get; set; }
+    public int FacturasMesActualStreaming { get; set; }
     
     // Estadísticas de clientes
     public int ClientesConInternet { get; set; }

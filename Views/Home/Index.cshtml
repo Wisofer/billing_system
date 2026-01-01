@@ -12,7 +12,7 @@
 </div>
 
 <!-- Tarjetas principales de métricas -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
     <!-- Ingresos Totales -->
     <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 border-2 border-green-200 dark:border-green-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
         <div class="flex items-center justify-between mb-4">
@@ -25,6 +25,20 @@
         </div>
         <p class="text-3xl font-bold text-green-700 dark:text-green-200 mb-2">C$ @Model.PagosRealizados.ToString("N2")</p>
         <p class="text-xs text-green-600 dark:text-green-400 font-medium">Total recibido</p>
+    </div>
+
+    <!-- Ingresos del Mes -->
+    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900 dark:to-emerald-800 border-2 border-emerald-200 dark:border-emerald-700 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">Ingresos del Mes</h3>
+            <div class="w-12 h-12 bg-emerald-500 dark:bg-emerald-600 rounded-lg flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-emerald-700 dark:text-emerald-200 mb-2">C$ @Model.IngresosMesActual.ToString("N2")</p>
+        <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Ingresos del mes</p>
     </div>
 
     <!-- Pendientes -->
@@ -143,30 +157,60 @@
                 Internet
             </h3>
             <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-sm font-semibold">
-                @Model.FacturasInternet facturas
+                Total: @Model.FacturasInternet facturas
             </span>
         </div>
         
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
-                <p class="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Ingresos</p>
-                <p class="text-2xl font-bold text-blue-700 dark:text-blue-200">C$ @Model.IngresosInternet.ToString("N2")</p>
+        <!-- Estadísticas Históricas -->
+        <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mb-3 uppercase">Total Histórico</p>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
+                    <p class="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Ingresos Totales</p>
+                    <p class="text-2xl font-bold text-blue-700 dark:text-blue-200">C$ @Model.IngresosInternet.ToString("N2")</p>
+                </div>
+                <div class="bg-amber-50 dark:bg-amber-900/30 rounded-lg p-4">
+                    <p class="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">Pendientes</p>
+                    <p class="text-2xl font-bold text-amber-700 dark:text-amber-200">C$ @Model.PendientesInternet.ToString("N2")</p>
+                </div>
             </div>
-            <div class="bg-amber-50 dark:bg-amber-900/30 rounded-lg p-4">
-                <p class="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">Pendientes</p>
-                <p class="text-2xl font-bold text-amber-700 dark:text-amber-200">C$ @Model.PendientesInternet.ToString("N2")</p>
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span class="text-gray-600 dark:text-gray-400">Total Pagadas: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPagadasInternet</span></span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
+                        <span class="text-gray-600 dark:text-gray-400">Total Pendientes: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPendientesInternet</span></span>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <div class="flex items-center justify-between text-sm">
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center">
-                    <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    <span class="text-gray-600 dark:text-gray-400">Pagadas: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPagadasInternet</span></span>
+        <!-- Estadísticas del Mes Actual -->
+        <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mb-3 uppercase">@Model.MesActualTexto</p>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-lg p-4">
+                    <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1">Ingresos del Mes</p>
+                    <p class="text-2xl font-bold text-emerald-700 dark:text-emerald-200">C$ @Model.IngresosMesActualInternet.ToString("N2")</p>
                 </div>
-                <div class="flex items-center">
-                    <div class="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
-                    <span class="text-gray-600 dark:text-gray-400">Pendientes: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPendientesInternet</span></span>
+                <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                    <p class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">Facturas del Mes</p>
+                    <p class="text-2xl font-bold text-gray-700 dark:text-gray-200">@Model.FacturasMesActualInternet</p>
+                </div>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span class="text-gray-600 dark:text-gray-400">Pagadas este mes: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPagadasMesActualInternet</span></span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
+                        <span class="text-gray-600 dark:text-gray-400">Pendientes este mes: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPendientesMesActualInternet</span></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -180,30 +224,60 @@
                 Streaming
             </h3>
             <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-sm font-semibold">
-                @Model.FacturasStreaming facturas
+                Total: @Model.FacturasStreaming facturas
             </span>
         </div>
         
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="bg-purple-50 dark:bg-purple-900/30 rounded-lg p-4">
-                <p class="text-xs text-purple-600 dark:text-purple-400 font-medium mb-1">Ingresos</p>
-                <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">C$ @Model.IngresosStreaming.ToString("N2")</p>
+        <!-- Estadísticas Históricas -->
+        <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mb-3 uppercase">Total Histórico</p>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="bg-purple-50 dark:bg-purple-900/30 rounded-lg p-4">
+                    <p class="text-xs text-purple-600 dark:text-purple-400 font-medium mb-1">Ingresos Totales</p>
+                    <p class="text-2xl font-bold text-purple-700 dark:text-purple-200">C$ @Model.IngresosStreaming.ToString("N2")</p>
+                </div>
+                <div class="bg-amber-50 dark:bg-amber-900/30 rounded-lg p-4">
+                    <p class="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">Pendientes</p>
+                    <p class="text-2xl font-bold text-amber-700 dark:text-amber-200">C$ @Model.PendientesStreaming.ToString("N2")</p>
+                </div>
             </div>
-            <div class="bg-amber-50 dark:bg-amber-900/30 rounded-lg p-4">
-                <p class="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">Pendientes</p>
-                <p class="text-2xl font-bold text-amber-700 dark:text-amber-200">C$ @Model.PendientesStreaming.ToString("N2")</p>
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span class="text-gray-600 dark:text-gray-400">Total Pagadas: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPagadasStreaming</span></span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
+                        <span class="text-gray-600 dark:text-gray-400">Total Pendientes: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPendientesStreaming</span></span>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <div class="flex items-center justify-between text-sm">
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center">
-                    <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    <span class="text-gray-600 dark:text-gray-400">Pagadas: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPagadasStreaming</span></span>
+        <!-- Estadísticas del Mes Actual -->
+        <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mb-3 uppercase">@Model.MesActualTexto</p>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="bg-emerald-50 dark:bg-emerald-900/30 rounded-lg p-4">
+                    <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1">Ingresos del Mes</p>
+                    <p class="text-2xl font-bold text-emerald-700 dark:text-emerald-200">C$ @Model.IngresosMesActualStreaming.ToString("N2")</p>
                 </div>
-                <div class="flex items-center">
-                    <div class="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
-                    <span class="text-gray-600 dark:text-gray-400">Pendientes: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPendientesStreaming</span></span>
+                <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                    <p class="text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">Facturas del Mes</p>
+                    <p class="text-2xl font-bold text-gray-700 dark:text-gray-200">@Model.FacturasMesActualStreaming</p>
+                </div>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span class="text-gray-600 dark:text-gray-400">Pagadas este mes: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPagadasMesActualStreaming</span></span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
+                        <span class="text-gray-600 dark:text-gray-400">Pendientes este mes: <span class="font-semibold text-gray-900 dark:text-white">@Model.FacturasPendientesMesActualStreaming</span></span>
+                    </div>
                 </div>
             </div>
         </div>
