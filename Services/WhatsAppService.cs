@@ -60,7 +60,8 @@ public class WhatsAppService : IWhatsAppService
         mensaje = mensaje.Replace("{NombreCliente}", factura.Cliente?.Nombre ?? "");
         mensaje = mensaje.Replace("{CodigoCliente}", factura.Cliente?.Codigo ?? "");
         mensaje = mensaje.Replace("{NumeroFactura}", factura.Numero);
-        mensaje = mensaje.Replace("{Monto}", factura.Monto.ToString("N2", cultura));
+        // Monto redondeado sin decimales
+        mensaje = mensaje.Replace("{Monto}", Math.Round(factura.Monto).ToString("N0", cultura));
         mensaje = mensaje.Replace("{Mes}", factura.MesFacturacion.ToString("MMMM yyyy", cultura));
         mensaje = mensaje.Replace("{Categoria}", factura.Categoria);
         mensaje = mensaje.Replace("{Estado}", factura.Estado);

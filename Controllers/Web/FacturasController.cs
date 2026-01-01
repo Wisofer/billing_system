@@ -643,10 +643,12 @@ public class FacturasController : Controller
             var enlacePDFCompleto = $"{urlBase}/facturas/descargar-pdf-publico/{factura.Id}?token={token}";
             
             // Si no hay plantilla, usar una por defecto
+            // Monto redondeado sin decimales
+            var montoRedondeado = Math.Round(factura.Monto);
             mensaje = $"Hola {factura.Cliente?.Nombre ?? "Cliente"},\n\n" +
                      $"Le enviamos su factura:\n" +
                      $"📄 Factura: {factura.Numero}\n" +
-                     $"💰 Monto: C$ {factura.Monto:N2}\n" +
+                     $"💰 Monto: C$ {montoRedondeado:N0}\n" +
                      $"📅 Mes: {factura.MesFacturacion:MMMM yyyy}\n" +
                      $"🔗 Descargar PDF: {enlacePDFCompleto}\n\n" +
                      $"Gracias por su preferencia.";
