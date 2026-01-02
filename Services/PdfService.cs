@@ -571,23 +571,23 @@ public class PdfService : IPdfService
                                         row.RelativeItem()
                                             .Background(Colors.White)
                                             .Padding(6)
-                                            .Column(emailColumn =>
+                                            .Column(webColumn =>
                                             {
-                                                emailColumn.Item()
+                                                webColumn.Item()
                                                     .AlignCenter()
-                                                    .Text("📧 Email")
+                                                    .Text("🌐 Visita Nuestra Web")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Orange.Darken4)
+                                                    .FontColor(Colors.Purple.Darken4)
                                                     .FontFamily("Noto Color Emoji");
                                                 
-                                                emailColumn.Item().PaddingTop(2)
+                                                webColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
-                                                    .Hyperlink("mailto:wisofer17@gmail.com")
-                                                    .Text("wisofer17@gmail.com")
+                                                    .Hyperlink("https://www.cowib.es")
+                                                    .Text("www.cowib.es")
                                                     .FontSize(7)
                                                     .Bold()
-                                                    .FontColor(Colors.Orange.Darken3)
+                                                    .FontColor(Colors.Purple.Darken3)
                                                     .Underline();
                                             });
                                     });
@@ -1324,23 +1324,23 @@ public class PdfService : IPdfService
                                         row.RelativeItem()
                                             .Background(Colors.White)
                                             .Padding(6)
-                                            .Column(emailColumn =>
+                                            .Column(webColumn =>
                                             {
-                                                emailColumn.Item()
+                                                webColumn.Item()
                                                     .AlignCenter()
-                                                    .Text("📧 Email")
+                                                    .Text("🌐 Visita Nuestra Web")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Orange.Darken4)
+                                                    .FontColor(Colors.Purple.Darken4)
                                                     .FontFamily("Noto Color Emoji");
                                                 
-                                                emailColumn.Item().PaddingTop(2)
+                                                webColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
-                                                    .Hyperlink("mailto:wisofer17@gmail.com")
-                                                    .Text("wisofer17@gmail.com")
+                                                    .Hyperlink("https://www.cowib.es")
+                                                    .Text("www.cowib.es")
                                                     .FontSize(7)
                                                     .Bold()
-                                                    .FontColor(Colors.Orange.Darken3)
+                                                    .FontColor(Colors.Purple.Darken3)
                                                     .Underline();
                                             });
                                     });
