@@ -157,7 +157,7 @@ namespace billing_system.Controllers.Api.Movil
                     return BadRequest(new { success = false, message = "El nombre es requerido" });
                 }
 
-                var cliente = new Cliente
+                var cliente = new Models.Entities.Cliente
                 {
                     Nombre = request.Nombre,
                     Telefono = request.Telefono,
