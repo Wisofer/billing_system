@@ -36,6 +36,24 @@ public class FacturasController : Controller
     [HttpGet("/facturas")]
     public IActionResult Index(string? estado, int? mes, int? año, string? busquedaCliente, string? categoria, int pagina = 1, int tamanoPagina = 25)
     {
+        // Si el usuario es Demo, devolver lista vacía
+        if (SecurityHelper.IsDemo(User))
+        {
+            ViewBag.Estado = estado ?? "Todos";
+            ViewBag.Mes = mes;
+            ViewBag.Año = año;
+            ViewBag.BusquedaCliente = busquedaCliente;
+            ViewBag.Categoria = categoria ?? "Todas";
+            ViewBag.Pagina = 1;
+            ViewBag.TamanoPagina = tamanoPagina;
+            ViewBag.TotalItems = 0;
+            ViewBag.TotalPages = 0;
+            ViewBag.EsAdministrador = false;
+            ViewBag.MesAnterior = DateTime.Now.AddMonths(-1);
+
+            return View(new List<Factura>());
+        }
+
         var esAdministrador = SecurityHelper.IsAdministrator(User);
 
         // Validar parámetros de paginación

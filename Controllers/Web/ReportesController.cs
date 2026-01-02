@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace billing_system.Controllers.Web;
 
-[Authorize(Policy = "Administrador")]
+[Authorize(Policy = "Demo")]
 [Route("[controller]/[action]")]
 public class ReportesController : Controller
 {

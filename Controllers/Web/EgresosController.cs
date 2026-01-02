@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using billing_system.Models.Entities;
+using billing_system.Models.ViewModels;
 using billing_system.Services.IServices;
 using billing_system.Utils;
 using OfficeOpenXml;
@@ -8,7 +9,7 @@ using OfficeOpenXml.Style;
 
 namespace billing_system.Controllers.Web;
 
-[Authorize(Policy = "Administrador")]
+[Authorize(Policy = "Demo")]
 [Route("[controller]/[action]")]
 public class EgresosController : Controller
 {
@@ -22,6 +23,34 @@ public class EgresosController : Controller
     [HttpGet("/egresos")]
     public IActionResult Index(int pagina = 1, int tamanoPagina = 15, string? busqueda = null, string? categoria = null, string? fechaInicio = null, string? fechaFin = null)
     {
+        // Si el usuario es Demo, devolver lista vacía
+        if (SecurityHelper.IsDemo(User))
+        {
+            var resultadoVacio = new Models.ViewModels.PagedResult<Models.Entities.Egreso>
+            {
+                Items = new List<Models.Entities.Egreso>(),
+                TotalItems = 0,
+                CurrentPage = 1,
+                PageSize = tamanoPagina
+            };
+
+            ViewBag.TotalEgresos = 0;
+            ViewBag.EgresosMesActual = 0;
+            ViewBag.EgresosPorCategoria = new Dictionary<string, decimal>();
+            ViewBag.CantidadEgresos = 0;
+            ViewBag.Busqueda = busqueda;
+            ViewBag.Categoria = categoria ?? "Todas";
+            ViewBag.FechaInicio = fechaInicio;
+            ViewBag.FechaFin = fechaFin;
+            ViewBag.Pagina = 1;
+            ViewBag.TamanoPagina = tamanoPagina;
+            ViewBag.TotalItems = 0;
+            ViewBag.TotalPages = 0;
+            ViewBag.Categorias = CategoriasEgreso.ObtenerTodas();
+
+            return View(resultadoVacio);
+        }
+
         DateTime? fechaInicioDate = null;
         DateTime? fechaFinDate = null;
 

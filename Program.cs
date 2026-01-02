@@ -224,9 +224,10 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Administrador", policy => policy.RequireClaim("Rol", "Administrador"));
     options.AddPolicy("Normal", policy => policy.RequireClaim("Rol", "Normal", "Administrador"));
     options.AddPolicy("Caja", policy => policy.RequireClaim("Rol", "Caja", "Administrador"));
-    options.AddPolicy("FacturasPagos", policy => policy.RequireClaim("Rol", "Normal", "Administrador"));
-    options.AddPolicy("Pagos", policy => policy.RequireClaim("Rol", "Caja", "Normal", "Administrador"));
-    options.AddPolicy("Inventario", policy => policy.RequireClaim("Rol", "Normal", "Administrador"));
+    options.AddPolicy("FacturasPagos", policy => policy.RequireClaim("Rol", "Normal", "Administrador", "Demo"));
+    options.AddPolicy("Pagos", policy => policy.RequireClaim("Rol", "Caja", "Normal", "Administrador", "Demo"));
+    options.AddPolicy("Inventario", policy => policy.RequireClaim("Rol", "Normal", "Administrador", "Demo"));
+    options.AddPolicy("Demo", policy => policy.RequireClaim("Rol", "Demo", "Administrador"));
 });
 
 // Registrar servicios
@@ -418,6 +419,7 @@ using (var scope = app.Services.CreateScope())
 
         // Crear usuario admin si no existe
         InicializarUsuarioAdmin.CrearAdminSiNoExiste(dbContext, logger);
+        InicializarUsuarioDemo.CrearDemoSiNoExiste(dbContext, logger);
 
         // Crear plantilla por defecto de WhatsApp si no existe
         InicializarPlantillaWhatsApp.CrearPlantillaDefaultSiNoExiste(dbContext, logger);
@@ -494,5 +496,39 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Verificar y crear usuario demo si no existe (ejecutar solo una vez al inicio)
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        var existeDemo = dbContext.Usuarios.Any(u => u.NombreUsuario.ToLower() == "demo");
+        if (!existeDemo)
+        {
+            logger.LogInformation("Usuario demo no existe. Creando...");
+            InicializarUsuarioDemo.CrearDemoSiNoExiste(dbContext, logger);
+        }
+        else
+        {
+            // Verificar que la contraseña sea correcta
+            var demo = dbContext.Usuarios.First(u => u.NombreUsuario.ToLower() == "demo");
+            var hashCorrecto = PasswordHelper.HashPassword("demo");
+            if (demo.Contrasena != hashCorrecto)
+            {
+                logger.LogInformation("Actualizando contraseña del usuario demo...");
+                demo.Contrasena = hashCorrecto;
+                dbContext.SaveChanges();
+                logger.LogInformation("Contraseña del usuario demo actualizada.");
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error al verificar/crear usuario demo");
+    }
+}
 
 app.Run();

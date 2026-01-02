@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace billing_system.Controllers.Web;
 
-[Authorize(Policy = "Administrador")]
+[Authorize(Policy = "Demo")]
 [Route("[controller]/[action]")]
 public class ServiciosController : Controller
 {
@@ -21,6 +21,15 @@ public class ServiciosController : Controller
     [HttpGet("/servicios")]
     public IActionResult Index(string? categoria = null)
     {
+        // Si el usuario es Demo, devolver lista vacía
+        if (SecurityHelper.IsDemo(User))
+        {
+            ViewBag.EsAdministrador = false;
+            ViewBag.Categoria = categoria;
+            ViewBag.CategoriaSeleccionada = categoria ?? "Todos";
+            return View(new List<Servicio>());
+        }
+
         List<Servicio> servicios;
         if (!string.IsNullOrWhiteSpace(categoria))
         {
@@ -42,6 +51,15 @@ public class ServiciosController : Controller
     [HttpGet("/servicios/internet")]
     public IActionResult Internet()
     {
+        // Si el usuario es Demo, devolver lista vacía
+        if (SecurityHelper.IsDemo(User))
+        {
+            ViewBag.EsAdministrador = false;
+            ViewBag.Categoria = SD.CategoriaInternet;
+            ViewBag.Titulo = "Servicios de Internet";
+            return View("Index", new List<Servicio>());
+        }
+
         var servicios = _servicioService.ObtenerPorCategoria(SD.CategoriaInternet);
         var esAdministrador = SecurityHelper.IsAdministrator(User);
 
@@ -54,6 +72,15 @@ public class ServiciosController : Controller
     [HttpGet("/servicios/streaming")]
     public IActionResult Streaming()
     {
+        // Si el usuario es Demo, devolver lista vacía
+        if (SecurityHelper.IsDemo(User))
+        {
+            ViewBag.EsAdministrador = false;
+            ViewBag.Categoria = SD.CategoriaStreaming;
+            ViewBag.Titulo = "Servicios de Streaming";
+            return View("Index", new List<Servicio>());
+        }
+
         var servicios = _servicioService.ObtenerPorCategoria(SD.CategoriaStreaming);
         var esAdministrador = SecurityHelper.IsAdministrator(User);
 

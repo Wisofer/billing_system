@@ -30,6 +30,25 @@ public class PagosController : Controller
     [HttpGet("/pagos")]
     public IActionResult Index(string? tipoPago, string? banco, DateTime? fecha, int pagina = 1, int tamanoPagina = 25)
     {
+        // Si el usuario es Demo, devolver lista vacía
+        if (SecurityHelper.IsDemo(User))
+        {
+            ViewBag.TotalPagos = 0;
+            ViewBag.MontoTotal = 0;
+            ViewBag.PagosFisicos = 0;
+            ViewBag.PagosElectronicos = 0;
+            ViewBag.TipoPago = tipoPago ?? "Todos";
+            ViewBag.Banco = banco ?? "Todos";
+            ViewBag.Fecha = fecha;
+            ViewBag.Pagina = 1;
+            ViewBag.TamanoPagina = tamanoPagina;
+            ViewBag.TotalItems = 0;
+            ViewBag.TotalPages = 0;
+            ViewBag.EsAdministrador = false;
+
+            return View(new List<Pago>());
+        }
+
         var esAdministrador = SecurityHelper.IsAdministrator(User);
         
         // Validar parámetros de paginación

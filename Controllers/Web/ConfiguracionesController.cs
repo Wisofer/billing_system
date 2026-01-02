@@ -11,7 +11,7 @@ using System;
 
 namespace billing_system.Controllers.Web;
 
-[Authorize(Policy = "Administrador")]
+[Authorize(Policy = "Demo")]
 [Route("[controller]/[action]")]
 public class ConfiguracionesController : Controller
 {
@@ -34,6 +34,25 @@ public class ConfiguracionesController : Controller
         var rolUsuario = User.FindFirst("Rol")?.Value ?? "";
         var esAdministrador = User.HasClaim("Rol", "Administrador");
         var temaActual = HttpContext.Session.GetString("Tema") ?? "claro";
+
+        // Si el usuario es Demo, devolver datos vacíos
+        if (SecurityHelper.IsDemo(User))
+        {
+            ViewBag.EsAdministrador = false;
+            ViewBag.RolUsuario = rolUsuario;
+            ViewBag.NombreUsuario = nombreUsuario;
+            ViewBag.Usuarios = new List<Models.Entities.Usuario>();
+            ViewBag.TemaActual = temaActual;
+            ViewBag.Plantillas = new List<Models.Entities.PlantillaMensajeWhatsApp>();
+            ViewBag.TipoCambioVenta = SD.TipoCambioDolar;
+            ViewBag.TipoCambioCompra = SD.TipoCambioCompra;
+            ViewBag.ConfiguracionTipoCambioVenta = null;
+            ViewBag.ConfiguracionTipoCambioCompra = null;
+            ViewBag.TipoCambio = SD.TipoCambioDolar;
+            ViewBag.ConfiguracionTipoCambio = null;
+
+            return View();
+        }
 
         var usuarios = _usuarioService.ObtenerTodos();
         var plantillas = _context.PlantillasMensajeWhatsApp.OrderByDescending(p => p.EsDefault).ThenBy(p => p.Nombre).ToList();

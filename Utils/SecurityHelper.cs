@@ -54,6 +54,14 @@ public static class SecurityHelper
     }
 
     /// <summary>
+    /// Verifica si el usuario actual es Demo (solo lectura, sin datos reales)
+    /// </summary>
+    public static bool IsDemo(ClaimsPrincipal user)
+    {
+        return GetUserRole(user).Equals(SD.RolDemo, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
     /// Verifica si el usuario actual tiene un rol específico
     /// </summary>
     public static bool HasRole(ClaimsPrincipal user, string role)
@@ -81,6 +89,7 @@ public static class SecurityHelper
             SD.RolAdministrador => "/",
             SD.RolNormal => "/facturas",
             SD.RolCaja => "/pagos",
+            SD.RolDemo => "/",
             _ => "/login"
         };
     }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using billing_system.Models.Entities;
+using billing_system.Models.ViewModels;
 using billing_system.Services.IServices;
 using billing_system.Utils;
 using billing_system.Data;
@@ -9,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace billing_system.Controllers.Web;
 
-[Authorize(Policy = "Administrador")]
+[Authorize(Policy = "Demo")]
 [Route("[controller]/[action]")]
 public class EquiposController : Controller
 {
@@ -42,6 +43,41 @@ public class EquiposController : Controller
     [HttpGet("/equipos")]
     public IActionResult Index(string? busqueda, string? estado, int? categoriaId, int? ubicacionId, string? estadoSistema, int pagina = 1, int tamanoPagina = 25)
     {
+        // Si el usuario es Demo, devolver lista vacía
+        if (SecurityHelper.IsDemo(User))
+        {
+            var resultadoVacio = new PagedResult<Equipo>
+            {
+                Items = new List<Equipo>(),
+                TotalItems = 0,
+                CurrentPage = 1,
+                PageSize = tamanoPagina
+            };
+
+            ViewBag.Busqueda = busqueda;
+            ViewBag.Estado = estado;
+            ViewBag.EstadoSistema = estadoSistema ?? "activos";
+            ViewBag.CategoriaId = categoriaId;
+            ViewBag.UbicacionId = ubicacionId;
+            ViewBag.Pagina = 1;
+            ViewBag.TamanoPagina = tamanoPagina;
+            ViewBag.TotalItems = 0;
+            ViewBag.TotalEquipos = 0;
+            ViewBag.TotalDeshabilitados = 0;
+            ViewBag.Disponibles = 0;
+            ViewBag.EnUso = 0;
+            ViewBag.Danados = 0;
+            ViewBag.EnReparacion = 0;
+            ViewBag.ConStockMinimo = 0;
+            ViewBag.ValorTotal = 0;
+            ViewBag.Categorias = new List<Models.Entities.CategoriaEquipo>();
+            ViewBag.Ubicaciones = new List<Models.Entities.Ubicacion>();
+            ViewBag.Estados = new[] { "Todos", SD.EstadoEquipoDisponible, SD.EstadoEquipoEnUso, SD.EstadoEquipoDanado, SD.EstadoEquipoEnReparacion, SD.EstadoEquipoRetirado };
+            ViewBag.EsAdministrador = false;
+
+            return View(resultadoVacio);
+        }
+
         // Validar parámetros de paginación
         if (pagina < 1) pagina = 1;
         if (tamanoPagina < 5) tamanoPagina = 5;

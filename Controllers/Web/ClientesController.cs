@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using billing_system.Data;
 using billing_system.Models.Entities;
+using billing_system.Models.ViewModels;
 using billing_system.Services.IServices;
 using billing_system.Utils;
 
 namespace billing_system.Controllers.Web;
 
-[Authorize(Policy = "Administrador")]
+[Authorize(Policy = "Demo")]
 [Route("[controller]/[action]")]
 public class ClientesController : Controller
 {
@@ -31,6 +32,33 @@ public class ClientesController : Controller
     [HttpGet("/clientes")]
     public IActionResult Index(string? busqueda, string? estado, string? tipoServicio, string? conFacturas, int pagina = 1, int tamanoPagina = 25)
     {
+        // Si el usuario es Demo, devolver lista vacía
+        if (SecurityHelper.IsDemo(User))
+        {
+            var resultadoVacio = new Models.ViewModels.PagedResult<Cliente>
+            {
+                Items = new List<Cliente>(),
+                TotalItems = 0,
+                CurrentPage = 1,
+                PageSize = tamanoPagina
+            };
+            
+            ViewBag.Busqueda = busqueda;
+            ViewBag.Estado = estado ?? "Todos";
+            ViewBag.TipoServicio = tipoServicio ?? "Todos";
+            ViewBag.ConFacturas = conFacturas ?? "Todos";
+            ViewBag.Pagina = 1;
+            ViewBag.TamanoPagina = tamanoPagina;
+            ViewBag.TotalItems = 0;
+            ViewBag.TotalPages = 0;
+            ViewBag.EsAdministrador = false;
+            ViewBag.ClientesActivos = 0;
+            ViewBag.NuevosEsteMes = 0;
+            ViewBag.Servicios = new List<Servicio>();
+
+            return View(resultadoVacio.Items);
+        }
+
         // Validar parámetros de paginación
         if (pagina < 1) pagina = 1;
         if (tamanoPagina < 5) tamanoPagina = 5;

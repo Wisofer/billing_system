@@ -30,6 +30,73 @@ public class HomeController : Controller
     [HttpGet("/")]
     public IActionResult Index()
     {
+        // Si el usuario es Demo, mostrar dashboard vacío
+        if (SecurityHelper.IsDemo(User))
+        {
+            var fechaMesActualDemo = DateTime.Now;
+            var mesActualTextoDemo = fechaMesActualDemo.ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-NI"));
+            var mesFacturacionDemo = fechaMesActualDemo.AddMonths(-1);
+            var mesFacturacionTextoDemo = mesFacturacionDemo.ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-NI"));
+
+            var viewModelDemo = new DashboardViewModel
+            {
+                // Estadísticas del mes actual - todas en 0
+                IngresosMesActual = 0,
+                EgresosMesActual = 0,
+                BalanceMesActual = 0,
+                FacturasMesActual = 0,
+                PagosMesActual = 0,
+                MesActualTexto = mesActualTextoDemo,
+                MesFacturacionTexto = mesFacturacionTextoDemo,
+                
+                // Estadísticas generales - todas en 0
+                PagosPendientes = 0,
+                PagosRealizados = 0,
+                IngresoTotal = 0,
+                IngresoFaltante = 0,
+                TotalClientes = 0,
+                TotalFacturas = 0,
+                TotalPagos = 0,
+                TotalClientesActivos = 0,
+                
+                // Internet - todas en 0
+                IngresosInternet = 0,
+                PendientesInternet = 0,
+                FacturasInternet = 0,
+                FacturasPagadasInternet = 0,
+                FacturasPendientesInternet = 0,
+                IngresosMesActualInternet = 0,
+                FacturasPagadasMesActualInternet = 0,
+                FacturasPendientesMesActualInternet = 0,
+                FacturasMesActualInternet = 0,
+                
+                // Streaming - todas en 0
+                IngresosStreaming = 0,
+                PendientesStreaming = 0,
+                FacturasStreaming = 0,
+                FacturasPagadasStreaming = 0,
+                FacturasPendientesStreaming = 0,
+                IngresosMesActualStreaming = 0,
+                FacturasPagadasMesActualStreaming = 0,
+                FacturasPendientesMesActualStreaming = 0,
+                FacturasMesActualStreaming = 0,
+                
+                // Clientes - todos en 0
+                ClientesConInternet = 0,
+                ClientesConStreaming = 0,
+                ClientesConAmbos = 0,
+                
+                // Egresos - todos en 0
+                TotalEgresos = 0,
+                CantidadEgresos = 0,
+                
+                // Estadísticas mensuales - lista vacía
+                EstadisticasMensuales = new List<MesEstadistica>()
+            };
+
+            return View(viewModelDemo);
+        }
+
         // Si el usuario no es Administrador, redirigir según su rol
         var rol = SecurityHelper.GetUserRole(User);
         if (rol != SD.RolAdministrador)
