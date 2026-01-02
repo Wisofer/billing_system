@@ -278,6 +278,8 @@ public class PdfService : IPdfService
                 page.Size(PageSizes.A4);
                 page.Margin(0.8f, Unit.Centimetre);
                 page.PageColor(Colors.White);
+                // Usar una fuente con mejor soporte Unicode para emojis
+                // Intentar usar Noto Color Emoji si está disponible, sino usar fuente por defecto
                 page.DefaultTextStyle(x => x.FontSize(9));
 
                 page.Content()
@@ -294,7 +296,8 @@ public class PdfService : IPdfService
                                     .Text("💰 ¿TU NEGOCIO ESTÁ PERDIENDO DINERO? 💰")
                                     .FontSize(16)
                                     .Bold()
-                                    .FontColor(Colors.White);
+                                    .FontColor(Colors.White)
+                                    .FontFamily("Noto Color Emoji");
                                 
                                 headerColumn.Item().PaddingTop(4)
                                     .AlignCenter()
@@ -316,7 +319,8 @@ public class PdfService : IPdfService
                                     .Text("⚠️ PROBLEMAS QUE RESOLVEMOS:")
                                     .FontSize(10)
                                     .Bold()
-                                    .FontColor(Colors.Red.Darken4);
+                                    .FontColor(Colors.Red.Darken4)
+                                    .FontFamily("Noto Color Emoji");
                                 
                                 problemasColumn.Item().PaddingTop(5)
                                     .Row(row =>
@@ -332,7 +336,8 @@ public class PdfService : IPdfService
                                                     .Text("📄 Pierdes facturas o no las encuentras")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Grey.Darken3);
+                                                    .FontColor(Colors.Grey.Darken3)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 leftCol.Item().PaddingTop(3)
                                                     .Background(Colors.White)
@@ -342,7 +347,8 @@ public class PdfService : IPdfService
                                                     .Text("💸 No sabes quién te debe dinero")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Grey.Darken3);
+                                                    .FontColor(Colors.Grey.Darken3)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 leftCol.Item().PaddingTop(3)
                                                     .Background(Colors.White)
@@ -352,7 +358,8 @@ public class PdfService : IPdfService
                                                     .Text("📝 Llevas todo en cuadernos o Excel")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Grey.Darken3);
+                                                    .FontColor(Colors.Grey.Darken3)
+                                                    .FontFamily("Noto Color Emoji");
                                             });
                                         
                                         row.ConstantItem(5);
@@ -368,7 +375,8 @@ public class PdfService : IPdfService
                                                     .Text("📊 No sabes cuánto estás ganando")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Grey.Darken3);
+                                                    .FontColor(Colors.Grey.Darken3)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 rightCol.Item().PaddingTop(3)
                                                     .Background(Colors.White)
@@ -378,7 +386,8 @@ public class PdfService : IPdfService
                                                     .Text("📦 No controlas tu inventario")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Grey.Darken3);
+                                                    .FontColor(Colors.Grey.Darken3)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 rightCol.Item().PaddingTop(3)
                                                     .Background(Colors.White)
@@ -388,7 +397,8 @@ public class PdfService : IPdfService
                                                     .Text("⏰ Pierdes tiempo buscando información")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Grey.Darken3);
+                                                    .FontColor(Colors.Grey.Darken3)
+                                                    .FontFamily("Noto Color Emoji");
                                             });
                                     });
                             });
@@ -405,7 +415,8 @@ public class PdfService : IPdfService
                                     .Text("✅ NUESTRA SOLUCIÓN:")
                                     .FontSize(11)
                                     .Bold()
-                                    .FontColor(Colors.White);
+                                    .FontColor(Colors.White)
+                                    .FontFamily("Noto Color Emoji");
                                 
                                 solucionColumn.Item().PaddingTop(5)
                                     .Background(Colors.Green.Lighten5)
@@ -417,7 +428,8 @@ public class PdfService : IPdfService
                                             .Text("💻 Sistema de Gestión Personalizado para tu Negocio")
                                             .FontSize(10)
                                             .Bold()
-                                            .FontColor(Colors.Green.Darken4);
+                                            .FontColor(Colors.Green.Darken4)
+                                            .FontFamily("Noto Color Emoji");
                                         
                                         descripcionColumn.Item().PaddingTop(5)
                                             .Row(row =>
@@ -431,7 +443,8 @@ public class PdfService : IPdfService
                                                             .Text("✅ Controla facturas y pagos")
                                                             .FontSize(8)
                                                             .Bold()
-                                                            .FontColor(Colors.Green.Darken4);
+                                                            .FontColor(Colors.Green.Darken4)
+                                                            .FontFamily("Noto Color Emoji");
                                                         
                                                         leftCol.Item().PaddingTop(3)
                                                             .Background(Colors.White)
@@ -439,7 +452,8 @@ public class PdfService : IPdfService
                                                             .Text("✅ Sabes quién debe y cuánto")
                                                             .FontSize(8)
                                                             .Bold()
-                                                            .FontColor(Colors.Green.Darken4);
+                                                            .FontColor(Colors.Green.Darken4)
+                                                            .FontFamily("Noto Color Emoji");
                                                         
                                                         leftCol.Item().PaddingTop(3)
                                                             .Background(Colors.White)
@@ -447,7 +461,8 @@ public class PdfService : IPdfService
                                                             .Text("✅ Reportes de ganancias claros")
                                                             .FontSize(8)
                                                             .Bold()
-                                                            .FontColor(Colors.Green.Darken4);
+                                                            .FontColor(Colors.Green.Darken4)
+                                                            .FontFamily("Noto Color Emoji");
                                                     });
                                                 
                                                 row.ConstantItem(5);
@@ -461,7 +476,8 @@ public class PdfService : IPdfService
                                                             .Text("✅ Control de inventario fácil")
                                                             .FontSize(8)
                                                             .Bold()
-                                                            .FontColor(Colors.Green.Darken4);
+                                                            .FontColor(Colors.Green.Darken4)
+                                                            .FontFamily("Noto Color Emoji");
                                                         
                                                         rightCol.Item().PaddingTop(3)
                                                             .Background(Colors.White)
@@ -469,7 +485,8 @@ public class PdfService : IPdfService
                                                             .Text("✅ Todo en un solo lugar")
                                                             .FontSize(8)
                                                             .Bold()
-                                                            .FontColor(Colors.Green.Darken4);
+                                                            .FontColor(Colors.Green.Darken4)
+                                                            .FontFamily("Noto Color Emoji");
                                                         
                                                         rightCol.Item().PaddingTop(3)
                                                             .Background(Colors.White)
@@ -477,7 +494,8 @@ public class PdfService : IPdfService
                                                             .Text("✅ Fácil de usar, sin complicaciones")
                                                             .FontSize(8)
                                                             .Bold()
-                                                            .FontColor(Colors.Green.Darken4);
+                                                            .FontColor(Colors.Green.Darken4)
+                                                            .FontFamily("Noto Color Emoji");
                                                     });
                                             });
                                     });
@@ -494,7 +512,8 @@ public class PdfService : IPdfService
                                     .Text("📞 ¡LLÁMANOS HOY Y EMPIEZA A GANAR MÁS! 📞")
                                     .FontSize(10)
                                     .Bold()
-                                    .FontColor(Colors.White);
+                                    .FontColor(Colors.White)
+                                    .FontFamily("Noto Color Emoji");
                                 
                                 contactoColumn.Item().PaddingTop(6)
                                     .Row(row =>
@@ -509,7 +528,8 @@ public class PdfService : IPdfService
                                                     .Text("💬 WhatsApp")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Green.Darken4);
+                                                    .FontColor(Colors.Green.Darken4)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 whatsappColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
@@ -533,7 +553,8 @@ public class PdfService : IPdfService
                                                     .Text("📱 Teléfono Claro")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Blue.Darken4);
+                                                    .FontColor(Colors.Blue.Darken4)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 telefonoColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
@@ -557,7 +578,8 @@ public class PdfService : IPdfService
                                                     .Text("📧 Email")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Orange.Darken4);
+                                                    .FontColor(Colors.Orange.Darken4)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 emailColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
@@ -1009,6 +1031,8 @@ public class PdfService : IPdfService
                 page.Size(PageSizes.A4);
                 page.Margin(0.8f, Unit.Centimetre);
                 page.PageColor(Colors.White);
+                // Usar una fuente con mejor soporte Unicode para emojis
+                // Intentar usar Noto Color Emoji si está disponible, sino usar fuente por defecto
                 page.DefaultTextStyle(x => x.FontSize(9));
 
                 page.Content()
@@ -1025,7 +1049,8 @@ public class PdfService : IPdfService
                                     .Text("💰 ¿TU NEGOCIO ESTÁ PERDIENDO DINERO? 💰")
                                     .FontSize(16)
                                     .Bold()
-                                    .FontColor(Colors.White);
+                                    .FontColor(Colors.White)
+                                    .FontFamily("Noto Color Emoji");
                                 
                                 headerColumn.Item().PaddingTop(4)
                                     .AlignCenter()
@@ -1047,7 +1072,8 @@ public class PdfService : IPdfService
                                     .Text("⚠️ PROBLEMAS QUE RESOLVEMOS:")
                                     .FontSize(10)
                                     .Bold()
-                                    .FontColor(Colors.Red.Darken4);
+                                    .FontColor(Colors.Red.Darken4)
+                                    .FontFamily("Noto Color Emoji");
                                 
                                 problemasColumn.Item().PaddingTop(5)
                                     .Row(row =>
@@ -1063,7 +1089,8 @@ public class PdfService : IPdfService
                                                     .Text("📄 Pierdes facturas o no las encuentras")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Grey.Darken3);
+                                                    .FontColor(Colors.Grey.Darken3)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 leftCol.Item().PaddingTop(3)
                                                     .Background(Colors.White)
@@ -1073,7 +1100,8 @@ public class PdfService : IPdfService
                                                     .Text("💸 No sabes quién te debe dinero")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Grey.Darken3);
+                                                    .FontColor(Colors.Grey.Darken3)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 leftCol.Item().PaddingTop(3)
                                                     .Background(Colors.White)
@@ -1083,7 +1111,8 @@ public class PdfService : IPdfService
                                                     .Text("📝 Llevas todo en cuadernos o Excel")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Grey.Darken3);
+                                                    .FontColor(Colors.Grey.Darken3)
+                                                    .FontFamily("Noto Color Emoji");
                                             });
                                         
                                         row.ConstantItem(5);
@@ -1099,7 +1128,8 @@ public class PdfService : IPdfService
                                                     .Text("📊 No sabes cuánto estás ganando")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Grey.Darken3);
+                                                    .FontColor(Colors.Grey.Darken3)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 rightCol.Item().PaddingTop(3)
                                                     .Background(Colors.White)
@@ -1109,7 +1139,8 @@ public class PdfService : IPdfService
                                                     .Text("📦 No controlas tu inventario")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Grey.Darken3);
+                                                    .FontColor(Colors.Grey.Darken3)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 rightCol.Item().PaddingTop(3)
                                                     .Background(Colors.White)
@@ -1119,7 +1150,8 @@ public class PdfService : IPdfService
                                                     .Text("⏰ Pierdes tiempo buscando información")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Grey.Darken3);
+                                                    .FontColor(Colors.Grey.Darken3)
+                                                    .FontFamily("Noto Color Emoji");
                                             });
                                     });
                             });
@@ -1136,7 +1168,8 @@ public class PdfService : IPdfService
                                     .Text("✅ NUESTRA SOLUCIÓN:")
                                     .FontSize(11)
                                     .Bold()
-                                    .FontColor(Colors.White);
+                                    .FontColor(Colors.White)
+                                    .FontFamily("Noto Color Emoji");
                                 
                                 solucionColumn.Item().PaddingTop(5)
                                     .Background(Colors.Green.Lighten5)
@@ -1148,7 +1181,8 @@ public class PdfService : IPdfService
                                             .Text("💻 Sistema de Gestión Personalizado para tu Negocio")
                                             .FontSize(10)
                                             .Bold()
-                                            .FontColor(Colors.Green.Darken4);
+                                            .FontColor(Colors.Green.Darken4)
+                                            .FontFamily("Noto Color Emoji");
                                         
                                         descripcionColumn.Item().PaddingTop(5)
                                             .Row(row =>
@@ -1162,7 +1196,8 @@ public class PdfService : IPdfService
                                                             .Text("✅ Controla facturas y pagos")
                                                             .FontSize(8)
                                                             .Bold()
-                                                            .FontColor(Colors.Green.Darken4);
+                                                            .FontColor(Colors.Green.Darken4)
+                                                            .FontFamily("Noto Color Emoji");
                                                         
                                                         leftCol.Item().PaddingTop(3)
                                                             .Background(Colors.White)
@@ -1170,7 +1205,8 @@ public class PdfService : IPdfService
                                                             .Text("✅ Sabes quién debe y cuánto")
                                                             .FontSize(8)
                                                             .Bold()
-                                                            .FontColor(Colors.Green.Darken4);
+                                                            .FontColor(Colors.Green.Darken4)
+                                                            .FontFamily("Noto Color Emoji");
                                                         
                                                         leftCol.Item().PaddingTop(3)
                                                             .Background(Colors.White)
@@ -1178,7 +1214,8 @@ public class PdfService : IPdfService
                                                             .Text("✅ Reportes de ganancias claros")
                                                             .FontSize(8)
                                                             .Bold()
-                                                            .FontColor(Colors.Green.Darken4);
+                                                            .FontColor(Colors.Green.Darken4)
+                                                            .FontFamily("Noto Color Emoji");
                                                     });
                                                 
                                                 row.ConstantItem(5);
@@ -1192,7 +1229,8 @@ public class PdfService : IPdfService
                                                             .Text("✅ Control de inventario fácil")
                                                             .FontSize(8)
                                                             .Bold()
-                                                            .FontColor(Colors.Green.Darken4);
+                                                            .FontColor(Colors.Green.Darken4)
+                                                            .FontFamily("Noto Color Emoji");
                                                         
                                                         rightCol.Item().PaddingTop(3)
                                                             .Background(Colors.White)
@@ -1200,7 +1238,8 @@ public class PdfService : IPdfService
                                                             .Text("✅ Todo en un solo lugar")
                                                             .FontSize(8)
                                                             .Bold()
-                                                            .FontColor(Colors.Green.Darken4);
+                                                            .FontColor(Colors.Green.Darken4)
+                                                            .FontFamily("Noto Color Emoji");
                                                         
                                                         rightCol.Item().PaddingTop(3)
                                                             .Background(Colors.White)
@@ -1208,7 +1247,8 @@ public class PdfService : IPdfService
                                                             .Text("✅ Fácil de usar, sin complicaciones")
                                                             .FontSize(8)
                                                             .Bold()
-                                                            .FontColor(Colors.Green.Darken4);
+                                                            .FontColor(Colors.Green.Darken4)
+                                                            .FontFamily("Noto Color Emoji");
                                                     });
                                             });
                                     });
@@ -1225,7 +1265,8 @@ public class PdfService : IPdfService
                                     .Text("📞 ¡LLÁMANOS HOY Y EMPIEZA A GANAR MÁS! 📞")
                                     .FontSize(10)
                                     .Bold()
-                                    .FontColor(Colors.White);
+                                    .FontColor(Colors.White)
+                                    .FontFamily("Noto Color Emoji");
                                 
                                 contactoColumn.Item().PaddingTop(6)
                                     .Row(row =>
@@ -1240,7 +1281,8 @@ public class PdfService : IPdfService
                                                     .Text("💬 WhatsApp")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Green.Darken4);
+                                                    .FontColor(Colors.Green.Darken4)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 whatsappColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
@@ -1264,7 +1306,8 @@ public class PdfService : IPdfService
                                                     .Text("📱 Teléfono Claro")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Blue.Darken4);
+                                                    .FontColor(Colors.Blue.Darken4)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 telefonoColumn.Item().PaddingTop(2)
                                                     .AlignCenter()
@@ -1288,7 +1331,8 @@ public class PdfService : IPdfService
                                                     .Text("📧 Email")
                                                     .FontSize(8)
                                                     .Bold()
-                                                    .FontColor(Colors.Orange.Darken4);
+                                                    .FontColor(Colors.Orange.Darken4)
+                                                    .FontFamily("Noto Color Emoji");
                                                 
                                                 emailColumn.Item().PaddingTop(2)
                                                     .AlignCenter()

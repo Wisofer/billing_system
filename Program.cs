@@ -9,11 +9,105 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using QuestPDF.Infrastructure;
+using QuestPDF.Drawing;
 using System.Text;
 using System.Globalization;
 
 // Inicializar QuestPDF antes de cualquier uso
 QuestPDF.Settings.License = LicenseType.Community;
+
+// Registrar fuentes con soporte de emojis
+try
+{
+    // Intentar registrar fuentes del sistema que soporten emojis
+    var fontPaths = new[]
+    {
+        // Linux - Noto Color Emoji (común en sistemas Linux)
+        "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
+        "/usr/share/fonts/truetype/noto/NotoEmoji-Regular.ttf",
+        "/usr/share/fonts/opentype/noto/NotoColorEmoji.ttf",
+        // Windows - Segoe UI Emoji
+        @"C:\Windows\Fonts\seguiemj.ttf",
+        // macOS - Apple Color Emoji (aunque no es TTF, intentamos)
+        "/System/Library/Fonts/Apple Color Emoji.ttc",
+        // Ruta alternativa común
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf" // Fallback
+    };
+
+    bool fontRegistered = false;
+    
+    foreach (var fontPath in fontPaths)
+    {
+        try
+        {
+            if (File.Exists(fontPath))
+            {
+                using var fontStream = File.OpenRead(fontPath);
+                // Registrar con un nombre personalizado para fácil acceso
+                FontManager.RegisterFont(fontStream);
+                Console.WriteLine($"Fuente con emojis registrada: {fontPath}");
+                fontRegistered = true;
+                break;
+            }
+        }
+        catch
+        {
+            // Continuar con la siguiente fuente si esta falla
+            continue;
+        }
+    }
+
+    // Si no se encontró ninguna fuente del sistema, intentar usar una fuente embebida
+    if (!fontRegistered)
+    {
+        // Intentar cargar desde Resources/Fonts si existe
+        var resourceFontPath = Path.Combine(AppContext.BaseDirectory, "Resources", "Fonts", "NotoColorEmoji.ttf");
+        if (File.Exists(resourceFontPath))
+        {
+            using var fontStream = File.OpenRead(resourceFontPath);
+            FontManager.RegisterFont(fontStream);
+            Console.WriteLine($"Fuente con emojis registrada desde recursos: {resourceFontPath}");
+            fontRegistered = true;
+        }
+    }
+    
+    // Si aún no se registró, intentar usar una fuente que combine texto y emojis
+    // Usaremos una fuente que tenga mejor soporte Unicode
+    if (!fontRegistered)
+    {
+        // Intentar usar DejaVu Sans que tiene mejor soporte Unicode
+        var dejaVuPaths = new[]
+        {
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
+        };
+        
+        foreach (var dejaVuPath in dejaVuPaths)
+        {
+            try
+            {
+                if (File.Exists(dejaVuPath))
+                {
+                    using var fontStream = File.OpenRead(dejaVuPath);
+                    FontManager.RegisterFont(fontStream);
+                    Console.WriteLine($"Fuente Unicode registrada como fallback: {dejaVuPath}");
+                    break;
+                }
+            }
+            catch { continue; }
+        }
+    }
+
+    if (!fontRegistered)
+    {
+        Console.WriteLine("Advertencia: No se encontró una fuente con soporte de emojis. Los emojis pueden no renderizarse correctamente.");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Advertencia al registrar fuentes con emojis: {ex.Message}");
+    // Continuar sin la fuente de emojis - la aplicación seguirá funcionando
+}
 
 // Configurar Npgsql para manejar DateTime correctamente con PostgreSQL
 // Esto permite usar DateTime.Now sin especificar UTC explícitamente
