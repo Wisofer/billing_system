@@ -42,32 +42,36 @@ namespace billing_system.Controllers.Api.Movil
         {
             try
             {
-                var pagos = _pagoService.ObtenerTodos().AsQueryable();
+                // Obtener todos los pagos con relaciones cargadas
+                var todosLosPagos = _pagoService.ObtenerTodos();
+
+                // Aplicar filtros en memoria para mantener las relaciones cargadas
+                var pagosFiltrados = todosLosPagos.AsQueryable();
 
                 // Filtrar por fecha
                 if (fechaInicio.HasValue)
                 {
-                    pagos = pagos.Where(p => p.FechaPago >= fechaInicio.Value);
+                    pagosFiltrados = pagosFiltrados.Where(p => p.FechaPago >= fechaInicio.Value);
                 }
                 if (fechaFin.HasValue)
                 {
-                    pagos = pagos.Where(p => p.FechaPago <= fechaFin.Value);
+                    pagosFiltrados = pagosFiltrados.Where(p => p.FechaPago <= fechaFin.Value);
                 }
 
                 // Filtrar por tipo de pago
                 if (!string.IsNullOrWhiteSpace(tipoPago) && tipoPago != "Todos")
                 {
-                    pagos = pagos.Where(p => p.TipoPago == tipoPago);
+                    pagosFiltrados = pagosFiltrados.Where(p => p.TipoPago == tipoPago);
                 }
 
                 // Filtrar por banco
                 if (!string.IsNullOrWhiteSpace(banco) && banco != "Todos")
                 {
-                    pagos = pagos.Where(p => p.Banco == banco);
+                    pagosFiltrados = pagosFiltrados.Where(p => p.Banco == banco);
                 }
 
                 // Ordenar por fecha descendente
-                var pagosOrdenados = pagos.OrderByDescending(p => p.FechaPago).ThenByDescending(p => p.Id).ToList();
+                var pagosOrdenados = pagosFiltrados.OrderByDescending(p => p.FechaPago).ThenByDescending(p => p.Id).ToList();
 
                 // Paginación
                 var totalItems = pagosOrdenados.Count;
@@ -77,42 +81,88 @@ namespace billing_system.Controllers.Api.Movil
                 return Ok(new
                 {
                     success = true,
-                    data = items.Select(p => new
+                    data = items.Select(p =>
                     {
-                        id = p.Id,
-                        monto = p.Monto,
-                        moneda = p.Moneda,
-                        tipoPago = p.TipoPago,
-                        banco = p.Banco,
-                        tipoCuenta = p.TipoCuenta,
-                        fechaPago = p.FechaPago,
-                        montoCordobasFisico = p.MontoCordobasFisico,
-                        montoDolaresFisico = p.MontoDolaresFisico,
-                        montoCordobasElectronico = p.MontoCordobasElectronico,
-                        montoDolaresElectronico = p.MontoDolaresElectronico,
-                        montoRecibido = p.MontoRecibidoFisico,
-                        vuelto = p.VueltoFisico,
-                        tipoCambio = p.TipoCambio,
-                        observaciones = p.Observaciones,
-                        factura = p.Factura != null ? new
+                        // Obtener cliente de la factura directa o de la primera factura en PagoFacturas
+                        Models.Entities.Cliente? cliente = null;
+                        Factura? facturaPrincipal = null;
+
+                        if (p.Factura != null)
                         {
-                            id = p.Factura.Id,
-                            numero = p.Factura.Numero,
-                            monto = p.Factura.Monto,
-                            cliente = new
+                            facturaPrincipal = p.Factura;
+                            // Si la factura tiene cliente cargado, usarlo
+                            if (p.Factura.Cliente != null)
                             {
-                                id = p.Factura.Cliente?.Id,
-                                codigo = p.Factura.Cliente?.Codigo,
-                                nombre = p.Factura.Cliente?.Nombre,
-                                telefono = p.Factura.Cliente?.Telefono
+                                cliente = p.Factura.Cliente;
                             }
-                        } : null,
-                        facturas = p.PagoFacturas?.Select(pf => new
+                            // Si no está cargado pero tiene ClienteId, cargarlo explícitamente
+                            else if (p.Factura.ClienteId > 0)
+                            {
+                                cliente = _clienteService.ObtenerPorId(p.Factura.ClienteId);
+                            }
+                        }
+                        // Si no hay factura directa, buscar en PagoFacturas
+                        else if (p.PagoFacturas != null && p.PagoFacturas.Any())
                         {
-                            id = pf.Factura?.Id,
-                            numero = pf.Factura?.Numero,
-                            monto = pf.MontoAplicado
-                        }).ToList()
+                            var primeraPagoFactura = p.PagoFacturas.FirstOrDefault();
+                            if (primeraPagoFactura?.Factura != null)
+                            {
+                                facturaPrincipal = primeraPagoFactura.Factura;
+                                if (primeraPagoFactura.Factura.Cliente != null)
+                                {
+                                    cliente = primeraPagoFactura.Factura.Cliente;
+                                }
+                                else if (primeraPagoFactura.Factura.ClienteId > 0)
+                                {
+                                    cliente = _clienteService.ObtenerPorId(primeraPagoFactura.Factura.ClienteId);
+                                }
+                            }
+                        }
+
+                        return new
+                        {
+                            id = p.Id,
+                            monto = p.Monto,
+                            moneda = p.Moneda,
+                            tipoPago = p.TipoPago,
+                            banco = p.Banco,
+                            tipoCuenta = p.TipoCuenta,
+                            fechaPago = p.FechaPago,
+                            montoCordobasFisico = p.MontoCordobasFisico,
+                            montoDolaresFisico = p.MontoDolaresFisico,
+                            montoCordobasElectronico = p.MontoCordobasElectronico,
+                            montoDolaresElectronico = p.MontoDolaresElectronico,
+                            montoRecibido = p.MontoRecibidoFisico,
+                            vuelto = p.VueltoFisico,
+                            tipoCambio = p.TipoCambio,
+                            observaciones = p.Observaciones,
+                            factura = facturaPrincipal != null ? new
+                            {
+                                id = facturaPrincipal.Id,
+                                numero = facturaPrincipal.Numero,
+                                monto = facturaPrincipal.Monto,
+                                cliente = cliente != null ? new
+                                {
+                                    id = cliente.Id,
+                                    codigo = cliente.Codigo,
+                                    nombre = cliente.Nombre,
+                                    telefono = cliente.Telefono
+                                } : null
+                            } : null,
+                            facturas = p.PagoFacturas?.Select(pf => new
+                            {
+                                id = pf.Factura?.Id,
+                                numero = pf.Factura?.Numero,
+                                monto = pf.MontoAplicado,
+                                cliente = pf.Factura?.Cliente != null ? new
+                                {
+                                    id = pf.Factura.Cliente.Id,
+                                    codigo = pf.Factura.Cliente.Codigo,
+                                    nombre = pf.Factura.Cliente.Nombre,
+                                    telefono = pf.Factura.Cliente.Telefono
+                                } : null
+                            }).ToList()
+                        };
                     }),
                     pagination = new
                     {
@@ -144,6 +194,20 @@ namespace billing_system.Controllers.Api.Movil
                     return NotFound(new { success = false, message = "Pago no encontrado" });
                 }
 
+                // Asegurarse de que el cliente esté cargado
+                Models.Entities.Cliente? cliente = null;
+                if (pago.Factura != null)
+                {
+                    if (pago.Factura.Cliente != null)
+                    {
+                        cliente = pago.Factura.Cliente;
+                    }
+                    else if (pago.Factura.ClienteId > 0)
+                    {
+                        cliente = _clienteService.ObtenerPorId(pago.Factura.ClienteId);
+                    }
+                }
+
                 return Ok(new
                 {
                     success = true,
@@ -171,21 +235,29 @@ namespace billing_system.Controllers.Api.Movil
                             monto = pago.Factura.Monto,
                             estado = pago.Factura.Estado,
                             mesFacturacion = pago.Factura.MesFacturacion,
-                            cliente = new
+                            cliente = cliente != null ? new
                             {
-                                id = pago.Factura.Cliente?.Id,
-                                codigo = pago.Factura.Cliente?.Codigo,
-                                nombre = pago.Factura.Cliente?.Nombre,
-                                telefono = pago.Factura.Cliente?.Telefono,
-                                email = pago.Factura.Cliente?.Email
-                            }
+                                id = cliente.Id,
+                                codigo = cliente.Codigo,
+                                nombre = cliente.Nombre,
+                                telefono = cliente.Telefono,
+                                email = cliente.Email
+                            } : null
                         } : null,
                         facturas = pago.PagoFacturas?.Select(pf => new
                         {
                             id = pf.Factura?.Id,
                             numero = pf.Factura?.Numero,
                             monto = pf.Factura?.Monto,
-                            montoAplicado = pf.MontoAplicado
+                            montoAplicado = pf.MontoAplicado,
+                            cliente = pf.Factura?.Cliente != null ? new
+                            {
+                                id = pf.Factura.Cliente.Id,
+                                codigo = pf.Factura.Cliente.Codigo,
+                                nombre = pf.Factura.Cliente.Nombre,
+                                telefono = pf.Factura.Cliente.Telefono,
+                                email = pf.Factura.Cliente.Email
+                            } : null
                         }).ToList()
                     }
                 });
@@ -911,24 +983,41 @@ namespace billing_system.Controllers.Api.Movil
                 return Ok(new
                 {
                     success = true,
-                    data = pagos.Select(p => new
+                    data = pagos.Select(p =>
                     {
-                        id = p.Id,
-                        monto = p.Monto,
-                        moneda = p.Moneda,
-                        tipoPago = p.TipoPago,
-                        fechaPago = p.FechaPago,
-                        factura = new
+                        // Asegurarse de que el cliente esté cargado
+                        Models.Entities.Cliente? cliente = null;
+                        if (p.Factura != null)
                         {
-                            id = p.Factura?.Id,
-                            numero = p.Factura?.Numero
-                        },
-                        cliente = new
-                        {
-                            id = p.Factura?.Cliente?.Id,
-                            codigo = p.Factura?.Cliente?.Codigo,
-                            nombre = p.Factura?.Cliente?.Nombre
+                            if (p.Factura.Cliente != null)
+                            {
+                                cliente = p.Factura.Cliente;
+                            }
+                            else if (p.Factura.ClienteId > 0)
+                            {
+                                cliente = _clienteService.ObtenerPorId(p.Factura.ClienteId);
+                            }
                         }
+
+                        return new
+                        {
+                            id = p.Id,
+                            monto = p.Monto,
+                            moneda = p.Moneda,
+                            tipoPago = p.TipoPago,
+                            fechaPago = p.FechaPago,
+                            factura = new
+                            {
+                                id = p.Factura?.Id,
+                                numero = p.Factura?.Numero
+                            },
+                            cliente = cliente != null ? new
+                            {
+                                id = cliente.Id,
+                                codigo = cliente.Codigo,
+                                nombre = cliente.Nombre
+                            } : null
+                        };
                     }),
                     totalResultados = pagos.Count
                 });

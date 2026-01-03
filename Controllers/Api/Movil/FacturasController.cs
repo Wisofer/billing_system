@@ -67,27 +67,41 @@ namespace billing_system.Controllers.Api.Movil
                 return Ok(new
                 {
                     success = true,
-                    data = items.Select(f => new
+                    data = items.Select(f =>
                     {
-                        id = f.Id,
-                        numero = f.Numero,
-                        cliente = new
+                        // Asegurarse de que el cliente esté cargado
+                        Models.Entities.Cliente? cliente = null;
+                        if (f.Cliente != null)
                         {
-                            id = f.Cliente?.Id,
-                            codigo = f.Cliente?.Codigo,
-                            nombre = f.Cliente?.Nombre,
-                            telefono = f.Cliente?.Telefono
-                        },
-                        servicio = new
+                            cliente = f.Cliente;
+                        }
+                        else if (f.ClienteId > 0)
                         {
-                            id = f.Servicio?.Id,
-                            nombre = f.Servicio?.Nombre
-                        },
-                        monto = f.Monto,
-                        estado = f.Estado,
-                        categoria = f.Categoria,
-                        fechaCreacion = f.FechaCreacion,
-                        mesFacturacion = f.MesFacturacion
+                            cliente = _clienteService.ObtenerPorId(f.ClienteId);
+                        }
+
+                        return new
+                        {
+                            id = f.Id,
+                            numero = f.Numero,
+                            cliente = cliente != null ? new
+                            {
+                                id = cliente.Id,
+                                codigo = cliente.Codigo,
+                                nombre = cliente.Nombre,
+                                telefono = cliente.Telefono
+                            } : null,
+                            servicio = new
+                            {
+                                id = f.Servicio?.Id,
+                                nombre = f.Servicio?.Nombre
+                            },
+                            monto = f.Monto,
+                            estado = f.Estado,
+                            categoria = f.Categoria,
+                            fechaCreacion = f.FechaCreacion,
+                            mesFacturacion = f.MesFacturacion
+                        };
                     }),
                     pagination = new
                     {
@@ -119,6 +133,17 @@ namespace billing_system.Controllers.Api.Movil
                     return NotFound(new { success = false, message = "Factura no encontrada" });
                 }
 
+                // Asegurarse de que el cliente esté cargado
+                Models.Entities.Cliente? cliente = null;
+                if (factura.Cliente != null)
+                {
+                    cliente = factura.Cliente;
+                }
+                else if (factura.ClienteId > 0)
+                {
+                    cliente = _clienteService.ObtenerPorId(factura.ClienteId);
+                }
+
                 return Ok(new
                 {
                     success = true,
@@ -126,14 +151,14 @@ namespace billing_system.Controllers.Api.Movil
                     {
                         id = factura.Id,
                         numero = factura.Numero,
-                        cliente = new
+                        cliente = cliente != null ? new
                         {
-                            id = factura.Cliente?.Id,
-                            codigo = factura.Cliente?.Codigo,
-                            nombre = factura.Cliente?.Nombre,
-                            telefono = factura.Cliente?.Telefono,
-                            email = factura.Cliente?.Email
-                        },
+                            id = cliente.Id,
+                            codigo = cliente.Codigo,
+                            nombre = cliente.Nombre,
+                            telefono = cliente.Telefono,
+                            email = cliente.Email
+                        } : null,
                         servicio = new
                         {
                             id = factura.Servicio?.Id,
@@ -210,19 +235,33 @@ namespace billing_system.Controllers.Api.Movil
                 {
                     success = true,
                     total = facturas.Count,
-                    data = facturas.Take(limite).Select(f => new
+                    data = facturas.Take(limite).Select(f =>
                     {
-                        id = f.Id,
-                        numero = f.Numero,
-                        cliente = new
+                        // Asegurarse de que el cliente esté cargado
+                        Models.Entities.Cliente? cliente = null;
+                        if (f.Cliente != null)
                         {
-                            id = f.Cliente?.Id,
-                            nombre = f.Cliente?.Nombre,
-                            telefono = f.Cliente?.Telefono
-                        },
-                        monto = f.Monto,
-                        fechaCreacion = f.FechaCreacion,
-                        mesFacturacion = f.MesFacturacion
+                            cliente = f.Cliente;
+                        }
+                        else if (f.ClienteId > 0)
+                        {
+                            cliente = _clienteService.ObtenerPorId(f.ClienteId);
+                        }
+
+                        return new
+                        {
+                            id = f.Id,
+                            numero = f.Numero,
+                            cliente = cliente != null ? new
+                            {
+                                id = cliente.Id,
+                                nombre = cliente.Nombre,
+                                telefono = cliente.Telefono
+                            } : null,
+                            monto = f.Monto,
+                            fechaCreacion = f.FechaCreacion,
+                            mesFacturacion = f.MesFacturacion
+                        };
                     })
                 });
             }
