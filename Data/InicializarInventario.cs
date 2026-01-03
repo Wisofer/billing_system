@@ -27,6 +27,7 @@ public static class InicializarInventario
                     new CategoriaEquipo { Nombre = "Modem", Descripcion = "Módems", Activo = true, FechaCreacion = DateTime.Now },
                     new CategoriaEquipo { Nombre = "Herramienta", Descripcion = "Herramientas de instalación", Activo = true, FechaCreacion = DateTime.Now },
                     new CategoriaEquipo { Nombre = "Consumible", Descripcion = "Materiales consumibles", Activo = true, FechaCreacion = DateTime.Now },
+                    new CategoriaEquipo { Nombre = "Ferretería", Descripcion = "Materiales de ferretería para instalaciones (tubos, platinas, tornillos, etc.)", Activo = true, FechaCreacion = DateTime.Now },
                     new CategoriaEquipo { Nombre = "Repuesto", Descripcion = "Repuestos y componentes", Activo = true, FechaCreacion = DateTime.Now },
                     new CategoriaEquipo { Nombre = "Otro", Descripcion = "Otros equipos", Activo = true, FechaCreacion = DateTime.Now }
                 };

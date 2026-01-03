@@ -15,11 +15,17 @@ public class ClientesController : Controller
 {
     private readonly IClienteService _clienteService;
     private readonly IServicioService _servicioService;
+    private readonly IMaterialInstalacionService _materialInstalacionService;
+    private readonly IEquipoService _equipoService;
+    private readonly ICategoriaEquipoService _categoriaEquipoService;
 
-    public ClientesController(IClienteService clienteService, IServicioService servicioService)
+    public ClientesController(IClienteService clienteService, IServicioService servicioService, IMaterialInstalacionService materialInstalacionService, IEquipoService equipoService, ICategoriaEquipoService categoriaEquipoService)
     {
         _clienteService = clienteService;
         _servicioService = servicioService;
+        _materialInstalacionService = materialInstalacionService;
+        _equipoService = equipoService;
+        _categoriaEquipoService = categoriaEquipoService;
     }
 
     [HttpGet("/clientes/obtener-codigo")]
@@ -84,6 +90,8 @@ public class ClientesController : Controller
         ViewBag.ClientesActivos = clientesActivos;
         ViewBag.NuevosEsteMes = nuevosEsteMes;
         ViewBag.Servicios = _servicioService.ObtenerActivos();
+        ViewBag.Equipos = _equipoService.ObtenerTodos().Where(e => e.Activo && e.Stock > 0).OrderBy(e => e.CategoriaEquipo?.Nombre).ThenBy(e => e.Nombre).ToList();
+        ViewBag.CategoriasEquipo = _categoriaEquipoService.ObtenerActivas();
 
         return View(resultado.Items);
     }
@@ -177,6 +185,37 @@ public class ClientesController : Controller
                     _clienteService.AsignarServiciosConCantidad(clienteCreado.Id, serviciosConCantidad);
                 }
             }
+
+            // Procesar materiales de instalación si vienen en el request
+            var materialesInstalacion = new Dictionary<int, decimal>();
+            // Formato esperado: MaterialesInstalacion[equipoId]=cantidad
+            foreach (var key in Request.Form.Keys)
+            {
+                if (key != null && key.StartsWith("MaterialesInstalacion["))
+                {
+                    // Extraer EquipoId del formato MaterialesInstalacion[123]
+                    var startIndex = key.IndexOf('[') + 1;
+                    var endIndex = key.IndexOf(']');
+                    if (startIndex > 0 && endIndex > startIndex)
+                    {
+                        var equipoIdStr = key.Substring(startIndex, endIndex - startIndex);
+                        if (int.TryParse(equipoIdStr, out int equipoId))
+                        {
+                            var cantidadStr = Request.Form[key].ToString();
+                            if (decimal.TryParse(cantidadStr, out decimal cantidad) && cantidad > 0)
+                            {
+                                materialesInstalacion[equipoId] = cantidad;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Si hay materiales, procesarlos y descontar del inventario
+            if (materialesInstalacion.Any())
+            {
+                _materialInstalacionService.CrearMaterialesInstalacion(clienteCreado.Id, materialesInstalacion);
+            }
             
             // Siempre devolver JSON para peticiones AJAX (verificar Accept header)
             var acceptHeader = Request.Headers["Accept"].ToString();
@@ -212,6 +251,14 @@ public class ClientesController : Controller
         }
 
         ViewBag.Servicios = _servicioService.ObtenerActivos();
+        
+        // Cargar equipos y categorías para materiales de instalación
+        ViewBag.Equipos = _equipoService.ObtenerTodos().Where(e => e.Activo && e.Stock > 0).OrderBy(e => e.Nombre).ToList();
+        ViewBag.CategoriasEquipo = _categoriaEquipoService.ObtenerActivas().OrderBy(c => c.Nombre).ToList();
+        
+        // Cargar materiales de instalación existentes del cliente
+        ViewBag.MaterialesInstalacion = _materialInstalacionService.ObtenerPorCliente(id);
+        
         return View(cliente);
     }
 
@@ -277,6 +324,11 @@ public class ClientesController : Controller
             // Si hay errores, mantener los datos del formulario pero asegurar que el cliente tenga todos los campos
             cliente.FechaCreacion = clienteExistente.FechaCreacion;
             ViewBag.Servicios = _servicioService.ObtenerActivos();
+            
+            // Cargar equipos y categorías para materiales de instalación
+            ViewBag.Equipos = _equipoService.ObtenerTodos().Where(e => e.Activo && e.Stock > 0).OrderBy(e => e.Nombre).ToList();
+            ViewBag.CategoriasEquipo = _categoriaEquipoService.ObtenerActivas().OrderBy(c => c.Nombre).ToList();
+            
             return View(cliente);
         }
 
@@ -329,6 +381,37 @@ public class ClientesController : Controller
                     _clienteService.AsignarServiciosConCantidad(id, serviciosConCantidad);
                 }
             }
+
+            // Procesar materiales de instalación adicionales si vienen en el request
+            var materialesInstalacion = new Dictionary<int, decimal>();
+            // Formato esperado: MaterialesInstalacion[equipoId]=cantidad
+            foreach (var key in Request.Form.Keys)
+            {
+                if (key != null && key.StartsWith("MaterialesInstalacion["))
+                {
+                    // Extraer EquipoId del formato MaterialesInstalacion[123]
+                    var startIndex = key.IndexOf('[') + 1;
+                    var endIndex = key.IndexOf(']');
+                    if (startIndex > 0 && endIndex > startIndex)
+                    {
+                        var equipoIdStr = key.Substring(startIndex, endIndex - startIndex);
+                        if (int.TryParse(equipoIdStr, out int equipoId))
+                        {
+                            var cantidadStr = Request.Form[key].ToString();
+                            if (decimal.TryParse(cantidadStr, out decimal cantidad) && cantidad > 0)
+                            {
+                                materialesInstalacion[equipoId] = cantidad;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Si hay materiales adicionales, procesarlos y descontar del inventario
+            if (materialesInstalacion.Any())
+            {
+                _materialInstalacionService.CrearMaterialesInstalacion(id, materialesInstalacion);
+            }
             
             TempData["Success"] = "Cliente actualizado exitosamente.";
             return Redirect("/clientes");
@@ -339,7 +422,42 @@ public class ClientesController : Controller
             // Recargar el cliente original en caso de error
             cliente.FechaCreacion = clienteExistente.FechaCreacion;
             ViewBag.Servicios = _servicioService.ObtenerActivos();
+            
+            // Cargar equipos y categorías para materiales de instalación
+            ViewBag.Equipos = _equipoService.ObtenerTodos().Where(e => e.Activo && e.Stock > 0).OrderBy(e => e.Nombre).ToList();
+            ViewBag.CategoriasEquipo = _categoriaEquipoService.ObtenerActivas().OrderBy(c => c.Nombre).ToList();
+            
             return View(cliente);
+        }
+    }
+
+    [Authorize(Policy = "Administrador")]
+    [HttpPost("/clientes/materiales-instalacion/eliminar/{id}")]
+    public IActionResult EliminarMaterialInstalacion(int id)
+    {
+        try
+        {
+            // Obtener usuario actual
+            int? usuarioId = null;
+            var usuarioIdStr = HttpContext.Session.GetString("UsuarioId");
+            if (!string.IsNullOrEmpty(usuarioIdStr) && int.TryParse(usuarioIdStr, out int userId))
+            {
+                usuarioId = userId;
+            }
+
+            var eliminado = _materialInstalacionService.EliminarConDevolucionStock(id, usuarioId);
+            if (eliminado)
+            {
+                return Json(new { success = true, message = "Material eliminado correctamente. El stock ha sido devuelto al inventario." });
+            }
+            else
+            {
+                return Json(new { success = false, message = "Material no encontrado." });
+            }
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = $"Error al eliminar material: {ex.Message}" });
         }
     }
 

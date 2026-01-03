@@ -60,6 +60,49 @@ function cerrarModalCrear() {
     document.getElementById('formCrearCliente').reset();
     document.querySelectorAll('#formCrearCliente .text-red-500').forEach(el => el.textContent = '');
     document.getElementById('codigoCliente').value = '';
+    // Limpiar materiales
+    const materialesLista = document.getElementById('materiales-lista');
+    if (materialesLista) materialesLista.innerHTML = '';
+}
+
+function agregarMaterialInstalacion() {
+    const template = document.getElementById('template-material-item');
+    const materialesLista = document.getElementById('materiales-lista');
+    
+    if (!template || !materialesLista) return;
+    
+    const nuevoMaterial = template.content.cloneNode(true);
+    materialesLista.appendChild(nuevoMaterial);
+    
+    // Agregar event listeners al nuevo material
+    const materialItem = materialesLista.lastElementChild;
+    const select = materialItem.querySelector('.material-select');
+    const cantidadInput = materialItem.querySelector('.material-cantidad');
+    const unidadSpan = materialItem.querySelector('.material-unidad');
+    
+    if (select) {
+        select.addEventListener('change', function() {
+            const option = this.options[this.selectedIndex];
+            const unidad = option.getAttribute('data-unidad') || '';
+            const stock = option.getAttribute('data-stock') || '0';
+            
+            if (unidadSpan) {
+                unidadSpan.textContent = unidad ? `(${unidad})` : '';
+            }
+            
+            if (cantidadInput) {
+                cantidadInput.setAttribute('max', stock);
+                cantidadInput.setAttribute('placeholder', `Máx: ${stock} ${unidad}`);
+            }
+        });
+    }
+}
+
+function eliminarMaterialInstalacion(button) {
+    const materialItem = button.closest('.material-item');
+    if (materialItem) {
+        materialItem.remove();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -78,6 +121,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+    });
+
+    // Manejar cambios en selects de materiales (actualizar unidad de medida)
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('material-select')) {
+            const select = e.target;
+            const option = select.options[select.selectedIndex];
+            const unidad = option.getAttribute('data-unidad') || '';
+            const stock = option.getAttribute('data-stock') || '0';
+            
+            const materialItem = select.closest('.material-item');
+            const unidadSpan = materialItem?.querySelector('.material-unidad');
+            const cantidadInput = materialItem?.querySelector('.material-cantidad');
+            
+            if (unidadSpan) {
+                unidadSpan.textContent = unidad ? `(${unidad})` : '';
+            }
+            
+            if (cantidadInput) {
+                cantidadInput.setAttribute('max', stock);
+                cantidadInput.setAttribute('placeholder', `Máx: ${stock} ${unidad}`);
+            }
+        }
     });
     
     const form = document.getElementById('formCrearCliente');
@@ -116,6 +182,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     const cantidadInput = servicioItem.querySelector('.cantidad-input');
                     const cantidad = cantidadInput ? parseInt(cantidadInput.value) || 1 : 1;
                     formDataToSend.append(`Cantidad_${id}`, cantidad.toString());
+            }
+        });
+
+        // Agregar materiales de instalación
+        const materialesItems = document.querySelectorAll('.material-item');
+        materialesItems.forEach(item => {
+            const equipoIdSelect = item.querySelector('.material-select');
+            const cantidadInput = item.querySelector('.material-cantidad');
+            
+            if (equipoIdSelect && equipoIdSelect.value && cantidadInput && cantidadInput.value) {
+                const equipoId = equipoIdSelect.value;
+                const cantidad = parseFloat(cantidadInput.value);
+                
+                if (equipoId && cantidad > 0) {
+                    formDataToSend.append(`MaterialesInstalacion[${equipoId}]`, cantidad.toString());
+                }
             }
         });
         

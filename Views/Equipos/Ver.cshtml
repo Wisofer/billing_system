@@ -127,7 +127,7 @@
                 <div>
                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Stock Actual</dt>
                     <dd class="mt-1 text-2xl font-semibold @(Model.Stock <= Model.StockMinimo && Model.StockMinimo > 0 ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white")">
-                        @Model.Stock
+                        @Model.Stock.ToString("N2").TrimEnd('0').TrimEnd(',') @Model.UnidadMedida
                         @if (Model.Stock <= Model.StockMinimo && Model.StockMinimo > 0)
                         {
                             <span class="ml-2 text-sm text-red-500">⚠ Stock bajo</span>
@@ -138,7 +138,7 @@
                 {
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Stock Mínimo</dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">@Model.StockMinimo</dd>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">@Model.StockMinimo.ToString("N2").TrimEnd('0').TrimEnd(',') @Model.UnidadMedida</dd>
                     </div>
                 }
             </dl>

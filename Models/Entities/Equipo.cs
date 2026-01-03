@@ -12,8 +12,10 @@ public class Equipo
     public int CategoriaEquipoId { get; set; }
     public int UbicacionId { get; set; }
     public string Estado { get; set; } = "Disponible"; // Disponible, En uso, Dañado, En reparación, Retirado
-    public int Stock { get; set; } = 0; // Cantidad disponible
-    public int StockMinimo { get; set; } = 0; // Alerta cuando llegue a este nivel
+    public decimal Stock { get; set; } = 0; // Cantidad disponible (soporta decimales para metros)
+    public decimal StockMinimo { get; set; } = 0; // Alerta cuando llegue a este nivel
+    public string TipoMedida { get; set; } = "Unidad"; // "Unidad" o "Metros" - define cómo se mide el producto
+    public string UnidadMedida { get; set; } = "unidades"; // Texto descriptivo: "unidades", "metros", "kg", etc.
     public decimal? PrecioCompra { get; set; }
     public DateTime? FechaAdquisicion { get; set; }
     public int? ProveedorId { get; set; }

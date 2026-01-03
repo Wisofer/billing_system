@@ -35,6 +35,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<AsignacionEquipo> AsignacionesEquipo { get; set; }
     public DbSet<MantenimientoReparacion> MantenimientosReparaciones { get; set; }
     public DbSet<HistorialEstadoEquipo> HistorialEstadosEquipo { get; set; }
+    public DbSet<MaterialInstalacion> MaterialesInstalacion { get; set; }
     
     // Egresos/Gastos
     public DbSet<Egreso> Egresos { get; set; }
@@ -267,8 +268,10 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Marca).HasMaxLength(100);
             entity.Property(e => e.Modelo).HasMaxLength(100);
             entity.Property(e => e.Estado).IsRequired().HasMaxLength(50).HasDefaultValue("Disponible");
-            entity.Property(e => e.Stock).HasDefaultValue(0);
-            entity.Property(e => e.StockMinimo).HasDefaultValue(0);
+            entity.Property(e => e.Stock).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+            entity.Property(e => e.StockMinimo).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+            entity.Property(e => e.TipoMedida).IsRequired().HasMaxLength(20).HasDefaultValue("Unidad");
+            entity.Property(e => e.UnidadMedida).IsRequired().HasMaxLength(50).HasDefaultValue("unidades");
             entity.Property(e => e.PrecioCompra).HasColumnType("decimal(18,2)");
             entity.Property(e => e.Observaciones).HasMaxLength(1000);
             entity.HasIndex(e => e.Codigo).IsUnique();
@@ -458,6 +461,27 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Longitud).HasColumnType("decimal(11,8)");
             entity.HasIndex(e => e.FechaEnvio);
             entity.HasIndex(e => e.Estado);
+        });
+
+        // Configuración de MaterialInstalacion
+        modelBuilder.Entity<MaterialInstalacion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Cantidad).IsRequired().HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Observaciones).HasMaxLength(1000);
+            
+            entity.HasOne(e => e.Cliente)
+                .WithMany(c => c.MaterialesInstalacion)
+                .HasForeignKey(e => e.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.Equipo)
+                .WithMany()
+                .HasForeignKey(e => e.EquipoId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasIndex(e => e.ClienteId);
+            entity.HasIndex(e => e.FechaInstalacion);
         });
     }
 }

@@ -121,15 +121,35 @@
                 </div>
 
                 <div>
+                    <label for="TipoMedida" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Tipo de Medida <span class="text-red-500">*</span>
+                    </label>
+                    <select asp-for="TipoMedida" name="TipoMedida" required 
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                        <option value="Unidad" selected="@(Model.TipoMedida == "Unidad")">Unidad (productos individuales: routers, antenas, etc.)</option>
+                        <option value="Metros" selected="@(Model.TipoMedida == "Metros")">Metros (cables, alambres, tubos por longitud)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="UnidadMedida" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Unidad de Medida <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" asp-for="UnidadMedida" name="UnidadMedida" value="@Model.UnidadMedida" required 
+                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                           placeholder="ej: unidades, metros, kg" />
+                </div>
+
+                <div>
                     <label for="Stock" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stock *</label>
-                    <input type="number" asp-for="Stock" name="Stock" value="@Model.Stock" min="0" required 
+                    <input type="number" asp-for="Stock" name="Stock" value="@Model.Stock" step="0.01" min="0" required 
                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                     <span asp-validation-for="Stock" class="text-red-500 text-xs"></span>
                 </div>
 
                 <div>
                     <label for="StockMinimo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stock Mínimo</label>
-                    <input type="number" asp-for="StockMinimo" name="StockMinimo" value="@Model.StockMinimo" min="0" 
+                    <input type="number" asp-for="StockMinimo" name="StockMinimo" value="@Model.StockMinimo" step="0.01" min="0" 
                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 </div>
 

@@ -254,6 +254,7 @@ builder.Services.AddScoped<IProveedorService, ProveedorService>();
 builder.Services.AddScoped<IMovimientoInventarioService, MovimientoInventarioService>();
 builder.Services.AddScoped<IAsignacionEquipoService, AsignacionEquipoService>();
 builder.Services.AddScoped<IMantenimientoReparacionService, MantenimientoReparacionService>();
+builder.Services.AddScoped<IMaterialInstalacionService, MaterialInstalacionService>();
 
 // Servicios de Landing Page
 builder.Services.AddScoped<IMetodoPagoService, MetodoPagoService>();
@@ -284,114 +285,6 @@ using (var scope = app.Services.CreateScope())
     {
         // Aplicar migraciones
         dbContext.Database.Migrate();
-        
-        // Agregar columna Mensaje si no existe (workaround para migración pendiente)
-        try
-        {
-            dbContext.Database.ExecuteSqlRaw(@"
-                ALTER TABLE ""ServiciosLandingPage"" 
-                ADD COLUMN IF NOT EXISTS ""Mensaje"" character varying(500) NULL;
-            ");
-            logger.LogInformation("Columna 'Mensaje' verificada/agregada en ServiciosLandingPage");
-        }
-        catch (Exception ex)
-        {
-            // Si la columna ya existe, ignorar el error
-            if (!ex.Message.Contains("already exists") && !ex.Message.Contains("duplicate"))
-            {
-                logger.LogWarning($"Advertencia al verificar columna Mensaje: {ex.Message}");
-            }
-        }
-        
-        // Crear tabla Egresos si no existe
-        try
-        {
-            dbContext.Database.ExecuteSqlRaw(@"
-                CREATE TABLE IF NOT EXISTS ""Egresos"" (
-                    ""Id"" SERIAL PRIMARY KEY,
-                    ""Codigo"" character varying(20) NOT NULL,
-                    ""Descripcion"" character varying(500) NOT NULL,
-                    ""Categoria"" character varying(100) NOT NULL,
-                    ""Monto"" numeric(18,2) NOT NULL,
-                    ""Fecha"" timestamp without time zone NOT NULL,
-                    ""NumeroFactura"" character varying(100),
-                    ""Proveedor"" character varying(200),
-                    ""MetodoPago"" character varying(50) NOT NULL DEFAULT 'Efectivo',
-                    ""Observaciones"" character varying(1000),
-                    ""UsuarioId"" integer,
-                    ""Activo"" boolean NOT NULL DEFAULT true,
-                    ""FechaCreacion"" timestamp without time zone NOT NULL,
-                    ""FechaActualizacion"" timestamp without time zone,
-                    CONSTRAINT ""FK_Egresos_Usuarios_UsuarioId"" FOREIGN KEY (""UsuarioId"") REFERENCES ""Usuarios""(""Id"") ON DELETE SET NULL
-                );
-            ");
-            
-            // Crear índices si no existen
-            dbContext.Database.ExecuteSqlRaw(@"CREATE UNIQUE INDEX IF NOT EXISTS ""IX_Egresos_Codigo"" ON ""Egresos"" (""Codigo"");");
-            dbContext.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Egresos_Fecha"" ON ""Egresos"" (""Fecha"");");
-            dbContext.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Egresos_Categoria"" ON ""Egresos"" (""Categoria"");");
-            dbContext.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Egresos_UsuarioId"" ON ""Egresos"" (""UsuarioId"");");
-            
-            logger.LogInformation("Tabla 'Egresos' verificada/creada correctamente");
-        }
-        catch (Exception ex)
-        {
-            if (!ex.Message.Contains("already exists") && !ex.Message.Contains("duplicate"))
-            {
-                logger.LogWarning($"Advertencia al crear tabla Egresos: {ex.Message}");
-            }
-        }
-        
-        // Crear tabla Contactos si no existe
-        try
-        {
-            dbContext.Database.ExecuteSqlRaw(@"
-                CREATE TABLE IF NOT EXISTS ""Contactos"" (
-                    ""Id"" SERIAL PRIMARY KEY,
-                    ""Nombre"" character varying(100) NOT NULL,
-                    ""Correo"" character varying(150) NOT NULL,
-                    ""Telefono"" character varying(20) NOT NULL,
-                    ""Mensaje"" character varying(1000) NOT NULL,
-                    ""FechaEnvio"" timestamp without time zone NOT NULL,
-                    ""Estado"" character varying(20) NOT NULL DEFAULT 'Nuevo',
-                    ""FechaLeido"" timestamp without time zone,
-                    ""FechaRespondido"" timestamp without time zone
-                );
-            ");
-            
-            // Crear índices si no existen
-            dbContext.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Contactos_FechaEnvio"" ON ""Contactos"" (""FechaEnvio"");");
-            dbContext.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_Contactos_Estado"" ON ""Contactos"" (""Estado"");");
-            
-            // Agregar columna Ubicacion si no existe
-            try
-            {
-                dbContext.Database.ExecuteSqlRaw(@"ALTER TABLE ""Contactos"" ADD COLUMN IF NOT EXISTS ""Ubicacion"" character varying(100);");
-            }
-            catch (Exception) { /* La columna ya existe */ }
-            
-            // Agregar columnas Latitud y Longitud si no existen
-            try
-            {
-                dbContext.Database.ExecuteSqlRaw(@"ALTER TABLE ""Contactos"" ADD COLUMN IF NOT EXISTS ""Latitud"" decimal(10,8);");
-            }
-            catch (Exception) { /* La columna ya existe */ }
-            
-            try
-            {
-                dbContext.Database.ExecuteSqlRaw(@"ALTER TABLE ""Contactos"" ADD COLUMN IF NOT EXISTS ""Longitud"" decimal(11,8);");
-            }
-            catch (Exception) { /* La columna ya existe */ }
-            
-            logger.LogInformation("Tabla 'Contactos' verificada/creada correctamente");
-        }
-        catch (Exception ex)
-        {
-            if (!ex.Message.Contains("already exists") && !ex.Message.Contains("duplicate"))
-            {
-                logger.LogWarning($"Advertencia al crear tabla Contactos: {ex.Message}");
-            }
-        }
         
         // Inicializar servicios si no existen
         if (!dbContext.Servicios.Any())

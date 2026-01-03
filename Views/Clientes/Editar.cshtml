@@ -12,7 +12,7 @@
 </div>
 
 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-    <form method="post" action="/clientes/editar/@Model.Id" class="space-y-5">
+    <form method="post" action="/clientes/editar/@Model.Id" class="space-y-5" id="formEditarCliente">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" name="Id" value="@Model.Id" />
         
@@ -113,6 +113,129 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Selecciona uno o más servicios para el cliente</p>
             </div>
 
+            <!-- Materiales de Instalación -->
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <span class="flex items-center space-x-1">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                        <span>Materiales de Instalación</span>
+                        <span class="text-xs font-normal text-gray-400">(opcional)</span>
+                    </span>
+                </label>
+                <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50">
+                    @{
+                        var equipos = ViewBag.Equipos as List<billing_system.Models.Entities.Equipo> ?? new List<billing_system.Models.Entities.Equipo>();
+                        var categoriasEquipo = ViewBag.CategoriasEquipo as List<billing_system.Models.Entities.CategoriaEquipo> ?? new List<billing_system.Models.Entities.CategoriaEquipo>();
+                    }
+                    @if (equipos.Any())
+                    {
+                        <div id="materiales-container" class="space-y-3">
+                            <div class="flex items-center justify-between mb-3">
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Agregar materiales adicionales utilizados</p>
+                                <button type="button" onclick="agregarMaterialInstalacion()" class="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <span>Agregar Material</span>
+                                </button>
+                            </div>
+                            <div id="materiales-lista" class="space-y-2">
+                                <!-- Materiales existentes del cliente (solo lectura) -->
+                                @{
+                                    var materialesExistentes = ViewBag.MaterialesInstalacion as List<billing_system.Models.Entities.MaterialInstalacion> ?? new List<billing_system.Models.Entities.MaterialInstalacion>();
+                                }
+                                @if (materialesExistentes.Any())
+                                {
+                                    <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-600">
+                                        <p class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Materiales ya registrados (solo lectura):</p>
+                                        <div class="space-y-2">
+                                            @foreach (var material in materialesExistentes)
+                                            {
+                                                <div class="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg border border-blue-200 dark:border-blue-800 material-existente-item" data-material-id="@material.Id">
+                                                    <div class="flex items-center justify-between">
+                                                        <div class="flex-1">
+                                                            <span class="text-sm text-gray-700 dark:text-gray-300">
+                                                                <strong>@material.Equipo?.Nombre</strong> - @material.Cantidad.ToString("N2") @material.Equipo?.UnidadMedida
+                                                            </span>
+                                                            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                                                                @material.FechaInstalacion.ToString("dd/MM/yyyy")
+                                                            </span>
+                                                        </div>
+                                                        <button type="button" 
+                                                                onclick="eliminarMaterialExistente(event, @material.Id, '@Html.Raw(material.Equipo?.Nombre?.Replace("'", "\\'") ?? "")', @material.Cantidad.ToString("N2", System.Globalization.CultureInfo.InvariantCulture))"
+                                                                class="ml-2 px-2 py-1 text-xs bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/70 transition-colors flex items-center space-x-1">
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                            <span>Eliminar</span>
+                                                        </button>
+                                                    </div>
+                                                    @if (!string.IsNullOrEmpty(material.Observaciones))
+                                                    {
+                                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">@material.Observaciones</p>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                                <!-- Los materiales nuevos se agregarán dinámicamente aquí -->
+                            </div>
+                            <template id="template-material-item">
+                                <div class="material-item bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 flex items-start space-x-3">
+                                    <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Material</label>
+                                            <select class="material-select w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                                                <option value="">Seleccionar...</option>
+                                                @foreach (var categoria in categoriasEquipo)
+                                                {
+                                                    var equiposCategoria = equipos.Where(e => e.CategoriaEquipoId == categoria.Id).ToList();
+                                                    if (equiposCategoria.Any())
+                                                    {
+                                                        <optgroup label="@categoria.Nombre">
+                                                            @foreach (var equipo in equiposCategoria)
+                                                            {
+                                                                <option value="@equipo.Id" data-unidad="@equipo.UnidadMedida" data-stock="@equipo.Stock">@equipo.Nombre (@equipo.Stock.ToString("N2").TrimEnd('0').TrimEnd(',') @equipo.UnidadMedida disponible)</option>
+                                                            }
+                                                        </optgroup>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Cantidad</label>
+                                            <input type="number" step="0.01" min="0.01" class="material-cantidad w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" placeholder="0.00">
+                                            <span class="material-unidad text-xs text-gray-500 dark:text-gray-400 mt-1 block"></span>
+                                        </div>
+                                        <div class="flex items-end">
+                                            <button type="button" onclick="eliminarMaterialInstalacion(this)" class="w-full px-3 py-2 text-sm bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/70 transition-colors flex items-center justify-center space-x-1">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                <span>Eliminar</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No hay materiales disponibles en el inventario</p>
+                    }
+                </div>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-2 flex items-center space-x-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Los materiales se descontarán automáticamente del inventario al guardar</span>
+                </p>
+            </div>
+
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Observaciones</label>
                 <textarea name="Observaciones" rows="3" placeholder="Notas sobre el cliente (ej: buen pagador, requiere seguimiento, mala paga, etc.)" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none">@(Model.Observaciones ?? "")</textarea>
@@ -136,6 +259,97 @@
         </div>
 
 <script>
+function agregarMaterialInstalacion() {
+    const template = document.getElementById('template-material-item');
+    const materialesLista = document.getElementById('materiales-lista');
+    
+    if (!template || !materialesLista) return;
+    
+    const nuevoMaterial = template.content.cloneNode(true);
+    materialesLista.appendChild(nuevoMaterial);
+    
+    // Agregar event listeners al nuevo material
+    const materialItem = materialesLista.lastElementChild;
+    const select = materialItem.querySelector('.material-select');
+    const cantidadInput = materialItem.querySelector('.material-cantidad');
+    const unidadSpan = materialItem.querySelector('.material-unidad');
+    
+    if (select) {
+        select.addEventListener('change', function() {
+            const option = this.options[this.selectedIndex];
+            const unidad = option.getAttribute('data-unidad') || '';
+            const stock = option.getAttribute('data-stock') || '0';
+            
+            if (unidadSpan) {
+                unidadSpan.textContent = unidad ? `(${unidad})` : '';
+            }
+            
+            if (cantidadInput) {
+                cantidadInput.setAttribute('max', stock);
+                cantidadInput.setAttribute('placeholder', `Máx: ${stock} ${unidad}`);
+            }
+        });
+    }
+}
+
+function eliminarMaterialInstalacion(button) {
+    const materialItem = button.closest('.material-item');
+    if (materialItem) {
+        materialItem.remove();
+    }
+}
+
+async function eliminarMaterialExistente(event, materialId, nombreEquipo, cantidad) {
+    const confirmado = await ModalDialog.confirm(`¿Estás seguro de eliminar ${cantidad} unidades de ${nombreEquipo}?\n\nEl stock será devuelto al inventario y se registrará un movimiento de devolución.`);
+    if (!confirmado) {
+        return;
+    }
+
+    // Deshabilitar botón mientras se procesa
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<svg class="w-3 h-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>';
+
+    // Obtener token de verificación
+    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+    
+    // Crear FormData para enviar el token
+    const formData = new FormData();
+    formData.append('__RequestVerificationToken', token);
+    
+    fetch(`/clientes/materiales-instalacion/eliminar/${materialId}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(async data => {
+        if (data.success) {
+            // Eliminar el elemento del DOM
+            const materialItem = document.querySelector(`.material-existente-item[data-material-id="${materialId}"]`);
+            if (materialItem) {
+                materialItem.remove();
+            }
+
+            // Mostrar mensaje de éxito
+            await ModalDialog.alert(data.message || 'Material eliminado correctamente', 'success');
+            
+            // Recargar la página para actualizar la vista
+            window.location.reload();
+        } else {
+            await ModalDialog.alert(data.message || 'Error al eliminar el material', 'error');
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    })
+    .catch(async error => {
+        console.error('Error:', error);
+        await ModalDialog.alert('Error al eliminar el material. Por favor, intenta nuevamente.', 'error');
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Manejar mostrar/ocultar campo de cantidad para servicios Streaming
     const servicioCheckboxes = document.querySelectorAll('.servicio-checkbox');
@@ -154,6 +368,58 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Manejar cambios en selects de materiales (actualizar unidad de medida)
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('material-select')) {
+            const select = e.target;
+            const option = select.options[select.selectedIndex];
+            const unidad = option.getAttribute('data-unidad') || '';
+            const stock = option.getAttribute('data-stock') || '0';
+            
+            const materialItem = select.closest('.material-item');
+            const unidadSpan = materialItem?.querySelector('.material-unidad');
+            const cantidadInput = materialItem?.querySelector('.material-cantidad');
+            
+            if (unidadSpan) {
+                unidadSpan.textContent = unidad ? `(${unidad})` : '';
+            }
+            
+            if (cantidadInput) {
+                cantidadInput.setAttribute('max', stock);
+                cantidadInput.setAttribute('placeholder', `Máx: ${stock} ${unidad}`);
+            }
+        }
+    });
+
+    // Procesar materiales antes de enviar el formulario
+    const form = document.getElementById('formEditarCliente');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Crear inputs hidden temporales para los materiales
+            const materialesItems = document.querySelectorAll('.material-item');
+            materialesItems.forEach(item => {
+                const equipoIdSelect = item.querySelector('.material-select');
+                const cantidadInput = item.querySelector('.material-cantidad');
+                
+                if (equipoIdSelect && equipoIdSelect.value && cantidadInput && cantidadInput.value) {
+                    const equipoId = equipoIdSelect.value;
+                    const cantidad = parseFloat(cantidadInput.value);
+                    
+                    if (equipoId && cantidad > 0) {
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = `MaterialesInstalacion[${equipoId}]`;
+                        hiddenInput.value = cantidad.toString();
+                        this.appendChild(hiddenInput);
+                    }
+                }
+            });
+            
+            // Continuar con el submit normal
+            // El formulario se enviará con los inputs hidden agregados
+        });
+    }
 });
 </script>
 
